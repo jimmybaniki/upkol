@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPKOL | Inscription en Ligne</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #121212;
+        }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        input:focus, select:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navigation Simple -->
+    <nav class="bg-upkol-noir p-4 text-white sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-upkol-jaune">UPKOL</h1>
+            <span class="text-sm italic">Portail d'Admission</span>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden animate__animated animate__fadeIn">
+            <div class="bg-upkol-jaune p-6 text-center">
+                <i class="fas fa-user-graduate text-4xl mb-2"></i>
+                <h2 class="text-2xl font-bold uppercase">Formulaire d'Inscription</h2>
+                <p class="text-sm">Remplissez vos informations pour rejoindre l'UPKOL</p>
+            </div>
+
+            <!-- FORMULAIRE -->
+            <!-- REMPLACER L'URL CI-DESSOUS APRÈS L'ÉTAPE 2 DU GUIDE -->
+            <form id="registrationForm" class="p-8 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Nom complet</label>
+                        <input type="text" name="nom" placeholder="Ex: Jean Mukendi" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Email</label>
+                        <input type="email" name="email" placeholder="votre@email.com" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Téléphone</label>
+                        <input type="tel" name="telephone" placeholder="+243..." required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold">Faculté souhaitée</label>
+                        <select name="faculte" required>
+                            <option value="">-- Choisir une faculté --</option>
+                            <option value="Informatique">Sciences Informatiques</option>
+                            <option value="Agronomie">Sciences Agronomiques</option>
+                            <option value="Mines">Sciences des Mines & Géologie</option>
+                            <option value="Pedagogie">Sciences Pédagogiques</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold">Dernier diplôme obtenu</label>
+                    <input type="text" name="diplome" placeholder="Ex: Diplôme d'État en Chimie-Biologie" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold">Message ou Motivation (Optionnel)</label>
+                    <textarea name="message" rows="3" placeholder="Pourquoi voulez-vous nous rejoindre ?"></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-upkol-noir text-upkol-jaune font-bold py-3 rounded-lg hover:bg-gray-800 transition duration-300 flex justify-center items-center gap-2">
+                    <span id="btnText">ENVOYER MON DOSSIER</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+
+            <!-- Message de succès -->
+            <div id="successMsg" class="hidden p-8 text-center animate__animated animate__zoomIn">
+                <div class="text-green-500 text-6xl mb-4"><i class="fas fa-check-circle"></i></div>
+                <h3 class="text-2xl font-bold">Félicitations !</h3>
+                <p class="text-gray-600">Votre demande d'inscription a été enregistrée avec succès dans notre base de données.</p>
+                <button onclick="location.reload()" class="mt-6 text-blue-600 underline">Envoyer une autre inscription</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION : Collez l'URL de votre Web App Google Script ici
+        const SCRIPT_URL = ""; 
+
+        const form = document.getElementById('registrationForm');
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const successMsg = document.getElementById('successMsg');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            if(!SCRIPT_URL) {
+                alert("Erreur: Vous devez d'abord configurer l'URL de votre base de données Google Sheets (Suivez le guide fourni par Gemini).");
+                return;
+            }
+
+            // État de chargement
+            btn.disabled = true;
+            btnText.innerText = "TRAITEMENT EN COURS...";
+            btn.classList.add('opacity-50');
+
+            const formData = new FormData(form);
+            
+            fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: formData
+            })
+            .then(response => {
+                form.classList.add('hidden');
+                successMsg.classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Erreur!', error.message);
+                alert("Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+                btn.disabled = false;
+                btnText.innerText = "RÉESSAYER L'ENVOI";
+            });
+        });
+    </script>
+</body>
+</html>
