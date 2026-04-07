@@ -148,7 +148,9 @@
                     </div>
                 </div>
                 
-                <button onclick="showTab('inscription')" class="bg-upkol-jaune text-black px-6 py-3 rounded-full hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-105 shadow-md">S'INSCRIRE</button>
+                 <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                S'INSCRIRE
+            </a>
             </div>
 
             <!-- Mobile Menu Toggle -->
@@ -402,41 +404,11 @@
 
     <!-- 4. INSCRIPTION -->
     <main id="inscription" class="tab-content py-20 px-6">
-        <div class="max-w-3xl mx-auto bg-white border-2 border-gray-100 rounded-[2rem] shadow-2xl overflow-hidden reveal-down">
-            <div class="bg-upkol-noir p-10 text-white text-center">
-                <h2 class="text-3xl font-black mb-2 uppercase">Pré-inscription</h2>
-                <p class="text-upkol-jaune text-xs font-bold tracking-widest">SESSION ACADÉMIQUE 2024-2025</p>
-            </div>
-            <form class="p-10 space-y-6" onsubmit="handleFormSubmit(event)">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Nom Complet</label>
-                        <input type="text" required placeholder="Ex: Jean Mukendi" class="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-upkol-jaune outline-none font-bold text-sm transition-all">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Email</label>
-                        <input type="email" required placeholder="exemple@mail.com" class="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-upkol-jaune outline-none font-bold text-sm transition-all">
-                    </div>
+        <div class="mt-10">
+                    <a href="inscription.html" class="bg-upkol-jaune text-black px-10 py-4 rounded-full font-black hover:bg-white transition inline-block">
+                        ACCÉDER AU FORMULAIRE D'INSCRIPTION
+                    </a>
                 </div>
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Faculté de choix</label>
-                    <select class="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-upkol-jaune outline-none font-bold text-sm">
-                        <option>Médecine</option>
-                        <option>Droit</option>
-                        <option>Sciences Techniques / Ingénierie</option>
-                        <option>Sciences Économiques et de Gestion</option>
-                        <option>Lettres et Sciences Humaines</option>
-                        <option>Sciences de l'Information et de la Communication</option>
-                        <option>Agronomie</option>
-                        <option>Psychologie et Sciences de l'Éducation</option>
-                        <option>Sciences Pures</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-upkol-jaune text-black py-5 rounded-xl font-black text-lg uppercase shadow-xl hover:bg-black hover:text-white transition-all transform hover:scale-[1.02]">
-                    Envoyer ma candidature
-                </button>
-            </form>
-        </div>
     </main>
 
     <!-- MODAL DE RECHERCHE -->
