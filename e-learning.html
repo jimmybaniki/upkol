@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning - UPKOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #121212;
+            --accent: #ffffff;
+        }
+
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
+                        url('https://images.unsplash.com/photo-1501504905252-473c47e087f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .platform-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .platform-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
+                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="index.html#actualites" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</a>
+                <a href="index.html#inscription" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <div class="lg:hidden flex items-center space-x-5">
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="index.html#facultes" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="index.html#actualites" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
+            <a href="index.html#inscription" onclick="toggleMobileMenu()" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section h-[60vh] flex items-center px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="text-white max-w-4xl">
+                <div class="w-20 h-1 bg-upkol-jaune mb-8 reveal-left"></div>
+                <h1 class="text-6xl md:text-8xl font-black mb-6 uppercase leading-tight reveal-left" style="animation-delay: 0.2s">
+                    E-<span class="text-upkol-jaune">Learning</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl reveal-left" style="animation-delay: 0.4s">
+                    Accédez à vos cours et ressources numériques en un clic
+                </p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 reveal-left" style="animation-delay: 0.6s">
+                    <button onclick="document.getElementById('plateforme').scrollIntoView({behavior: 'smooth'})" class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl text-center">
+                        ACCÉDER À LA PLATEFORME
+                    </button>
+                    <button onclick="document.getElementById('ressources').scrollIntoView({behavior: 'smooth'})" class="border-2 border-white px-8 py-4 font-bold rounded-lg hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-all text-center">
+                        DÉCOUVRIR LES RESSOURCES
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal-down">
+            <h2 class="text-4xl font-black uppercase mb-4">Apprentissage <span class="text-upkol-jaune">Numérique</span></h2>
+            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">La révolution pédagogique à l'UPKOL</p>
+            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
+            <div class="reveal-left">
+                <h3 class="text-3xl font-black mb-6 uppercase">Pourquoi l'E-Learning ?</h3>
+                <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                    L'enseignement numérique transforme l'expérience d'apprentissage à l'UPKOL. Grâce à notre plateforme moderne, vous accédez à des cours interactifs, des ressources multimédias et des outils pédagogiques avancés.
+                </p>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    Apprenez à votre rythme, où que vous soyez, avec un suivi personnalisé et des évaluations continues pour garantir votre progression.
+                </p>
+            </div>
+            <div class="reveal-right">
+                <img src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=800&q=80" alt="E-Learning UPKOL" class="rounded-2xl shadow-2xl">
+            </div>
+        </div>
+    </section>
+
+    <!-- PLATEFORME -->
+    <section id="plateforme" class="py-20 px-6 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal-down">
+                <h2 class="text-4xl font-black uppercase mb-4">Notre <span class="text-upkol-jaune">Plateforme</span></h2>
+                <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Outils et fonctionnalités</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cours en Ligne -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                    <i class="fas fa-play-circle text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Cours Vidéo</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Accédez à des cours enregistrés par nos meilleurs enseignants. Visionnez, mettez en pause, reprenez quand vous voulez.
+                    </p>
+                </div>
+
+                <!-- Exercices Interactifs -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                    <i class="fas fa-tasks text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Exercices Interactifs</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Testez vos connaissances avec des quiz, QCM et exercices pratiques. Obtenez un feedback immédiat sur vos réponses.
+                    </p>
+                </div>
+
+                <!-- Bibliothèque Numérique -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                    <i class="fas fa-book text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Bibliothèque Numérique</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Consultez des milliers d'ouvrages, articles scientifiques et ressources pédagogiques en ligne 24/7.
+                    </p>
+                </div>
+
+                <!-- Forums de Discussion -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                    <i class="fas fa-comments text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Forums Étudiants</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Échangez avec vos camarades et enseignants. Posez vos questions et partagez vos connaissances.
+                    </p>
+                </div>
+
+                <!-- Suivi de Progression -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                    <i class="fas fa-chart-line text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Tableau de Bord</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Suivez votre progression, consultez vos notes et identifiez vos points d'amélioration en temps réel.
+                    </p>
+                </div>
+
+                <!-- Certification -->
+                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                    <i class="fas fa-certificate text-4xl mb-6 text-upkol-jaune"></i>
+                    <h3 class="font-black text-xl mb-4 uppercase">Certifications</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Obtenez des attestations de compétences validées par l'université pour valoriser votre parcours.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESSOURCES -->
+    <section id="ressources" class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal-down">
+            <h2 class="text-4xl font-black uppercase mb-4">Ressources <span class="text-upkol-jaune">Numériques</span></h2>
+            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Contenus par discipline</p>
+            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-left">
+                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">Sciences de la Santé</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Anatomie 3D, cas cliniques virtuels, simulations médicales et protocoles thérapeutiques interactifs.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-upkol-jaune font-black text-sm">150+ ressources</span>
+                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                        Explorer <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-down">
+                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">Sciences Techniques</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Modélisation CAO, simulations industrielles, tutoriels de programmation et bases de données techniques.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-upkol-jaune font-black text-sm">200+ ressources</span>
+                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                        Explorer <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-right">
+                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">Sciences Humaines</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Archives historiques, analyses sociologiques, études de cas juridiques et ressources linguistiques.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-upkol-jaune font-black text-sm">120+ ressources</span>
+                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                        Explorer <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACCÈS RAPIDE -->
+    <section class="py-20 px-6 bg-upkol-noir text-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal-down">
+                <h2 class="text-4xl font-black uppercase mb-4">Accès <span class="text-upkol-jaune">Rapide</span></h2>
+                <p class="text-gray-400 font-bold text-lg tracking-widest uppercase mb-4">Connectez-vous en quelques clics</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal-left">
+                    <h3 class="text-3xl font-black mb-6 uppercase">Comment accéder ?</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">1</div>
+                            <div>
+                                <h4 class="font-black text-lg mb-2">Inscription</h4>
+                                <p class="text-gray-300">Créez votre compte étudiant avec votre matricule UPKOL</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">2</div>
+                            <div>
+                                <h4 class="font-black text-lg mb-2">Connexion</h4>
+                                <p class="text-gray-300">Utilisez vos identifiants pour accéder à la plateforme</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">3</div>
+                            <div>
+                                <h4 class="font-black text-lg mb-2">Apprentissage</h4>
+                                <p class="text-gray-300">Explorez les cours et ressources de votre filière</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 p-8 rounded-2xl border-l-4 border-upkol-jaune reveal-right">
+                    <h3 class="font-black text-2xl mb-6 uppercase">Connexion à la plateforme</h3>
+                    <form class="space-y-6">
+                        <div>
+                            <label class="block text-gray-300 font-bold text-sm mb-2 uppercase tracking-widest">Matricule Étudiant</label>
+                            <input type="text" class="w-full bg-gray-700 border border-gray-600 px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:border-upkol-jaune focus:outline-none" placeholder="Ex: UPKOL2024001">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 font-bold text-sm mb-2 uppercase tracking-widest">Mot de Passe</label>
+                            <input type="password" class="w-full bg-gray-700 border border-gray-600 px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:border-upkol-jaune focus:outline-none" placeholder="Votre mot de passe">
+                        </div>
+                        <button type="submit" class="w-full bg-upkol-jaune text-black font-black py-4 rounded-lg hover:bg-white transition-all uppercase tracking-widest">
+                            Se Connecter <i class="fas fa-sign-in-alt ml-2"></i>
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <a href="#" class="text-upkol-jaune hover:underline text-sm">Mot de passe oublié ?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal-down">
+            <h2 class="text-4xl font-black uppercase mb-4">Support <span class="text-upkol-jaune">Technique</span></h2>
+            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Aide et assistance</p>
+            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center reveal-left">
+                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">FAQ</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Trouvez rapidement des réponses à vos questions les plus fréquentes sur l'utilisation de la plateforme.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Consulter <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <div class="text-center reveal-down">
+                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">Support 24/7</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Notre équipe technique est disponible en permanence pour vous assister dans vos démarches.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Contacter <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <div class="text-center reveal-right">
+                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase">Tutoriels</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Guides vidéo et tutoriels détaillés pour maîtriser toutes les fonctionnalités de la plateforme.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Découvrir <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div class="reveal-left">
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation.</p>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.2s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés</a></li>
+                    <li><a href="index.html#actualites" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                </ul>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.4s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="reveal-right">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold">Kolwezi, Lualaba<br>République Démocratique du Congo</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <div class="flex space-x-4">
+                <span>FORMATION</span>
+                <span>EXCELLENCE</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        }
+
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.platform-card, .group').forEach(card => {
+            card.style.opacity = "0";
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

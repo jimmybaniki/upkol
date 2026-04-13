@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment réussir ? - UPKOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #121212;
+            --accent: #ffffff;
+        }
+
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
+                        url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .step-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .step-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
+                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="index.html#actualites" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</a>
+                <a href="index.html#inscription" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <div class="lg:hidden flex items-center space-x-5">
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="index.html#facultes" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="index.html#actualites" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
+            <a href="index.html#inscription" onclick="toggleMobileMenu()" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section h-[60vh] flex items-center px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="text-white max-w-4xl">
+                <div class="w-20 h-1 bg-upkol-jaune mb-8 reveal-left"></div>
+                <h1 class="text-6xl md:text-8xl font-black mb-6 uppercase leading-tight reveal-left" style="animation-delay: 0.2s">
+                    Comment <span class="text-upkol-jaune">réussir ?</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl reveal-left" style="animation-delay: 0.4s">
+                    Guide méthodologique complet pour votre parcours universitaire à l'UPKOL
+                </p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 reveal-left" style="animation-delay: 0.6s">
+                    <button onclick="document.getElementById('methodologie').scrollIntoView({behavior: 'smooth'})" class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl text-center">
+                        DÉCOUVRIR LE GUIDE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal-down">
+            <h2 class="text-4xl font-black uppercase mb-4">Votre <span class="text-upkol-jaune">Succès</span> Académique</h2>
+            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Méthodes éprouvées pour exceller à l'université</p>
+            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
+            <div class="reveal-left">
+                <h3 class="text-3xl font-black mb-6 uppercase">Pourquoi ce guide ?</h3>
+                <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                    La réussite universitaire ne dépend pas uniquement de l'intelligence innée. Elle résulte d'une combinaison de méthodes de travail efficaces, d'une organisation rigoureuse et d'une motivation constante.
+                </p>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    Ce guide méthodologique, élaboré par nos enseignants et psychologues pédagogiques, vous accompagne tout au long de votre parcours à l'UPKOL pour maximiser vos chances de succès.
+                </p>
+            </div>
+            <div class="reveal-right">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="Étudiants réussissant" class="rounded-2xl shadow-2xl">
+            </div>
+        </div>
+    </section>
+
+    <!-- MÉTHODOLOGIE -->
+    <section id="methodologie" class="py-20 px-6 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal-down">
+                <h2 class="text-4xl font-black uppercase mb-4">La <span class="text-upkol-jaune">Méthodologie</span> UPKOL</h2>
+                <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">7 étapes pour réussir vos études</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Étape 1 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">1</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Organisation du Temps</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Planifiez votre emploi du temps hebdomadaire. Réservez des créneaux fixes pour les cours, les révisions et les loisirs. L'équilibre est essentiel.
+                    </p>
+                </div>
+
+                <!-- Étape 2 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">2</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Méthodes de Lecture</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Apprenez à lire efficacement : surlignage, prise de notes structurée, résumé. Identifiez les idées principales et les concepts clés.
+                    </p>
+                </div>
+
+                <!-- Étape 3 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">3</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Techniques de Révision</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Utilisez la méthode des fiches, l'apprentissage espacé et les groupes d'étude. Révisez régulièrement plutôt que de bachoter.
+                    </p>
+                </div>
+
+                <!-- Étape 4 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">4</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Participation en Cours</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Soyez actif en classe : posez des questions, participez aux discussions. La compréhension orale renforce l'apprentissage.
+                    </p>
+                </div>
+
+                <!-- Étape 5 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">5</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Gestion du Stress</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Pratiquez la relaxation, le sport et maintenez un sommeil régulier. Le stress nuit aux performances cognitives.
+                    </p>
+                </div>
+
+                <!-- Étape 6 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">6</div>
+                    <h3 class="font-black text-xl mb-4 uppercase">Évaluation Continue</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Auto-évaluez vos progrès régulièrement. Identifiez vos points forts et axes d'amélioration pour progresser continuellement.
+                    </p>
+                </div>
+
+                <!-- Étape 7 -->
+                <div class="step-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left col-span-full md:col-span-2 lg:col-span-3 mx-auto max-w-md">
+                    <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6 mx-auto">7</div>
+                    <h3 class="font-black text-xl mb-4 uppercase text-center">Motivation et Persévérance</h3>
+                    <p class="text-gray-600 leading-relaxed text-center">
+                        Gardez vos objectifs en vue. Célébrez vos succès, apprenez de vos échecs. La persévérance est la clé du succès universitaire.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESSOURCES -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal-down">
+            <h2 class="text-4xl font-black uppercase mb-4">Ressources <span class="text-upkol-jaune">Pédagogiques</span></h2>
+            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Outils pour vous accompagner</p>
+            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-left">
+                <i class="fas fa-brain text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Centre de Psychologie</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Accompagnement personnalisé pour les difficultés d'apprentissage, gestion du stress et développement des méthodes de travail.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Prendre rendez-vous <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-down">
+                <i class="fas fa-users text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Tuteurs Étudiants</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Système de tutorat par les pairs. Des étudiants avancés vous aident à maîtriser les matières difficiles.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Trouver un tuteur <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-right">
+                <i class="fas fa-book-open text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Bibliothèque Numérique</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Accès 24/7 à des milliers de ressources pédagogiques, ouvrages et revues scientifiques en ligne.
+                </p>
+                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
+                    Explorer <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TÉMOIGNAGES -->
+    <section class="py-20 px-6 bg-upkol-noir text-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal-down">
+                <h2 class="text-4xl font-black uppercase mb-4">Témoignages d'<span class="text-upkol-jaune">Étudiants</span></h2>
+                <p class="text-gray-400 font-bold text-lg tracking-widest uppercase mb-4">Leurs expériences de réussite</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gray-800 p-8 rounded-2xl border-l-4 border-upkol-jaune reveal-left">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-lg mr-4">M</div>
+                        <div>
+                            <h4 class="font-black text-lg">Marie K., Médecine</h4>
+                            <p class="text-gray-400 text-sm">Promotion 2022</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed italic">
+                        "Les méthodes apprises ici m'ont permis de réussir mes examens avec brio. L'organisation du temps et les techniques de révision ont changé ma façon d'étudier."
+                    </p>
+                </div>
+
+                <div class="bg-gray-800 p-8 rounded-2xl border-l-4 border-upkol-jaune reveal-right">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-lg mr-4">J</div>
+                        <div>
+                            <h4 class="font-black text-lg">Jean P., Informatique</h4>
+                            <p class="text-gray-400 text-sm">Promotion 2023</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed italic">
+                        "Le centre de psychologie m'a aidé à surmonter mes difficultés. Aujourd'hui, je suis confiant et performant dans mes études."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div class="reveal-left">
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation.</p>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.2s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés</a></li>
+                    <li><a href="index.html#actualites" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                </ul>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.4s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="reveal-right">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold">Kolwezi, Lualaba<br>République Démocratique du Congo</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <div class="flex space-x-4">
+                <span>FORMATION</span>
+                <span>EXCELLENCE</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        }
+
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.step-card, .group').forEach(card => {
+            card.style.opacity = "0";
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
