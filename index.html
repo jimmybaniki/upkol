@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UPKOL | Université Pédagogique de Kolwezi</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.upkol.academy/">
+    <meta property="og:title" content="UPKOL | Université Pédagogique de Kolwezi">
+    <meta property="og:description" content="Formation, Recherche et Excellence au cœur du Lualaba. Rejoignez le pôle académique de référence.">
+    <meta property="og:image" content="logo.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="UPKOL | Université Pédagogique de Kolwezi">
+    <meta name="twitter:description" content="Formation, Recherche et Excellence au cœur du Lualaba.">
+    <meta name="twitter:image" content="logo.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Bibliothèque pour les animations au défilement -->
@@ -114,7 +129,7 @@
                 <div class="search-container relative mr-4">
                     <input type="text" id="site-search" placeholder="Rechercher..." 
                            class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
-                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch()">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -122,7 +137,7 @@
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">L'Université <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
                     <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
-                        <a href="#" onclick="showTab('home')" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
                         <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
                         <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
                     </div>
@@ -139,15 +154,18 @@
                         <a href="#" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
                         </a>
-                        <a href="#" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
                         </a>
-                        <a href="#" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
                         </a>
                     </div>
                 </div>
                 
+                <a href="#" class="border-2 border-gray-900 text-gray-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-900 hover:text-upkol-jaune transition transform hover:scale-105">
+                    SE CONNECTER
+                </a>
                  <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
                 S'INSCRIRE
             </a>
@@ -163,16 +181,17 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="#" onclick="showTab('home'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">L'Université</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-            <a href="#" onclick="showTab('actualites'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
-            <a href="#" onclick="showTab('inscription'); toggleMobileMenu()" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+            <a href="#" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Se connecter</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
         <!-- Mobile Search Bar -->
         <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
             <div class="flex">
                 <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
-                <button onclick="handleMobileSearch()" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
             </div>
         </div>
     </nav>
@@ -191,7 +210,7 @@
                         Le pôle académique de référence au Lualaba pour la formation des cadres de demain.
                     </p>
                     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 reveal-left" style="animation-delay: 0.8s">
-                        <button onclick="showTab('inscription')" class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl text-center">REJOINDRE L'UPKOL</button>
+                        <a href="inscription.html" class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl text-center">REJOINDRE L'UPKOL</a>
                         <button onclick="showTab('facultes')" class="border-2 border-white px-8 py-4 font-bold rounded-lg hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-all text-center">NOS FILIÈRES</button>
                     </div>
                 </div>
@@ -291,4 +310,62 @@
             </div>
 
             <!-- Droit -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all dura
+            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right">
+                <div class="h-48 bg-gray-200 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80" alt="Droit" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Justice</div>
+                </div>
+                <div class="p-8">
+                    <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Faculté de Droit</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation juridique rigoureuse pour les futurs défenseurs des droits et de la justice.</p>
+                    <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir le programme <i class="fas fa-arrow-right ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
+            <p>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <span>Formation</span>
+                <span>Recherche</span>
+                <span>Excellence</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== "") {
+                alert("Recherche en cours pour : " + query);
+                // Ici, vous pourriez rediriger vers une page de résultats
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Présentation - UPKOL</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Présentation de l'UPKOL">
+    <meta property="og:description" content="Découvrez l'histoire, la mission et les facultés de l'Université Pédagogique de Kolwezi.">
+    <meta property="og:image" content="logo.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #FFD700; --secondary: #121212; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            </div>
+            <div class="hidden md:flex space-x-4 italic text-gray-500">Excellence Pédagogique au Lualaba</div>
+        </div>
+    </div>
+
+    <!-- NAV -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md h-20 flex items-center px-6">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 group">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden group-hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </a>
+            <div class="hidden md:flex space-x-8 text-[11px] font-bold uppercase tracking-widest">
+                <a href="index.html" class="hover:text-upkol-jaune">Accueil</a>
+                <a href="presentation.html" class="text-upkol-jaune">L'Université</a>
+                <a href="index.html#facultes" class="hover:text-upkol-jaune">Facultés</a>
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-4 py-2 rounded-full">S'inscrire</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="bg-upkol-noir text-white py-24 px-6 text-center">
+        <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase">Présentation de <span class="text-upkol-jaune">l'UPKOL</span></h1>
+        <p class="text-xl text-gray-400 max-w-2xl mx-auto">La formation, La Recherche et l'Excellence</p>
+    </header>
+
+    <!-- HISTOIRE ET MISSION -->
+    <section class="py-20 px-6 max-w-5xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-12">
+            <div>
+                <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Histoire</h2>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Créée en R.D. Congo le 21 mai 2013, l'Université Pédagogique de Kolwezi (UPKOL) est une institution d'utilité publique dépendante des services de l'État. 
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Elle jouit de la personnalité juridique et se conforme aux dispositions statutaires pour assurer une éducation de qualité dans la province du Lualaba.
+                </p>
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <p class="text-xs font-bold text-gray-500 uppercase mb-2">Arrêté Ministériel :</p>
+                    <p class="italic text-sm">N°099/MINESU/CAB.MIN/SMM/JPK/LMM /2017 du 28 juillet 2017</p>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Mission</h2>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Assurer la formation des cadres de conception dans les domaines les plus divers de la vie nationale.
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Éclosion d'idées neuves et développement professionnel.</span></li>
+                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Diplômes de graduat, licence et agrégation.</span></li>
+                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Recherche fondamentale et appliquée orientée vers les solutions locales.</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- FACULTES LIST -->
+    <section class="py-20 px-6 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-black text-center uppercase mb-16">Domaines d'Enseignement <br><span class="text-upkol-jaune">(Graduat et Licence)</span></h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Facultés -->
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">1. Psychologie & Sc. de l'Éducation</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Psychologie</li></ul>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">2. Sciences Informatiques</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Informatique de gestion</li><li>Informatique de réseau</li></ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">3. Sciences de la Santé</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Pédiatrie Hospitalière</li><li>Nutrition et diététique</li><li>Santé Publique</li></ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">4. Sc. Économiques & Gestion</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Sciences économiques</li><li>Sc. commerciales et administratives</li><li>Sc. commerciales et financières</li><li>Développement Rural</li></ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">5. Droit</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Droit privé et judiciaire</li><li>Droit économique et social</li><li>Droit Public</li></ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">6. Sciences</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Chimie</li><li>Géologie</li><li>Marketing</li><li>Comptabilité / Fiscalité</li></ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">7. Sc. Commerciales & Financières</h3>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">8. Sc. et Tech. de Secrétariat</h3>
+                    <p class="text-sm text-gray-600">Secrétariat de Direction</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">9. Hôtellerie, Tourisme & Accueil</h3>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">10. Sciences Agronomiques</h3>
+                    <ul class="text-sm space-y-1 text-gray-600"><li>Phytotechnie</li><li>Zootechnie</li><li>Économie Agricole</li></ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row">
+            <div class="p-12 md:w-1/2">
+                <h2 class="text-3xl font-black mb-8 uppercase">Adresses et <span class="text-upkol-jaune">Contacts</span></h2>
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-map-marked-alt text-upkol-jaune text-2xl mr-4"></i>
+                        <div>
+                            <p class="font-bold">Siège Social</p>
+                            <p class="text-gray-400">Commune MANIKA Av. LDK N° 2007</p>
+                            <p class="text-gray-400 text-sm">(Réf. Complexe Scolaire « les Petits anges » / Rond Point MWANGEJI)</p>
+                            <p class="text-gray-400">Ville de Kolwezi, RDC</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-phone-alt text-upkol-jaune text-2xl mr-4"></i>
+                        <div>
+                            <p class="font-bold">Téléphones</p>
+                            <p class="text-gray-400">+243 826 838 544 | +243 811 699 281</p>
+                            <p class="text-gray-400">+243 997 290 857 | +243 991 762 424</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-1/2 h-[400px] md:h-auto min-h-[300px]">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15655.44855476685!2d25.466549275143324!3d-10.727506289418375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19760773d3283f55%3A0xc6c42a22956c8672!2sKolwezi!5e0!3m2!1sfr!2scd!4v1715851457425!5m2!1sfr!2scd" 
+                    width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="py-20 text-center px-6">
+        <h2 class="text-3xl font-black uppercase mb-6">Soyez les bienvenus à l'université de l'émergence !</h2>
+        <div class="flex justify-center space-x-4">
+            <a href="inscription.html" class="bg-upkol-jaune text-black px-8 py-4 font-black rounded-lg hover:scale-105 transition-transform uppercase">S'inscrire maintenant</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
+            <p>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <span>Formation</span>
+                <span>Recherche</span>
+                <span>Excellence</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
