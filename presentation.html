@@ -15,20 +15,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #FFD700; --secondary: #121212; }
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        .bg-upkol-jaune { background-color: var(--primary); }
-        .text-upkol-jaune { color: var(--primary); }
+        :root { --primary: #FACC15; --secondary: #0f172a; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; background-color: #f8fafc; }
+        .bg-upkol-jaune { background-color: #FACC15; }
+        .text-upkol-jaune { color: #854d0e; }
         .bg-upkol-noir { background-color: var(--secondary); }
     </style>
 </head>
-<body class="bg-white text-gray-900">
+<body class="bg-slate-50 text-slate-800">
 
     <!-- TOP BAR -->
     <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex space-x-6">
-                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> MANIKA, KOLWEZI</span>
                 <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
             </div>
             <div class="hidden md:flex space-x-4 italic text-gray-500">Excellence Pédagogique au Lualaba</div>
@@ -57,13 +57,16 @@
     </nav>
 
     <!-- HERO -->
-    <header class="bg-upkol-noir text-white py-24 px-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase">Présentation de <span class="text-upkol-jaune">l'UPKOL</span></h1>
-        <p class="text-xl text-gray-400 max-w-2xl mx-auto">La formation, La Recherche et l'Excellence</p>
+    <header class="relative bg-upkol-noir text-white py-32 px-6 text-center overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1523050337458-56928bc5d528?auto=format&fit=crop&w=1600&q=80" alt="Campus" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="relative z-10">
+            <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase">Présentation de <span class="text-upkol-jaune">l'UPKOL</span></h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">La formation, La Recherche et l'Excellence</p>
+        </div>
     </header>
 
     <!-- HISTOIRE ET MISSION -->
-    <section class="py-20 px-6 max-w-5xl mx-auto">
+    <section class="py-24 px-6 max-w-7xl mx-auto">
         <div class="grid md:grid-cols-2 gap-12">
             <div>
                 <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Histoire</h2>
@@ -80,14 +83,17 @@
             </div>
             <div>
                 <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Mission</h2>
-                <p class="text-gray-600 leading-relaxed mb-4">
+                <p class="text-gray-600 leading-relaxed mb-6">
                     Assurer la formation des cadres de conception dans les domaines les plus divers de la vie nationale.
                 </p>
-                <ul class="space-y-3">
+                <ul class="space-y-4 mb-8">
                     <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Éclosion d'idées neuves et développement professionnel.</span></li>
                     <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Diplômes de graduat, licence et agrégation.</span></li>
                     <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Recherche fondamentale et appliquée orientée vers les solutions locales.</span></li>
                 </ul>
+                <div class="rounded-2xl overflow-hidden shadow-xl">
+                    <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80" alt="Étudiants" class="w-full h-48 object-cover">
+                </div>
             </div>
         </div>
     </section>
@@ -95,63 +101,109 @@
     <!-- FACULTES LIST -->
     <section class="py-20 px-6 bg-gray-50">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-4xl font-black text-center uppercase mb-16">Domaines d'Enseignement <br><span class="text-upkol-jaune">(Graduat et Licence)</span></h2>
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-black uppercase mb-4">Nos <span class="text-upkol-jaune">Facultés & Filières</span></h2>
+                <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Découvrez l'ensemble des formations de l'UPKOL</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Facultés -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">1. Psychologie & Sc. de l'Éducation</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Psychologie</li></ul>
-                </div>
-                
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">2. Sciences Informatiques</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Informatique de gestion</li><li>Informatique de réseau</li></ul>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">3. Sciences de la Santé</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Pédiatrie Hospitalière</li><li>Nutrition et diététique</li><li>Santé Publique</li></ul>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 1. Psychologie -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&w=800&q=80" alt="Psychologie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Pédagogie</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Psychologie & Sc. de l'Éducation</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation des cadres en psychologie et sciences de l'éducation pour le développement humain.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">4. Sc. Économiques & Gestion</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Sciences économiques</li><li>Sc. commerciales et administratives</li><li>Sc. commerciales et financières</li><li>Développement Rural</li></ul>
+                <!-- 2. Informatique -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80" alt="Informatique" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Technologie</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences Informatiques</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Expertise en gestion et réseaux informatiques pour répondre aux défis numériques.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">5. Droit</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Droit privé et judiciaire</li><li>Droit économique et social</li><li>Droit Public</li></ul>
+                <!-- 3. Santé -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1576091160623-112de5cc029b?auto=format&fit=crop&w=800&q=80" alt="Santé" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Santé</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences de la Santé</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation en pédiatrie, nutrition et santé publique pour améliorer le bien-être.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">6. Sciences</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Chimie</li><li>Géologie</li><li>Marketing</li><li>Comptabilité / Fiscalité</li></ul>
+                <!-- 4. Économie & Gestion -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Économie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Économie</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sc. Économiques & Gestion</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Maîtrise des sciences commerciales, administratives et développement rural.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">7. Sc. Commerciales & Financières</h3>
+                <!-- 5. Droit -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" alt="Droit" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Droit</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Droit</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Expertise en droit privé, public et sciences économiques et sociales.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">8. Sc. et Tech. de Secrétariat</h3>
-                    <p class="text-sm text-gray-600">Secrétariat de Direction</p>
+                <!-- 6. Sciences -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80" alt="Sciences" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Sciences</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Chimie, géologie et disciplines connexes pour la recherche fondamentale.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">9. Hôtellerie, Tourisme & Accueil</h3>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-black text-upkol-jaune mb-4 uppercase">10. Sciences Agronomiques</h3>
-                    <ul class="text-sm space-y-1 text-gray-600"><li>Phytotechnie</li><li>Zootechnie</li><li>Économie Agricole</li></ul>
+                <!-- 7. Sciences Agronomiques -->
+                <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500">
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80" alt="Agronomie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Agronomie</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences Agronomiques</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation en phytotechnie, zootechnie et économie agricole.</p>
+                        <button class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CONTACTS -->
-    <section class="py-20 px-6 max-w-7xl mx-auto">
+    <section class="py-24 px-6 max-w-7xl mx-auto">
         <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row">
             <div class="p-12 md:w-1/2">
                 <h2 class="text-3xl font-black mb-8 uppercase">Adresses et <span class="text-upkol-jaune">Contacts</span></h2>
@@ -184,10 +236,10 @@
     </section>
 
     <!-- CALL TO ACTION -->
-    <section class="py-20 text-center px-6">
+    <section class="py-24 text-center px-6 bg-white">
         <h2 class="text-3xl font-black uppercase mb-6">Soyez les bienvenus à l'université de l'émergence !</h2>
         <div class="flex justify-center space-x-4">
-            <a href="inscription.html" class="bg-upkol-jaune text-black px-8 py-4 font-black rounded-lg hover:scale-105 transition-transform uppercase">S'inscrire maintenant</a>
+            <a href="inscription.html" class="bg-upkol-jaune text-black px-10 py-5 font-black rounded-lg hover:scale-105 transition-transform uppercase shadow-lg">S'inscrire maintenant</a>
         </div>
     </section>
 
@@ -196,9 +248,9 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
             <p>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
             <div class="flex space-x-6 mt-4 md:mt-0">
-                <span>Formation</span>
-                <span>Recherche</span>
-                <span>Excellence</span>
+                <span>Formation.</span>
+                <span>Recherche.</span>
+                <span>Excellence.</span>
             </div>
         </div>
     </footer>

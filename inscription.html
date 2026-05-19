@@ -40,10 +40,18 @@
 </head>
 <body class="bg-gray-50">
 
-    <nav class="bg-upkol-noir p-4 text-white sticky top-0 z-50 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-upkol-jaune">UPKOL</h1>
-            <span class="text-sm italic">Portail d'Admission</span>
+    <nav class="bg-upkol-noir py-2 px-6 text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 group">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden group-hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-white w-full h-full flex items-center justify-center rounded-lg shadow-lg text-black\'>Logo</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter text-upkol-jaune">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </a>
+            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Portail d'Admission</span>
         </div>
     </nav>
 
@@ -73,13 +81,52 @@
                         <input type="tel" name="telephone" placeholder="+243..." required>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold">Faculté souhaitée</label>
+                        <label class="block text-sm font-semibold">Filière souhaitée</label>
                         <select name="faculte" required>
-                            <option value="">-- Choisir une faculté --</option>
-                            <option value="Informatique">Sciences Informatiques</option>
-                            <option value="Agronomie">Sciences Agronomiques</option>
-                            <option value="Mines">Sciences des Mines & Géologie</option>
-                            <option value="Pedagogie">Sciences Pédagogiques</option>
+                            <option value="">-- Sélectionner une option --</option>
+                            <optgroup label="Psychologie & Sc. de l'Éducation">
+                                <option value="Psychologie">Psychologie</option>
+                            </optgroup>
+                            <optgroup label="Sciences Informatiques">
+                                <option value="Informatique de gestion">Informatique de gestion</option>
+                                <option value="Informatique de réseau">Informatique de réseau</option>
+                            </optgroup>
+                            <optgroup label="Sciences de la Santé">
+                                <option value="Pédiatrie Hospitalière">Pédiatrie Hospitalière</option>
+                                <option value="Nutrition et diététique">Nutrition et diététique</option>
+                                <option value="Santé Publique">Santé Publique</option>
+                            </optgroup>
+                            <optgroup label="Sc. Économiques & Gestion">
+                                <option value="Sciences économiques">Sciences économiques</option>
+                                <option value="Sc. commerciales et administratives">Sc. commerciales et administratives</option>
+                                <option value="Sc. commerciales et financières">Sc. commerciales et financières</option>
+                                <option value="Développement Rural">Développement Rural</option>
+                            </optgroup>
+                            <optgroup label="Droit">
+                                <option value="Droit privé et judiciaire">Droit privé et judiciaire</option>
+                                <option value="Droit économique et social">Droit économique et social</option>
+                                <option value="Droit Public">Droit Public</option>
+                            </optgroup>
+                            <optgroup label="Sciences">
+                                <option value="Chimie">Chimie</option>
+                                <option value="Géologie">Géologie</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Comptabilité / Fiscalité">Comptabilité / Fiscalité</option>
+                            </optgroup>
+                            <optgroup label="Sc. Commerciales & Financières">
+                                <option value="Sciences Commerciales & Financières">Sciences Commerciales & Financières</option>
+                            </optgroup>
+                            <optgroup label="Sc. et Tech. de Secrétariat">
+                                <option value="Secrétariat de Direction">Secrétariat de Direction</option>
+                            </optgroup>
+                            <optgroup label="Hôtellerie, Tourisme & Accueil">
+                                <option value="Hôtellerie, Tourisme & Accueil">Hôtellerie, Tourisme & Accueil</option>
+                            </optgroup>
+                            <optgroup label="Sciences Agronomiques">
+                                <option value="Phytotechnie">Phytotechnie</option>
+                                <option value="Zootechnie">Zootechnie</option>
+                                <option value="Économie Agricole">Économie Agricole</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
@@ -87,6 +134,19 @@
                 <div>
                     <label class="block text-sm font-semibold">Dernier diplôme obtenu</label>
                     <input type="text" name="diplome" placeholder="Ex: Diplôme d'État en Chimie-Biologie" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold">Télécharger le Diplôme d'État (PDF)</label>
+                    <input type="file" name="diplome_pdf" accept=".pdf" required class="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-upkol-jaune file:text-black hover:file:bg-gray-100 transition-all">
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-file-invoice text-upkol-noir text-xl"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">Règlement Intérieur</span>
+                    </div>
+                    <a href="reglement_interieur.pdf" download class="bg-upkol-noir text-upkol-jaune text-[10px] font-black px-4 py-2 rounded uppercase hover:bg-gray-800 transition-all">Télécharger PDF</a>
                 </div>
 
                 <div>
@@ -108,6 +168,21 @@
             </div>
         </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
+            <p class="mb-4 md:mb-0">&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
+            <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+                <a href="index.html" class="hover:text-white transition-colors">Retour à l'accueil</a>
+                <div class="flex space-x-6">
+                    <span>Formation.</span>
+                    <span>Recherche.</span>
+                    <span>Excellence.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         // URL configurée avec votre script Google

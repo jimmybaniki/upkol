@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliothèque - UPKOL</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Bibliothèque Numérique - UPKOL">
+    <meta property="og:description" content="Accédez à une vaste collection de ressources académiques, TFC et documents scientifiques de l'UPKOL.">
+    <meta property="og:image" content="logo.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #121212;
+            --accent: #ffffff;
+        }
+
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
+                        url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .library-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
+        }
+        .library-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
+                <a href="presentation.html" class="hover:text-upkol-jaune py-8 transition-colors">L'Université</a>
+                <a href="recherche.html" class="hover:text-upkol-jaune py-8 transition-colors">Recherches</a>
+                <a href="e-learning.html" class="hover:text-upkol-jaune py-8 transition-colors">E-Learning</a>
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <div class="lg:hidden flex items-center space-x-5">
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section h-[50vh] flex items-center px-6">
+        <div class="max-w-7xl mx-auto w-full text-white text-center">
+            <h1 class="text-5xl md:text-7xl font-black mb-6 uppercase reveal-down">Bibliothèque <span class="text-upkol-jaune">Numérique</span></h1>
+            <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto reveal-down" style="animation-delay: 0.2s">
+                Le portail d'accès aux ressources académiques et aux archives scientifiques de l'université.
+            </p>
+        </div>
+    </section>
+
+    <!-- LIBRARY CATEGORIES -->
+    <section class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Ouvrages & Livres -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-left">
+                <i class="fas fa-book text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Livres & Ouvrages</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Une vaste collection de manuels académiques et d'ouvrages de référence par faculté.
+                </p>
+            </div>
+
+            <!-- Revues Scientifiques -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-down">
+                <i class="fas fa-microscope text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Revues Scientifiques</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Articles de recherche et publications périodiques nationaux et internationaux.
+                </p>
+            </div>
+
+            <!-- Travaux de Fin de Cycle (TFC) -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-right">
+                <i class="fas fa-graduation-cap text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Travaux de Fin de Cycle</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Consultez les travaux de recherche produits par nos étudiants finalistes de graduat.
+                </p>
+            </div>
+
+            <!-- Mémoires de Licence -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-left">
+                <i class="fas fa-user-graduate text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Mémoires de Licence</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Accès aux archives des mémoires soutenus par nos licenciés dans divers domaines.
+                </p>
+            </div>
+
+            <!-- Rapports de Stage -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-down">
+                <i class="fas fa-briefcase text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Rapports de Stage</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Partage d'expériences professionnelles et rapports techniques en milieu professionnel.
+                </p>
+            </div>
+
+            <!-- Autres Documents Intéressants -->
+            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-right">
+                <i class="fas fa-file-alt text-4xl mb-6 text-upkol-jaune"></i>
+                <h3 class="font-black text-xl mb-4 uppercase">Autres Documents</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Supports de cours, guides méthodologiques et documents pédagogiques complémentaires.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div class="reveal-left">
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation.</p>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.2s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="presentation.html" class="hover:text-white transition-colors uppercase">L'Université</a></li>
+                    <li><a href="e-learning.html" class="hover:text-white transition-colors uppercase">E-Learning</a></li>
+                </ul>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.4s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="reveal-right">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold">Kolwezi, Lualaba<br>République Démocratique du Congo</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <div class="flex space-x-6">
+                <span>Formation.</span>
+                <span>Recherche.</span>
+                <span>Excellence.</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+                menu.classList.toggle('flex');
+            }
+        }
+
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.library-card').forEach(card => {
+            card.style.opacity = "0";
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
