@@ -150,8 +150,6 @@
                 updateAuthUI();
                 
                 console.log("Données transmises avec succès :", userData);
-                // Redirection vers la plateforme E-Learning après connexion réussie
-                window.location.href = 'e-learning.html';
             })
             .catch(error => console.error("Erreur lors de la transmission :", error));
         }
@@ -332,7 +330,24 @@
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <div class="lg:hidden flex items-center space-x-5">
+            <div class="lg:hidden flex items-center space-x-3">
+                <!-- Auth visible en permanence sur le header mobile -->
+                <div id="mobile-google-signin-button-container">
+                    <div class="g_id_signin" 
+                        data-type="icon" 
+                        data-shape="circle" 
+                        data-theme="outline">
+                    </div>
+                </div>
+                <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
+                    </div>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+
                 <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
                 <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
             </div>
@@ -344,28 +359,6 @@
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">L'Université</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-
-            <!-- Mobile Auth -->
-            <div id="mobile-google-signin-button-container" class="px-6 py-4 border-b border-gray-50">
-                <div class="g_id_signin"
-                    data-type="standard"
-                    data-shape="pill"
-                    data-theme="outline"
-                    data-text="signin_with"
-                    data-size="large"
-                    data-logo_alignment="left">
-                </div>
-            </div>
-            <div id="mobile-logged-in-user-info" class="hidden px-6 py-4 border-b border-gray-50 flex-col space-y-2">
-                <div class="flex items-center">
-                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
-                    <div class="flex flex-col text-sm font-bold text-gray-700">
-                        <span>Bienvenue</span>
-                        <span id="mobile-display-user-name" class="text-upkol-jaune"></span>
-                    </div>
-                </div>
-                <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm w-fit">Déconnexion</button>
-            </div>
 
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
