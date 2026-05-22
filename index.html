@@ -36,6 +36,69 @@
             return JSON.parse(jsonPayload);
         }
 
+        // Fonction pour gérer la déconnexion
+        function signOut() {
+            // Supprimer les informations de l'utilisateur du localStorage
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName'); // Supprimer aussi le nom complet
+            localStorage.removeItem('userPicture'); // Supprimer l'URL de la photo
+
+            // Demander à Google Identity Services de désactiver la sélection automatique
+            // Cela empêche le One Tap de réapparaître immédiatement
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            
+            // Rediriger vers la page d'accueil ou de connexion
+            window.location.href = 'index.html';
+        }
+
+        // Fonction pour mettre à jour l'interface utilisateur d'authentification
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName'); // Récupérer le nom complet
+            const userPicture = localStorage.getItem('userPicture'); // Récupérer l'URL de la photo
+            
+            // Mise à jour Desktop
+            const desktopSignInContainer = document.getElementById('google-signin-button-container');
+            const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
+            const desktopDisplayName = document.getElementById('display-user-name');
+            const desktopDisplayPicture = document.getElementById('display-user-picture');
+
+            if (userEmail) {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'none';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'flex';
+                if (desktopDisplayName) desktopDisplayName.innerText = userName || '';
+                if (desktopDisplayPicture) {
+                    desktopDisplayPicture.src = userPicture || '';
+                    desktopDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'block';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
+            }
+
+            // Mise à jour Mobile
+            const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
+            const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
+            const mobileDisplayName = document.getElementById('mobile-display-user-name');
+            const mobileDisplayPicture = document.getElementById('mobile-display-user-picture');
+
+            if (userEmail) {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'none';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'flex';
+                if (mobileDisplayName) mobileDisplayName.innerText = userName || '';
+                if (mobileDisplayPicture) {
+                    mobileDisplayPicture.src = userPicture || '';
+                    mobileDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'block';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'none';
+            }
+        }
+
         // Fonction pour enregistrer des actions spécifiques (ex: clics, téléchargements)
         function logAction(email, userId, action, details) {
             const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
@@ -61,6 +124,7 @@
                 nom_complet: responsePayload.name,
                 prenom: responsePayload.given_name,
                 email: responsePayload.email,
+                picture: responsePayload.picture, // Ajouter l'URL de la photo
                 statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
                 action: "Connexion",
                 details: "Authentification via Google Identity Services"
@@ -79,6 +143,11 @@
                 // Sauvegarde de la session pour logAction sur les autres pages
                 localStorage.setItem('userEmail', userData.email);
                 localStorage.setItem('userId', userData.id);
+                localStorage.setItem('userName', userData.nom_complet); // Stocker le nom complet
+                localStorage.setItem('userPicture', userData.picture); // Stocker l'URL de la photo
+
+                // Mettre à jour l'UI après la connexion
+                updateAuthUI();
                 
                 console.log("Données transmises avec succès :", userData);
                 // Redirection vers la plateforme E-Learning après connexion réussie
@@ -233,16 +302,31 @@
                 </div>
                 
                 <!-- Bouton de connexion Google -->
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-shape="pill"
-                     data-theme="outline"
-                     data-text="signin_with"
-                     data-size="large"
-                     data-logo_alignment="left">
+                <div id="google-signin-button-container">
+                    <div class="g_id_signin"
+                        data-type="standard"
+                        data-shape="pill"
+                        data-theme="outline"
+                        data-text="signin_with"
+                        data-size="large"
+                        data-logo_alignment="left">
+                    </div>
                 </div>
 
-                 <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                <!-- Informations utilisateur et bouton de déconnexion (initialement cachés) -->
+                <div id="logged-in-user-info" class="hidden items-center space-x-4">
+                    <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
+                        Déconnexion
+                    </button>
+                </div>
+
+
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
                 S'INSCRIRE
             </a>
             </div>
@@ -260,6 +344,29 @@
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">L'Université</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+
+            <!-- Mobile Auth -->
+            <div id="mobile-google-signin-button-container" class="px-6 py-4 border-b border-gray-50">
+                <div class="g_id_signin"
+                    data-type="standard"
+                    data-shape="pill"
+                    data-theme="outline"
+                    data-text="signin_with"
+                    data-size="large"
+                    data-logo_alignment="left">
+                </div>
+            </div>
+            <div id="mobile-logged-in-user-info" class="hidden px-6 py-4 border-b border-gray-50 flex-col space-y-2">
+                <div class="flex items-center">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                </div>
+                <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm w-fit">Déconnexion</button>
+            </div>
+
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
@@ -532,6 +639,10 @@
                 // Ici, vous pourriez rediriger vers une page de résultats
             }
         }
+
+        // Appeler la fonction pour mettre à jour l'UI d'authentification au chargement de la page
+        document.addEventListener('DOMContentLoaded', updateAuthUI);
+
     </script>
 </body>
 </html>
