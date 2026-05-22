@@ -447,6 +447,22 @@
     </footer>
 
     <script>
+        // Fonction pour enregistrer des actions (ex: téléchargements, clics)
+        function logAction(email, userId, action, details) {
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: userId,
+                    email: email,
+                    action: action,
+                    details: details
+                })
+            });
+        }
+
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             if (menu.classList.contains('hidden')) {

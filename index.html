@@ -23,6 +23,70 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Bibliothèque pour les animations au défilement -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // Fonction pour décoder le JWT de Google sans bibliothèque externe
+        function decodeJwtResponse(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        // Fonction pour enregistrer des actions spécifiques (ex: clics, téléchargements)
+        function logAction(email, userId, action, details) {
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: userId,
+                    email: email,
+                    action: action,
+                    details: details
+                })
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+
+            // Extraction et préparation des données pour les onglets 'utilisateurs' et 'Historique_Actions'
+            const userData = {
+                id: responsePayload.sub,
+                nom_complet: responsePayload.name,
+                prenom: responsePayload.given_name,
+                email: responsePayload.email,
+                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
+                action: "Connexion",
+                details: "Authentification via Google Identity Services"
+            };
+
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
+
+            // Envoi des données vers Google Apps Script
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            })
+            .then(() => {
+                // Sauvegarde de la session pour logAction sur les autres pages
+                localStorage.setItem('userEmail', userData.email);
+                localStorage.setItem('userId', userData.id);
+                
+                console.log("Données transmises avec succès :", userData);
+                // Redirection vers la plateforme E-Learning après connexion réussie
+                window.location.href = 'e-learning.html';
+            })
+            .catch(error => console.error("Erreur lors de la transmission :", error));
+        }
+    </script>
     <style>
         :root {
             --primary: #FFD700; /* Jaune Or UPKOL */
@@ -109,6 +173,11 @@
     </div>
 
     <!-- MAIN NAVIGATION -->
+    <div id="g_id_onload"
+         data-client_id="396005366251-5jl94257ahdgn21j0e5r3iiiajje0fc3.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
     <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <!-- Logo -->
@@ -163,9 +232,16 @@
                     </div>
                 </div>
                 
-a                <a href="#" class="border-2 border-gray-900 text-gray-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-900 hover:text-upkol-jaune transition transform hover:scale-105">
-                    SE CONNECTER
-                </a>
+                <!-- Bouton de connexion Google -->
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="pill"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left">
+                </div>
+
                  <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
                 S'INSCRIRE
             </a>
@@ -182,8 +258,8 @@ a                <a href="#" class="border-2 border-gray-900 text-gray-900 px-6 
         <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="#" onclick="showTab('home'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">L'Université</a>
+            <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-            <a href="#" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Se connecter</a>
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
