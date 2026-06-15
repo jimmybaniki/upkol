@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UPKOL | Université Pédagogique de Kolwezi</title>
-    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="favicon.png?v=2" type="image/png">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -168,10 +168,12 @@
         .bg-upkol-noir { background-color: var(--secondary); }
         
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
-                        url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-color: #121212; /* Couleur de secours si l'image ne charge pas */
+            background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+                              url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
+            background-attachment: scroll; /* Plus compatible que 'fixed' sur mobile */
         }
 
         /* Animations personnalisées */
@@ -271,7 +273,7 @@
                 </div>
 
                 <div class="relative nav-dropdown py-8">
-                    <button class="flex items-center hover:text-upkol-jaune transition-colors">L'Université <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
                     <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
                         <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
                         <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
@@ -296,18 +298,29 @@
                         <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
                         </a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
+                        </a>
                     </div>
+                </div>
+
+                <!-- Creative Portal Entry -->
+                <div class="relative group">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                            <i class="fas fa-university text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
+                    </a>
                 </div>
                 
                 <!-- Bouton de connexion Google -->
                 <div id="google-signin-button-container">
                     <div class="g_id_signin"
-                        data-type="standard"
-                        data-shape="pill"
+                        data-type="icon"
+                        data-shape="circle"
                         data-theme="outline"
-                        data-text="signin_with"
-                        data-size="large"
-                        data-logo_alignment="left">
+                        data-size="large">
                     </div>
                 </div>
 
@@ -356,9 +369,10 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="#" onclick="showTab('home'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
-            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">L'Université</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
 
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>

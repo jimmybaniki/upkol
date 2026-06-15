@@ -3,223 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPKOL | Inscription en Ligne</title>
-    <link rel="icon" href="favicon.png" type="image/png">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Inscription en Ligne - UPKOL">
-    <meta property="og:description" content="Rejoignez l'UPKOL pour la prochaine année académique. Remplissez votre dossier d'inscription dès maintenant.">
-    <meta property="og:image" content="logo.png">
-
+    <title>Inscription - UPKOL</title>
+    <link rel="icon" href="favicon.png?v=2" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #FFD700;
-            --secondary: #121212;
-        }
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        :root { --primary: #FFD700; --secondary: #121212; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
         .bg-upkol-noir { background-color: var(--secondary); }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-            margin-top: 0.25rem;
-        }
-        input:focus, select:focus {
-            outline: 2px solid var(--primary);
-            border-color: transparent;
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                        url('https://images.unsplash.com/photo-1523240715639-993731804f8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
 
-    <nav class="bg-upkol-noir py-2 px-6 text-white sticky top-0 z-50 shadow-lg">
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-3 group">
-                <div class="w-12 h-12 flex items-center justify-center overflow-hidden group-hover:rotate-3 transition-transform">
-                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-white w-full h-full flex items-center justify-center rounded-lg shadow-lg text-black\'>Logo</span>';">
-                </div>
-                <div>
-                    <h1 class="text-xl font-black leading-none tracking-tighter text-upkol-jaune">UPKOL</h1>
-                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
-                </div>
-            </a>
-            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Portail d'Admission</span>
-        </div>
-    </nav>
-
-    <div class="container mx-auto px-4 py-12">
-        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden animate__animated animate__fadeIn">
-            <div class="bg-upkol-jaune p-6 text-center">
-                <i class="fas fa-user-graduate text-4xl mb-2"></i>
-                <h2 class="text-2xl font-bold uppercase">Formulaire d'Inscription</h2>
-                <p class="text-sm">Remplissez vos informations pour rejoindre l'UPKOL</p>
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
             </div>
-
-            <form id="registrationForm" class="p-8 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold">Nom complet</label>
-                        <input type="text" name="nom" placeholder="Ex: Jean Mukendi" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold">Email</label>
-                        <input type="email" name="email" placeholder="votre@email.com" required>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold">Téléphone</label>
-                        <input type="tel" name="telephone" placeholder="+243..." required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold">Filière souhaitée</label>
-                        <select name="faculte" required>
-                            <option value="">-- Sélectionner une option --</option>
-                            <optgroup label="Psychologie & Sc. de l'Éducation">
-                                <option value="Psychologie">Psychologie</option>
-                            </optgroup>
-                            <optgroup label="Sciences Informatiques">
-                                <option value="Informatique de gestion">Informatique de gestion</option>
-                                <option value="Informatique de réseau">Informatique de réseau</option>
-                            </optgroup>
-                            <optgroup label="Sciences de la Santé">
-                                <option value="Pédiatrie Hospitalière">Pédiatrie Hospitalière</option>
-                                <option value="Nutrition et diététique">Nutrition et diététique</option>
-                                <option value="Santé Publique">Santé Publique</option>
-                            </optgroup>
-                            <optgroup label="Sc. Économiques & Gestion">
-                                <option value="Sciences économiques">Sciences économiques</option>
-                                <option value="Sc. commerciales et administratives">Sc. commerciales et administratives</option>
-                                <option value="Sc. commerciales et financières">Sc. commerciales et financières</option>
-                                <option value="Développement Rural">Développement Rural</option>
-                            </optgroup>
-                            <optgroup label="Droit">
-                                <option value="Droit privé et judiciaire">Droit privé et judiciaire</option>
-                                <option value="Droit économique et social">Droit économique et social</option>
-                                <option value="Droit Public">Droit Public</option>
-                            </optgroup>
-                            <optgroup label="Sciences">
-                                <option value="Chimie">Chimie</option>
-                                <option value="Géologie">Géologie</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Comptabilité / Fiscalité">Comptabilité / Fiscalité</option>
-                            </optgroup>
-                            <optgroup label="Sc. Commerciales & Financières">
-                                <option value="Sciences Commerciales & Financières">Sciences Commerciales & Financières</option>
-                            </optgroup>
-                            <optgroup label="Sc. et Tech. de Secrétariat">
-                                <option value="Secrétariat de Direction">Secrétariat de Direction</option>
-                            </optgroup>
-                            <optgroup label="Hôtellerie, Tourisme & Accueil">
-                                <option value="Hôtellerie, Tourisme & Accueil">Hôtellerie, Tourisme & Accueil</option>
-                            </optgroup>
-                            <optgroup label="Sciences Agronomiques">
-                                <option value="Phytotechnie">Phytotechnie</option>
-                                <option value="Zootechnie">Zootechnie</option>
-                                <option value="Économie Agricole">Économie Agricole</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold">Dernier diplôme obtenu</label>
-                    <input type="text" name="diplome" placeholder="Ex: Diplôme d'État en Chimie-Biologie" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold">Télécharger le Diplôme d'État (PDF)</label>
-                    <input type="file" name="diplome_pdf" accept=".pdf" required class="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-upkol-jaune file:text-black hover:file:bg-gray-100 transition-all">
-                </div>
-
-                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-file-invoice text-upkol-noir text-xl"></i>
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">Règlement Intérieur</span>
-                    </div>
-                    <a href="reglement_interieur.pdf" download class="bg-upkol-noir text-upkol-jaune text-[10px] font-black px-4 py-2 rounded uppercase hover:bg-gray-800 transition-all">Télécharger PDF</a>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold">Message ou Motivation (Optionnel)</label>
-                    <textarea name="message" rows="3" placeholder="Pourquoi voulez-vous nous rejoindre ?"></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-upkol-noir text-upkol-jaune font-bold py-3 rounded-lg hover:bg-gray-800 transition duration-300 flex justify-center items-center gap-2">
-                    <span id="btnText">ENVOYER MON DOSSIER</span>
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </form>
-
-            <div id="successMsg" class="hidden p-8 text-center animate__animated animate__zoomIn">
-                <div class="text-green-500 text-6xl mb-4"><i class="fas fa-check-circle"></i></div>
-                <h3 class="text-2xl font-bold">Félicitations !</h3>
-                <p class="text-gray-600">Votre demande d'inscription a été enregistrée avec succès dans notre base de données.</p>
-                <button onclick="location.reload()" class="mt-6 text-blue-600 underline">Envoyer une autre inscription</button>
-            </div>
+            <div class="hidden md:flex space-x-4 italic text-gray-500">Excellence Pédagogique au Lualaba</div>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
-            <p class="mb-4 md:mb-0">&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
-            <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
-                <a href="index.html" class="hover:text-white transition-colors">Retour à l'accueil</a>
-                <div class="flex space-x-6">
-                    <span>Formation.</span>
-                    <span>Recherche.</span>
-                    <span>Excellence.</span>
+    <!-- NAV -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md h-20 flex items-center px-6">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <div class="w-12 h-12 flex items-center justify-center">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
                 </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </a>
+            <div class="hidden md:flex space-x-8 text-[11px] font-bold uppercase tracking-widest">
+                <a href="index.html" class="hover:text-upkol-jaune">Accueil</a>
+                <a href="presentation.html" class="hover:text-upkol-jaune">À Propos</a>
+                <a href="index.html#facultes" class="hover:text-upkol-jaune">Facultés</a>
+                <a href="inscription.html" class="text-upkol-jaune">S'inscrire</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero-section py-24 text-center text-white">
+        <div class="max-w-4xl mx-auto px-6">
+            <h1 class="text-5xl md:text-7xl font-black uppercase mb-4 animate__animated animate__fadeInDown">S'inscrire à <span class="text-upkol-jaune">l'UPKOL</span></h1>
+            <p class="text-xl text-gray-300 animate__animated animate__fadeInUp">Rejoignez le pôle d'excellence académique du Lualaba pour l'année académique 2024-2025.</p>
+        </div>
+    </header>
+
+    <!-- REGISTRATION FORM -->
+    <section class="py-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+                <div class="bg-upkol-noir p-8 text-white">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter">Formulaire de pré-inscription</h2>
+                    <p class="text-gray-400 text-sm mt-2">Veuillez remplir soigneusement tous les champs ci-dessous.</p>
+                </div>
+                
+                <form id="registrationForm" class="p-8 md:p-12 space-y-8">
+                    <!-- Identité -->
+                    <div>
+                        <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">1</span>
+                            Informations Personnelles
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Nom Complet</label>
+                                <input type="text" required placeholder="Ex: Jean Mukendi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Lieu de naissance</label>
+                                <input type="text" id="birthPlace" required placeholder="Ex: Kolwezi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Date de naissance</label>
+                                <input type="date" id="birthDate" required class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Email de contact</label>
+                                <input type="email" required placeholder="votre@email.com" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Numéro de Téléphone</label>
+                                <input type="tel" required placeholder="+243 ..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-gray-100">
+
+                    <!-- Choix Académique -->
+                    <div>
+                        <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">2</span>
+                            Choix de la Filière
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Faculté</label>
+                                <select required id="facultySelect" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
+                                    <option value="" disabled selected>Sélectionnez une faculté</option>
+                                    <option>Psychologie et Sciences de l'Éducation</option>
+                                    <option>Sciences Informatiques</option>
+                                    <option>Sciences de la Santé</option>
+                                    <option>Sciences Économiques et Gestion</option>
+                                    <option>Faculté de Droit</option>
+                                    <option>Faculté des Sciences</option>
+                                    <option>Sciences Agronomiques</option>
+                                    <option>Hôtellerie et Tourisme</option>
+                                    <option>Filières Administratives</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Niveau d'étude souhaité</label>
+                                <select required class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
+                                    <option>Licence 1 (LMD)</option>
+                                    <option>Licence 2 (LMD)</option>
+                                    <option>Licence 3 (LMD)</option>
+                                    <option>Master / Agrégation</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-gray-100">
+
+                    <!-- Documents -->
+                    <div>
+                        <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">3</span>
+                            Parcours Scolaire
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">École de provenance</label>
+                                <input type="text" required placeholder="Ex: Institut de la Mine" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Pourcentage obtenu au diplôme d'état</label>
+                                <input type="number" required placeholder="Ex: 65" min="50" max="100" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <button type="submit" class="w-full bg-upkol-jaune text-black font-black py-5 rounded-2xl hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-[1.02] uppercase tracking-widest shadow-xl">
+                            Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                        <p class="text-center text-[10px] text-gray-400 mt-4 italic">
+                            En soumettant ce formulaire, vous acceptez d'être contacté par le service des inscriptions de l'UPKOL.
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Information cards -->
+            <div class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="bg-blue-50 p-8 rounded-3xl border-l-4 border-blue-500">
+                    <h4 class="font-black uppercase text-sm mb-3">Documents à préparer</h4>
+                    <ul class="text-xs space-y-2 text-gray-600 font-bold">
+                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Copie du Diplôme d'État ou équivalent</li>
+                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Bulletins des 5ème et 6ème humanités</li>
+                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Attestation de naissance et de bonne vie et mœurs</li>
+                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> 4 photos passeport récentes</li>
+                    </ul>
+                </div>
+                <div class="bg-yellow-50 p-8 rounded-3xl border-l-4 border-upkol-jaune">
+                    <h4 class="font-black uppercase text-sm mb-3">Besoin d'aide ?</h4>
+                    <p class="text-xs text-gray-600 font-bold leading-relaxed">
+                        Le service des inscriptions est ouvert du lundi au vendredi de 08h00 à 15h30 au siège administratif.
+                    </p>
+                    <div class="mt-4 flex items-center text-sm font-black">
+                        <i class="fas fa-phone-alt mr-2 text-upkol-jaune"></i> +243 826 838 544
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section class="py-20 px-6 bg-gray-50">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-black uppercase mb-4">Foire Aux <span class="text-upkol-jaune">Questions</span></h2>
+                <div class="w-20 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Question 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
+                        <span class="font-bold text-sm uppercase">Comment se déroule le processus d'inscription ?</span>
+                        <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
+                        Le processus commence par cette pré-inscription en ligne. Une fois soumise, vous recevrez un mail de confirmation. Vous devrez ensuite vous présenter au campus avec vos documents physiques originaux pour la validation finale par le secrétariat.
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
+                        <span class="font-bold text-sm uppercase">Quels sont les frais de scolarité ?</span>
+                        <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
+                        Les frais varient selon la faculté et le cycle choisi. Pour obtenir la grille tarifaire complète de l'année 2024-2025, veuillez contacter le service de comptabilité via le numéro de téléphone indiqué ou vous rendre directement au guichet d'information du campus.
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
+                        <span class="font-bold text-sm uppercase">Puis-je changer de filière après l'inscription ?</span>
+                        <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
+                        Oui, il est possible de demander un changement de filière durant les deux premières semaines suivant la rentrée académique, sous réserve de places disponibles dans la filière souhaitée et de l'accord du Secrétariat Général Académique.
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-center text-xs text-gray-400 mt-10">Vous avez une autre question ? <a href="mailto:contact@upkol.org" class="text-upkol-jaune font-bold underline">Contactez-nous</a></p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune mt-20">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
+            <p>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <span>Formation.</span>
+                <span>Recherche.</span>
+                <span>Excellence.</span>
             </div>
         </div>
     </footer>
 
     <script>
-        // URL configurée avec votre script Google
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCc_QSrwmGAOEqADuIwQXjYtuWi0d27iefcUFB0fbcXQeq06Yr9uUQc60QeocWfeW8Bg/exec"; 
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const form = document.getElementById('registrationForm');
-        const btn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const successMsg = document.getElementById('successMsg');
-
-        form.addEventListener('submit', e => {
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Bouton de soumission pour l'animation
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Envoi en cours...';
             btn.disabled = true;
-            btnText.innerText = "TRAITEMENT EN COURS...";
-            btn.classList.add('opacity-50');
 
-            // Utilisation de URLSearchParams pour la compatibilité avec Google Apps Script
-            const formData = new FormData(form);
-            const params = new URLSearchParams();
-            formData.forEach((value, key) => params.append(key, value));
-            
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                mode: 'no-cors', // Important pour éviter les erreurs de redirection CORS
-                body: params
-            })
-            .then(() => {
-                form.classList.add('hidden');
-                successMsg.classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Erreur!', error.message);
-                alert("Une erreur est survenue lors de l'envoi.");
+            // 1. Récupération et alignement des données avec les colonnes exactes de la table 'candidatures'
+           const registrationData = {
+    full_name: e.target.querySelector('input[placeholder="Ex: Jean Mukendi"]').value,
+    email: e.target.querySelector('input[type="email"]').value,
+    phone: e.target.querySelector('input[type="tel"]').value,
+    birth_place: document.getElementById('birthPlace').value,
+    birth_date: document.getElementById('birthDate').value,
+    faculty: document.getElementById('facultySelect').value,
+    academic_level: e.target.querySelectorAll('select')[1].value, // Ajouté
+    previous_school: e.target.querySelector('input[placeholder="Ex: Institut de la Mine"]').value, // Ajouté
+    percentage: parseInt(e.target.querySelector('input[type="number"]').value), // Ajouté
+    status: 'en_attente'
+};
+
+            // 2. Sauvegarde dans Supabase
+            const { error } = await _supabase
+                .from('candidatures')
+                .insert([registrationData]);
+
+            // En cas d'erreur renvoyée par Supabase
+            if (error) {
+                btn.innerHTML = 'Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>';
                 btn.disabled = false;
-                btnText.innerText = "RÉESSAYER L'ENVOI";
+                return alert("Erreur lors de l'envoi : " + error.message);
+            }
+
+            // Animation de succès si tout s'est bien passé
+            setTimeout(() => {
+                alert("Félicitations ! Votre demande de pré-inscription a été envoyée avec succès. \n\nUn conseiller académique vous contactera par email sous 48h pour la suite de votre dossier.");
+                e.target.reset();
+                btn.innerHTML = 'Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>';
+                btn.disabled = false;
+                window.location.href = 'index.html';
+            }, 2000);
+        });
+
+        // FAQ Accordion Logic
+        document.querySelectorAll('.faq-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('i');
+                
+                // Toggle current item
+                const isHidden = content.classList.contains('hidden');
+                
+                // Fermer tous les autres (optionnel)
+                document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.faq-toggle i').forEach(i => i.classList.remove('rotate-180'));
+
+                // Ouvrir si c'était caché
+                if (isHidden) {
+                    content.classList.remove('hidden');
+                    icon.classList.add('rotate-180');
+                }
             });
+        });
+
+        // Logique de tracking si l'utilisateur est connecté (optionnel)
+        document.addEventListener('DOMContentLoaded', () => {
+            const userEmail = localStorage.getItem('userEmail');
+            if (userEmail) {
+                // On pourrait pré-remplir certains champs
+            }
         });
     </script>
 </body>
