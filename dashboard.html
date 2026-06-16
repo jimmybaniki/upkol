@@ -25,6 +25,9 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -113,53 +116,54 @@
         </div>
         
         <nav class="flex-grow mt-2 px-4 space-y-2">
-            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm bg-upkol-jaune text-black">
+            <a href="#" id="nav-mon-espace" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm bg-upkol-jaune text-black" onclick="switchRole(currentLoggedInRole);">
                 <i class="fas fa-th-large mr-3 w-5"></i> Mon Espace
             </a>
             
             <div id="nav-student-only" class="space-y-2 hidden">
                 <div class="pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3">Académique</div>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Fonctionnalité en cours de développement', 'info');">
                     <i class="fas fa-book-open mr-3 w-5"></i> Mes Cours
                 </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Fonctionnalité en cours de développement', 'info');">
                     <i class="fas fa-graduation-cap mr-3 w-5"></i> Mes Résultats
                 </a>
             </div>
 
             <div id="nav-teacher-only" class="space-y-2 hidden">
                 <div class="pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3">Enseignement</div>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Fonctionnalité en cours de développement', 'info');">
                     <i class="fas fa-chalkboard mr-3 w-5"></i> Mes Classes
                 </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Fonctionnalité en cours de développement', 'info');">
                     <i class="fas fa-edit mr-3 w-5"></i> Évaluations
                 </a>
             </div>
 
             <div id="nav-admin-only" class="space-y-2 hidden">
                 <div class="pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3">Administration</div>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" id="nav-inscriptions" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="displayAdminRegistrations();">
+                <a href="#" id="nav-inscriptions" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="loadCandidatures();">
                     <i class="fas fa-user-plus mr-3 w-5"></i> Inscriptions
                 </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Redirection vers Statistiques...', 'info');">
                     <i class="fas fa-chart-line mr-3 w-5"></i> Statistiques
                 </a>
             </div>
 
             <div class="pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3">Ressources</div>
-            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+            <a href="bibliotheque.html" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
                 <i class="fas fa-book mr-3 w-5"></i> Bibliothèque
             </a>
-            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+            <a href="recherche.html" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
                 <i class="fas fa-microscope mr-3 w-5"></i> Projets Recherche
             </a>
 
             <div class="pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3">Paramètres</div>
-            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Redirection vers Profil...', 'info');">
                 <i class="fas fa-users-cog mr-3 w-5"></i> Mon Profil
             </a>
-            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400">
+            <a href="#" class="nav-link flex items-center p-3 rounded-lg font-bold text-sm text-gray-400" onclick="showCustomToast('Redirection vers Configurations...', 'info');">
                 <i class="fas fa-cog mr-3 w-5"></i> Configurations
             </a>
         </nav>
@@ -479,27 +483,9 @@
                                     </tr>
                                 </thead>
                                 <tbody id="registrations-body" class="text-sm divide-y divide-gray-50">
-                                    <tr data-faculty="Informatique">
-                                        <td class="px-4 lg:px-6 py-4 font-bold flex items-center">
-                                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center text-xs mr-2">A</div>
-                                            Alice Mubenga
-                                        </td>
-                                        <td class="px-4 lg:px-6 py-4 text-gray-600 text-xs">Informatique</td>
-                                        <td class="px-4 lg:px-6 py-4 text-gray-500 text-[10px]">Ce matin</td>
-                                        <td class="px-4 lg:px-6 py-4 text-right">
-                                            <button onclick="validerInscription(this)" class="bg-green-100 text-green-600 px-3 py-1.5 rounded text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-colors">Valider</button>
-                                        </td>
-                                    </tr>
-                                    <tr data-faculty="Médecine">
-                                        <td class="px-4 lg:px-6 py-4 font-bold flex items-center">
-                                            <div class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex justify-center items-center text-xs mr-2">K</div>
-                                            Kevin Lufuluabo
-                                        </td>
-                                        <td class="px-4 lg:px-6 py-4 text-gray-600 text-xs">Médecine</td>
-                                        <td class="px-4 lg:px-6 py-4 text-gray-500 text-[10px]">Hier, 14:00</td>
-                                        <td class="px-4 lg:px-6 py-4 text-right">
-                                            <button onclick="validerInscription(this)" class="bg-green-100 text-green-600 px-3 py-1.5 rounded text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-colors">Valider</button>
-                                        </td>
+                                    <!-- Les données seront chargées dynamiquement depuis Supabase -->
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Chargement des candidatures...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -550,6 +536,9 @@
                                 <button onclick="showCustomToast('Analyse des statistiques de la faculté...')" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
                                     <i class="fas fa-chart-area mr-3 text-upkol-jaune w-4 text-center"></i> Stats. Faculté
                                 </button>
+                                <button onclick="requestUserAuthorization()" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
+                                    <i class="fas fa-user-check mr-3 text-upkol-jaune w-4 text-center"></i> Soumettre une autorisation
+                                </button>
                             </div>
 
                             <!-- Actions Recteur & SG -->
@@ -560,16 +549,19 @@
                                 <button onclick="showCustomToast('Ouverture du budget...')" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
                                     <i class="fas fa-money-check-alt mr-3 text-upkol-jaune w-4 text-center"></i> Budget Annuel
                                 </button>
+                                <button onclick="requestUserAuthorization()" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
+                                    <i class="fas fa-user-check mr-3 text-upkol-jaune w-4 text-center"></i> Soumettre une autorisation
+                                </button>
                             </div>
                             
                             <!-- Actions Communes Administration (Recteur, SG, Doyen) -->
                             <div id="admin-actions-common" class="hidden space-y-2 mt-2 pt-2 border-t border-gray-700">
-                                <button onclick="showCustomToast('Interface de publication ouverte')" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
+                                <a href="publier-actualite.html" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
                                     <i class="fas fa-bullhorn mr-3 text-upkol-jaune w-4 text-center"></i> Publier actualité
-                                </button>
-                                <button onclick="showCustomToast('Gestion du calendrier ouverte')" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
+                                </a>
+                                <a href="calendrier-acad.html" class="w-full bg-gray-800 text-left p-3 rounded-lg text-xs font-bold hover:bg-gray-700 flex items-center transition-colors">
                                     <i class="fas fa-calendar-alt mr-3 text-upkol-jaune w-4 text-center"></i> Calendrier acad.
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -591,7 +583,13 @@
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
+        // --- CONFIGURATION SUPABASE ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         // --- DONNÉES DES PROFILS (GATEWAY) ---
+        // Added super_admin role for consistency, though it redirects to its own dashboard.
         const profilesData = {
             'etudiant': { 
                 id: 'etudiant',
@@ -640,7 +638,15 @@
                 contact: 'Dir. de Cabinet (DirCab) : <strong class="text-gray-800">dircab.recteur@upkol.cd</strong><br>Bureau : Rectorat Principal',
                 name: 'Prof. Mbuyi', 
                 roleText: 'Recteur de l\'Université' 
-            }
+            },
+            'super_admin': { // Added for consistency, though it redirects
+                id: 'super_admin',
+                title: 'Super Admin',
+                icon: 'fa-shield-alt',
+                contact: 'Accès direct au tableau de bord Super Admin.',
+                name: 'Admin Système',
+                roleText: 'Accès Maximum'
+            } 
         };
 
         let currentSelectedProfileId = null;
@@ -653,7 +659,7 @@
             // Générer les cartes
             Object.values(profilesData).forEach(profile => {
                 const card = document.createElement('button');
-                card.className = 'profile-card bg-white border-2 border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center text-center hover:border-upkol-jaune hover:bg-yellow-50 transition-all cursor-pointer focus:outline-none';
+                card.className = 'profile-card bg-white border-2 border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center text-center hover:border-upkol-jaune hover:bg-yellow-50 transition-all cursor-pointer focus:outline-none'; // Removed ring classes here
                 card.onclick = () => selectProfile(profile.id, card);
                 card.innerHTML = `
                     <div class="w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mb-2 icon-container transition-colors">
@@ -674,7 +680,7 @@
 
             // Réinitialiser les styles de toutes les cartes
             document.querySelectorAll('.profile-card').forEach(c => {
-                c.classList.remove('border-upkol-jaune', 'bg-yellow-50', 'ring-2', 'ring-upkol-jaune');
+                c.classList.remove('border-upkol-jaune', 'bg-yellow-50'); // Removed ring classes here
                 c.querySelector('.icon-container').classList.replace('bg-upkol-jaune', 'bg-gray-100');
                 c.querySelector('.icon-container').classList.replace('text-black', 'text-gray-600');
             });
@@ -821,9 +827,19 @@
             });
         }
 
+        // Function to manage active navigation link styling
+        function setActiveNavLink(linkElement) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-upkol-jaune', 'text-black');
+                link.classList.add('text-gray-400');
+            });
+            linkElement.classList.remove('text-gray-400');
+            linkElement.classList.add('bg-upkol-jaune', 'text-black');
+        }
         function switchRole(roleId) {
             const profileData = profilesData[roleId];
             const switcher = document.getElementById('role-switcher-container');
+            window.currentLoggedInRole = roleId; // Mémoriser le rôle actuel
 
             // Masquer le sélecteur par défaut pour tous les utilisateurs
             switcher.classList.add('hidden');
@@ -842,8 +858,10 @@
             document.getElementById('user-role').innerText = profileData.roleText;
             document.getElementById('user-name').innerText = profileData.name;
 
-            // 4. Afficher selon le rôle
-            if (roleId === 'etudiant') {
+            // 4. Afficher selon le rôle et définir le lien actif "Mon Espace"
+            setActiveNavLink(document.getElementById('nav-mon-espace'));
+
+            if (roleId === 'etudiant') { // Student
                 studentView.classList.remove('hidden');
                 studentStats.classList.remove('hidden');
                 navStudentOnly.classList.remove('hidden');
@@ -856,7 +874,7 @@
                 teacherActions.classList.remove('hidden');
                 document.getElementById('teacher-upload-title').innerText = 'Publier un support';
 
-            } else if (roleId === 'chef_dept') {
+            } else if (roleId === 'chef_dept') { // Chef de Département
                 // Chef de dept voit la vue enseignant (pour ses propres cours) et des outils administratifs du dept
                 teacherView.classList.remove('hidden');
                 teacherStats.classList.remove('hidden');
@@ -865,7 +883,7 @@
                 chefDeptActions.classList.remove('hidden');
                 document.getElementById('teacher-upload-title').innerText = 'Dépôt des TPs & Sujets d\'examens';
                 
-            } else if (roleId === 'doyen') {
+            } else if (roleId === 'doyen') { // Doyen
                 adminView.classList.remove('hidden');
                 adminStats.classList.remove('hidden');
                 navAdminOnly.classList.remove('hidden');
@@ -878,6 +896,7 @@
                 navAdminOnly.classList.remove('hidden');
                 rectorActions.classList.remove('hidden');
                 adminActionsCommon.classList.remove('hidden');
+                loadCandidatures(); // Charger les données réelles
             }
 
             showCustomToast(`Connecté en tant que ${profileData.title}`, 'info');
@@ -902,14 +921,87 @@
             });
         });
 
-        window.validerInscription = function(btn) {
+        // --- RÉCUPÉRATION DES DONNÉES RÉELLES DEPUIS SUPABASE ---
+        async function loadCandidatures() {
+            const tbody = document.getElementById('registrations-body');
+            
+            const { data, error } = await _supabase
+                .from('candidatures')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Erreur de chargement:", error);
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Erreur lors du chargement des données.</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">Aucune candidature trouvée.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const date = new Date(item.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const faculty = item.faculty || 'Non spécifiée';
+                const initial = item.full_name ? item.full_name.charAt(0).toUpperCase() : '?';
+                
+                const row = `
+                    <tr data-faculty="${faculty}">
+                        <td class="px-4 lg:px-6 py-4 font-bold flex items-center">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center text-xs mr-2">${initial}</div>
+                            ${item.full_name}
+                        </td>
+                        <td class="px-4 lg:px-6 py-4 text-gray-600 text-xs">${faculty}</td>
+                        <td class="px-4 lg:px-6 py-4 text-gray-500 text-[10px]">${date}</td>
+                        <td class="px-4 lg:px-6 py-4 text-right">
+                            ${item.status === 'validé' 
+                                ? '<span class="text-green-600 font-black text-[10px] uppercase">Déjà validé</span>'
+                                : `<button onclick="validerInscription(this, '${item.id}', '${item.email}')" class="bg-green-100 text-green-600 px-3 py-1.5 rounded text-[10px] font-black uppercase hover:bg-green-600 hover:text-white transition-colors">Valider</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Mettre à jour les stats si nécessaire
+            document.querySelector('#admin-stats h3').innerText = data.length;
+        }
+
+        window.validerInscription = async function(btn, id, email) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            
+            const { error } = await _supabase
+                .from('candidatures')
+                .update({ status: 'validé' })
+                .eq('id', id);
+
+            if (error) {
+                showCustomToast("Erreur lors de la validation : " + error.message, 'error');
+                btn.innerHTML = 'Valider';
+                btn.disabled = false;
+                return;
+            }
+
+            // Marquer également le compte utilisateur comme approuvé s'il existe déjà dans le système
+            let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+            const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+            if (userIndex > -1) {
+                const submitterRole = profilesData[window.currentLoggedInRole]?.title || 'Rectorat';
+                users[userIndex].requestedAuthorization = true;
+                users[userIndex].submittedBy = submitterRole;
+                localStorage.setItem('superAdminUsers', JSON.stringify(users));
+            }
+
             const row = btn.closest('tr');
             const nom = row.querySelector('td:first-child').innerText.trim();
             btn.innerHTML = '<i class="fas fa-check"></i> Validé';
             btn.classList.remove('bg-green-100', 'text-green-600');
             btn.classList.add('bg-green-600', 'text-white');
-            btn.disabled = true;
-            showCustomToast(`Le dossier de ${nom} a été traité.`, 'success');
+            showCustomToast(`Le dossier de ${nom} a été validé avec succès.`, 'success');
             setTimeout(() => { row.style.opacity = '0.5'; }, 1000);
         };
 
@@ -931,37 +1023,35 @@
             }
         };
 
-        // Nouvelle fonction pour gérer la demande d'autorisation d'un étudiant
-        window.requestStudentAuthorization = function() {
-            const studentIdentifier = prompt("Veuillez entrer l'email ou le matricule de l'étudiant à soumettre pour autorisation :");
+        // Fonction généralisée pour soumettre n'importe quel compte au Super Admin
+        window.requestUserAuthorization = function() {
+            const userIdentifier = prompt("Veuillez entrer l'email ou le matricule de l'utilisateur à soumettre pour autorisation :");
 
-            if (!studentIdentifier) {
+            if (!userIdentifier) {
                 showCustomToast("Opération annulée.", 'info');
                 return;
             }
 
             let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
             const userIndex = users.findIndex(u =>
-                u.email.toLowerCase() === studentIdentifier.toLowerCase() ||
-                u.matricule.toLowerCase() === studentIdentifier.toLowerCase()
+                u.email.toLowerCase() === userIdentifier.toLowerCase() ||
+                u.matricule.toLowerCase() === userIdentifier.toLowerCase()
             );
 
             if (userIndex > -1) {
-                if (users[userIndex].role !== 'etudiant') {
-                    showCustomToast("Seuls les comptes étudiants peuvent être soumis pour autorisation via cette fonction.", 'error');
-                    return;
-                }
                 if (users[userIndex].authorized) {
-                    showCustomToast(`L'étudiant ${users[userIndex].name} est déjà autorisé.`, 'info');
+                    showCustomToast(`L'utilisateur ${users[userIndex].name} est déjà autorisé.`, 'info');
                 } else if (users[userIndex].requestedAuthorization) {
                     showCustomToast(`Une demande d'autorisation pour ${users[userIndex].name} est déjà en attente.`, 'info');
                 } else {
+                    const submitterRole = profilesData[window.currentLoggedInRole]?.title || 'Rectorat';
                     users[userIndex].requestedAuthorization = true;
+                    users[userIndex].submittedBy = submitterRole;
                     localStorage.setItem('superAdminUsers', JSON.stringify(users));
-                    showCustomToast(`Demande d'autorisation pour l'étudiant ${users[userIndex].name} envoyée au Super Admin.`, 'success');
+                    showCustomToast(`Demande pour ${users[userIndex].name} envoyée au Super Admin par le ${submitterRole}.`, 'success');
                 }
             } else {
-                showCustomToast("Aucun étudiant trouvé avec cet email ou matricule.", 'error');
+                showCustomToast("Aucun compte trouvé avec cet email ou matricule.", 'error');
             }
         };
 
@@ -1005,7 +1095,13 @@
             // Succès
             const gateway = document.getElementById('login-gateway');
             gateway.style.opacity = '0';
-            setTimeout(() => { gateway.classList.add('hidden'); switchRole(currentSelectedProfileId); document.getElementById('user-name').innerText = user.name; document.getElementById('demo-role-switcher').value = currentSelectedProfileId; }, 400);
+            setTimeout(() => { 
+                gateway.classList.add('hidden'); 
+                switchRole(currentSelectedProfileId); 
+                document.getElementById('user-name').innerText = user.name; 
+                document.getElementById('demo-role-switcher').value = currentSelectedProfileId;
+                window.currentLoggedInRole = currentSelectedProfileId;
+            }, 400);
         }
         // --- INITIALISATION AU CHARGEMENT ---
         document.addEventListener('DOMContentLoaded', () => {

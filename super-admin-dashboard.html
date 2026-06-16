@@ -26,6 +26,9 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -142,10 +145,19 @@
                 <div class="p-5 lg:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50">
                     <h2 class="font-black uppercase text-sm text-gray-800"><i class="fas fa-list mr-2 text-upkol-jaune"></i> Registre des Utilisateurs</h2>
                     
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
                         <div class="relative w-full sm:w-64">
                             <input type="text" id="searchInput" placeholder="Rechercher un nom ou matricule..." class="w-full pl-9 pr-4 py-2 text-xs font-bold bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all" onkeyup="filterTable()">
                             <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                        </div>
+                        <div class="relative w-full sm:w-48">
+                            <select id="statusFilter" class="w-full pl-3 pr-9 py-2 text-xs font-bold bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all appearance-none cursor-pointer" onchange="filterTable()">
+                                <option value="all">Tous les comptes</option>
+                                <option value="active">Comptes actifs</option>
+                                <option value="inactive">Comptes inactifs</option>
+                                <option value="pending">En attente d'approbation</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-2.5 text-gray-400 text-xs pointer-events-none"></i>
                         </div>
                         <button onclick="openCreateUserModal()" class="bg-upkol-noir text-upkol-jaune px-4 py-2 rounded-lg text-xs font-black uppercase hover:bg-gray-800 transition-colors whitespace-nowrap shadow-md">
                             <i class="fas fa-user-plus mr-1"></i> Nouveau
@@ -154,7 +166,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[800px]">
+                    <table class="w-full text-left min-w-[950px]">
                         <thead class="bg-white border-b border-gray-200 text-[10px] font-black uppercase text-gray-400 tracking-widest">
                             <tr>
                                 <th class="px-6 py-4">Utilisateur</th>
@@ -162,6 +174,7 @@
                                 <th class="px-6 py-4">Rôle</th>
                                 <th class="px-6 py-4">Identifiants</th>
                                 <th class="px-6 py-4 text-center">Statut</th>
+                                <th class="px-6 py-4 text-center">Approuvé par</th>
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -279,6 +292,12 @@
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
+        // --- CONFIGURATION SUPABASE ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        let validatedCandidaturesEmails = [];
+
         // --- CONFIGURATION ET DONNÉES ---
         const roleConfig = {
             'etudiant': { label: 'Étudiant', color: 'bg-blue-100 text-blue-700', prefix: 'ETU' },
@@ -293,7 +312,7 @@
         let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
 
         // --- FONCTIONS INITIALES ---
-        function initAdmin() {
+        async function initAdmin() {
             // Si la base est vide, on crée quelques profils de démo pour illustrer
             if (users.length === 0) {
                 users = [
@@ -303,6 +322,14 @@
                 ];
                 saveData();
             }
+            
+            // Récupérer les emails validés par le rectorat
+            const { data } = await _supabase
+                .from('candidatures')
+                .select('email')
+                .eq('status', 'validé');
+            
+            validatedCandidaturesEmails = data ? data.map(c => c.email.toLowerCase()) : [];
             renderTable();
         }
 
@@ -330,13 +357,28 @@
             tbody.innerHTML = '';
 
             let filteredUsers = users;
-            if (filterText) {
-                const lowerFilter = filterText.toLowerCase();
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchInput) {
                 filteredUsers = users.filter(u => 
-                    u.name.toLowerCase().includes(lowerFilter) || 
-                    u.matricule.toLowerCase().includes(lowerFilter) ||
-                    u.email.toLowerCase().includes(lowerFilter)
+                    u.name.toLowerCase().includes(searchInput) || 
+                    u.matricule.toLowerCase().includes(searchInput) ||
+                    u.email.toLowerCase().includes(searchInput)
                 );
+            }
+
+            const statusFilterValue = document.getElementById('statusFilter').value;
+            if (statusFilterValue !== 'all') {
+                filteredUsers = filteredUsers.filter(u => {
+                    if (statusFilterValue === 'active') {
+                        return u.authorized;
+                    } else if (statusFilterValue === 'inactive') {
+                        return !u.authorized && !u.requestedAuthorization;
+                    } else if (statusFilterValue === 'pending') {
+                        return u.requestedAuthorization;
+                    }
+                    return true; // Should not happen with 'all' handled
+                });
             }
 
             if (filteredUsers.length === 0) {
@@ -360,7 +402,7 @@
                         </button>
                     `;
                 } else if (user.requestedAuthorization) {
-                    statusBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-[10px] font-black uppercase"><i class="fas fa-hourglass-half mr-1"></i> En attente</span>`;
+                    statusBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-[10px] font-black uppercase"><i class="fas fa-hourglass-half mr-1"></i> Soumis pour autorisation</span>`;
                     actionButton = `
                         <button onclick="approveAuthorization('${user.id}')" class="w-8 h-8 rounded bg-upkol-jaune hover:bg-yellow-400 text-black flex items-center justify-center" title="Approuver la demande">
                             <i class="fas fa-user-check"></i>
@@ -406,6 +448,11 @@
                             <td class="px-6 py-4 text-center">
                                 ${statusBadge}
                             </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">
+                                    ${user.submittedBy || '---'}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     ${actionButton}
@@ -426,8 +473,8 @@
     }
 
     function filterTable() {
-        const input = document.getElementById('searchInput').value;
-        renderTable(input);
+        // On rafraîchit le tableau avec la valeur actuelle de recherche
+        renderTable();
     }
 
     function updateStats() {
@@ -458,6 +505,7 @@
         if (userIndex > -1) {
             users[userIndex].authorized = true;
             users[userIndex].requestedAuthorization = false; // Effacer le drapeau de demande
+            delete users[userIndex].submittedBy; // Nettoyer la mention de soumission
             saveData();
             renderTable(document.getElementById('searchInput').value);
             showCustomToast(`Demande d'autorisation pour ${users[userIndex].name} approuvée. Le compte est maintenant actif.`, 'success');
