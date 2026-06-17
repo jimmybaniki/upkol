@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Étudiant - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        /* 3D Student Card CSS */
+        .card-container { perspective: 1000px; }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-container:hover .card-inner, .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .card-back { transform: rotateY(180deg); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (STUDENT LOGIN)   -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-user-graduate text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Portail Étudiant</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Session Académique de Démo</span>
+            </div>
+
+            <div class="w-full space-y-4 mb-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Institutionnel</label>
+                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: jean.mukendi@upkol.cd" value="jean.mukendi@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mot de passe de sécurité</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Utilisez les identifiants pré-remplis pour charger instantanément le dossier fictif de Jean Mukendi en L1 Informatique.</span>
+                </div>
+            </div>
+
+            <button id="btn-login-student" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                Ouvrir mon espace académique
+                <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR ÉTUDIANT                          -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-university text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL ETUDIANT</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Espace Personnel</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Menu de Navigation de l'Étudiant -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Mon Année Académique</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-pie mr-3 w-5 text-lg"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-courses" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('courses')">
+                <i class="fas fa-book-open mr-3 w-5 text-lg"></i> TPs & Supports de cours
+            </a>
+
+            <a href="#" id="menu-grades" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('grades')">
+                <i class="fas fa-graduation-cap mr-3 w-5 text-lg"></i> Résultats & Relevés
+            </a>
+
+            <a href="#" id="menu-payments" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('payments')">
+                <i class="fas fa-wallet mr-3 w-5 text-lg"></i> Frais & Trésorerie
+                <span id="badge-payment" class="ml-auto bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">Tranche 2</span>
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Université & Communauté</div>
+
+            <a href="#" id="menu-calendar" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('calendar')">
+                <i class="fas fa-calendar-alt mr-3 w-5 text-lg"></i> Emploi du Temps
+            </a>
+
+            <a href="#" id="menu-idcard" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('idcard')">
+                <i class="fas fa-id-card mr-3 w-5 text-lg"></i> Carte d'Étudiant 3D
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN EXECUTIF -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- HEADER ACADÉMIQUE -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Mon Portail <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Étudiant</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Identité de l'Étudiant -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="student-header-name" class="text-xs font-black text-slate-900 uppercase">Jean Mukendi</p>
+                    <p id="student-header-matricule" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">UPK-2026-9874</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-graduate text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENU SCROLLABLE DU DASHBOARD -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- ONGLET 1 : VUE D'ENSEMBLE (OVERVIEW)       -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- GRID STATS ÉTUDIANT -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Assiduité Générale</p>
+                                <h3 class="text-3xl font-black text-slate-900">96.8%</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-user-check text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-green-500 font-bold">
+                            <i class="fas fa-circle-check mr-2 text-xs"></i> Profil assidu & régulier
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Moyenne Générale</p>
+                                <h3 class="text-3xl font-black text-slate-900">16.4 <span class="text-xs text-slate-400">/20</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-trophy text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
+                            <i class="fas fa-star mr-2 text-xs"></i> Mention Très Bien
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">TPs & Homeworks</p>
+                                <h3 class="text-3xl font-black text-slate-900">12 / 12</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold">
+                            <i class="fas fa-circle-check text-green-500 mr-2 text-xs"></i> Tous les TPs sont rendus
+                        </div>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Solde Académique</p>
+                                <h3 id="stat-fees-due" class="text-3xl font-black text-slate-900">150$ <span class="text-xs text-rose-500">Dû</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-coins text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-rose-500 font-bold">
+                            <i class="fas fa-exclamation-triangle mr-2 text-xs"></i> Tranche 2 en attente
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRILLE DE SUIVI -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Cours à l'affiche & Horaires de la semaine -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2 space-y-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Planning du jour</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Mes cours du Mercredi</h3>
+                            </div>
+                            <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Aujourd'hui</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-upkol-noir text-white rounded-xl flex flex-col items-center justify-center text-[10px] font-black">
+                                        <span>08:30</span>
+                                        <span>11:30</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-sm text-slate-900">Architecture des Ordinateurs</h4>
+                                        <p class="text-xs text-slate-500">Prof. Tshibangu • Salle B4</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-black uppercase">Fini</span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex flex-col items-center justify-center text-[10px] font-black">
+                                        <span>12:00</span>
+                                        <span>15:00</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-sm text-slate-900">Base de données avancées</h4>
+                                        <p class="text-xs text-slate-500">Dr. Kalala • Salle Labo-Info</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-black uppercase">Fini</span>
+                            </div>
+
+                            <div class="p-4 bg-yellow-50/50 rounded-2xl border border-yellow-100 flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-upkol-jaune text-slate-950 rounded-xl flex flex-col items-center justify-center text-[10px] font-black">
+                                        <span>15:30</span>
+                                        <span>18:30</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-sm text-slate-900">Algorithmique & Structures complexes</h4>
+                                        <p class="text-xs text-slate-500">Prof. Ilunga • Salle A1</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-black uppercase animate-pulse">En cours</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flux de notifications & Bulletins rectorat -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+                        <div class="mb-6">
+                            <h4 class="font-black text-xs uppercase text-slate-400">Bulletin Officiel</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Actes & Décisions du Rectorat</h3>
+                        </div>
+                        <div class="space-y-4 flex-grow overflow-y-auto max-h-80 pr-1">
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">12 Juin 2026</span>
+                                <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">Nomination des Chefs de Travaux</h4>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">Les nouveaux chefs de travaux de la Faculté des Sciences Technologiques sont confirmés.</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">08 Juin 2026</span>
+                                <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">Octroi de bourses L1 Technologie</h4>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">Soutien à l'excellence : les 15 premiers candidats admis à l'examen bénéficient d'exemption de frais.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 2 : COURS & DÉPÔT DE TPS            -->
+            <!-- ========================================== -->
+            <div id="tab-courses" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Liste des chapitres de cours -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight mb-6">Supports de cours récents</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-50 border border-slate-200 hover:border-upkol-jaune rounded-2xl flex items-center justify-between transition-all">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-file-pdf text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">Bases de données relationnelles - S1.pdf</h4>
+                                            <p class="text-[10px] text-slate-500">Dr. Kalala • Nouveau Support • PDF</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="showCustomToast('Téléchargement du support de cours...', 'info')" class="text-xs bg-white hover:bg-upkol-jaune border border-slate-200 rounded-xl px-4 py-2 font-black uppercase transition-all shadow-sm">
+                                        Télécharger
+                                    </button>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 border border-slate-200 hover:border-upkol-jaune rounded-2xl flex items-center justify-between transition-all">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-file-pdf text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">Méthodologie Orientée Objet UML.pdf</h4>
+                                            <p class="text-[10px] text-slate-500">Prof. Ilunga • Chapitre 1 & 2 • PDF</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="showCustomToast('Téléchargement du support de cours...', 'info')" class="text-xs bg-white hover:bg-upkol-jaune border border-slate-200 rounded-xl px-4 py-2 font-black uppercase transition-all shadow-sm">
+                                        Télécharger
+                                    </button>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 border border-slate-200 hover:border-upkol-jaune rounded-2xl flex items-center justify-between transition-all">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-video text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">Cours Vidéo d'Algèbre de Boole - Partie 2</h4>
+                                            <p class="text-[10px] text-slate-500">Prof. Tshibangu • Tutorat Officiel • Mp4</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="showCustomToast('Lancement du cours vidéo...', 'info')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 font-black uppercase transition-all shadow-md">
+                                        Regarder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Module de remise de devoirs / TPs -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Submission Center</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Rendre un TP / Devoir</h3>
+                        </div>
+
+                        <form id="assignment-form" class="space-y-4" onsubmit="submitAssignment(event)">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Matière / Cours cible</label>
+                                <select id="assignment-course" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                    <option value="architect">Architecture des Ordinateurs</option>
+                                    <option value="database">Base de données avancées</option>
+                                    <option value="algo">Algorithmique & Structures complexes</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Fichier de TP (PDF uniquement)</label>
+                                <input type="file" id="assignment-file" required class="w-full text-[10px] file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-upkol-jaune file:text-black cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                            </div>
+
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Commentaires de l'étudiant</label>
+                                <textarea id="assignment-comments" rows="3" placeholder="Notes additionnelles adressées au professeur..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune"></textarea>
+                            </div>
+
+                            <!-- Progress submission bar -->
+                            <div id="upload-progress-container" class="hidden space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase">
+                                    <span>Envoi en cours...</span>
+                                    <span id="upload-percent">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div id="upload-progress-bar" class="bg-upkol-jaune h-full w-0 transition-all duration-300"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Soumettre le TP
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 3 : RÉSULTATS & RELEVÉS             -->
+            <!-- ========================================== -->
+            <div id="tab-grades" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Tableau des notes -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Mes Bulletins & Cotes</h3>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Première session • Licence 1 Technologie</p>
+                                </div>
+                                <button onclick="showCustomToast('Génération du relevé numérique en PDF...', 'info')" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                                    <i class="fas fa-download mr-2"></i> Exporter PDF
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left min-w-[500px]">
+                                    <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-4">Matières & Unités d'Enseignement</th>
+                                            <th class="px-6 py-4">Crédits</th>
+                                            <th class="px-6 py-4 text-center">Note /20</th>
+                                            <th class="px-6 py-4 text-right">Mention obtenu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="student-grades-table" class="text-sm divide-y divide-slate-100 font-medium">
+                                        <!-- Injecté dynamiquement par JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulateur de mention -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Projection prévisionnelle</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Estimer ma moyenne</h3>
+                            </div>
+
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Architecture</span>
+                                        <span id="range-val-1">16/20</span>
+                                    </div>
+                                    <input type="range" id="grade-slider-1" min="10" max="20" value="16" class="w-full accent-upkol-jaune cursor-pointer" oninput="calculateSimulatorGPA()">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Base de données</span>
+                                        <span id="range-val-2">17/20</span>
+                                    </div>
+                                    <input type="range" id="grade-slider-2" min="10" max="20" value="17" class="w-full accent-upkol-jaune cursor-pointer" oninput="calculateSimulatorGPA()">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Algorithmique</span>
+                                        <span id="range-val-3">15/20</span>
+                                    </div>
+                                    <input type="range" id="grade-slider-3" min="10" max="20" value="15" class="w-full accent-upkol-jaune cursor-pointer" oninput="calculateSimulatorGPA()">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Mathématiques</span>
+                                        <span id="range-val-4">18/20</span>
+                                    </div>
+                                    <input type="range" id="grade-slider-4" min="10" max="20" value="18" class="w-full accent-upkol-jaune cursor-pointer" oninput="calculateSimulatorGPA()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-3xl text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Moyenne simulée</p>
+                            <h3 id="simulator-avg-gpa" class="text-4xl font-black text-slate-950 mt-1">16.5 /20</h3>
+                            <span id="simulator-gpa-mention" class="inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200">Distinction d'excellence</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 4 : FRAIS & TRÉSORERIE              -->
+            <!-- ========================================== -->
+            <div id="tab-payments" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Statut des paiements -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                            <div>
+                                <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Mes Versements Académiques</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Suivi du recouvrement annuel • Année académique 2026</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-green-100 text-green-700 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-check-double text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">Première Tranche - Droits de base</h4>
+                                            <p class="text-[10px] text-slate-500">Payé par M-Pesa le 15/02/2026 • Réf : MP-2026-8874</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-black bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-xl uppercase">200$ Acquis</span>
+                                        <button onclick="downloadPaymentReceipt('Première Tranche', '200$')" class="text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-download"></i></button>
+                                    </div>
+                                </div>
+
+                                <div id="tranche-2-card" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="tranche-2-icon" class="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-hourglass-half text-lg animate-pulse"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">Deuxième Tranche - Examens Semestriels</h4>
+                                            <p id="tranche-2-status-desc" class="text-[10px] text-rose-500 font-bold">À solder avant le début des épreuves finales</p>
+                                        </div>
+                                    </div>
+                                    <div id="tranche-2-actions" class="flex items-center space-x-2">
+                                        <span class="text-xs font-black bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-xl uppercase">150$ En attente</span>
+                                        <button onclick="openPaymentModal()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[9px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-sm transition-all">Solder</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel d'information sur les frais -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <h4 class="font-black text-xs uppercase text-slate-400">Renseignements comptables</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Droits d'Inscriptions 2026</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">Les frais d'inscription doivent être payés via les passerelles agrées par le secrétariat administratif. Conservez précieusement vos reçus de délibérations pour accéder aux salles d'examens.</p>
+                        </div>
+
+                        <div class="bg-amber-50 border border-yellow-200 p-4 rounded-2xl flex items-start space-x-3">
+                            <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
+                            <div>
+                                <h5 class="font-black text-[10px] uppercase text-slate-950 mb-0.5">Exigence rectorale</h5>
+                                <p class="text-[10px] text-slate-600 font-medium">L'accès à la session d'évaluation du Semestre 1 est conditionnée par l'apurement de la tranche 2 de 150$.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 5 : CALENDRIER ACADÉMIQUE           -->
+            <!-- ========================================== -->
+            <div id="tab-calendar" class="tab-pane space-y-8 hidden">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Mon Emploi du temps officiel</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Semaine Universitaire Actuelle</h3>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-700 font-black px-4 py-1.5 rounded-xl uppercase">Juin 2026</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <!-- Jour 1 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                            <h4 class="font-black text-xs uppercase text-slate-400 pb-2 border-b border-slate-200">Lundi</h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                <span class="text-[9px] font-black text-amber-600">08:30 - 11:30</span>
+                                <h5 class="font-black text-xs text-slate-900 uppercase mt-0.5">Architecture</h5>
+                                <p class="text-[10px] text-slate-500 mt-1">S. B4 • Salle B4</p>
+                            </div>
+                        </div>
+
+                        <!-- Jour 2 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                            <h4 class="font-black text-xs uppercase text-slate-400 pb-2 border-b border-slate-200">Mardi</h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                <span class="text-[9px] font-black text-amber-600">12:00 - 15:00</span>
+                                <h5 class="font-black text-xs text-slate-900 uppercase mt-0.5">Base de données</h5>
+                                <p class="text-[10px] text-slate-500 mt-1">S. Labo • Labo-Info</p>
+                            </div>
+                        </div>
+
+                        <!-- Jour 3 -->
+                        <div class="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100 space-y-3">
+                            <h4 class="font-black text-xs uppercase text-amber-700 pb-2 border-b border-yellow-100">Mercredi</h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                <span class="text-[9px] font-black text-amber-600">15:30 - 18:30</span>
+                                <h5 class="font-black text-xs text-slate-900 uppercase mt-0.5">Algorithmes</h5>
+                                <p class="text-[10px] text-slate-500 mt-1">S. A1 • Salle A1</p>
+                            </div>
+                        </div>
+
+                        <!-- Jour 4 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                            <h4 class="font-black text-xs uppercase text-slate-400 pb-2 border-b border-slate-200">Jeudi</h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                <span class="text-[9px] font-black text-amber-600">08:30 - 11:30</span>
+                                <h5 class="font-black text-xs text-slate-900 uppercase mt-0.5">Anglais Tech.</h5>
+                                <p class="text-[10px] text-slate-500 mt-1">S. B2 • Bâtiment A</p>
+                            </div>
+                        </div>
+
+                        <!-- Jour 5 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                            <h4 class="font-black text-xs uppercase text-slate-400 pb-2 border-b border-slate-200">Vendredi</h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                                <span class="text-[9px] font-black text-amber-600">12:00 - 15:00</span>
+                                <h5 class="font-black text-xs text-slate-900 uppercase mt-0.5">Mathématiques</h5>
+                                <p class="text-[10px] text-slate-500 mt-1">S. A4 • Amphi-B</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 6 : CARTE ÉTUDIANT 3D              -->
+            <!-- ========================================== -->
+            <div id="tab-idcard" class="tab-pane space-y-8 hidden">
+                <div class="flex flex-col items-center justify-center space-y-6 py-6">
+                    <div class="text-center">
+                        <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Carte Digitale d'Identité Étudiant</h3>
+                        <p class="text-xs text-slate-400 font-bold uppercase mt-1">Surnommé la "Carte Universitaire Intelligente" • Appuyez pour retourner</p>
+                    </div>
+
+                    <!-- Carte 3D Interactive Container -->
+                    <div class="card-container w-80 h-[480px] cursor-pointer" onclick="toggleCardFlip()">
+                        <div class="card-inner w-full h-full relative" id="student-card-inner">
+                            
+                            <!-- Recto de la carte -->
+                            <div class="card-front bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -right-16 -top-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-upkol-jaune rounded flex items-center justify-center text-slate-950">
+                                            <i class="fas fa-university text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md">
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                            <i class="fas fa-user-graduate text-5xl"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h3 class="font-black text-lg tracking-tight uppercase" id="idcard-name">Jean Mukendi</h3>
+                                        <p class="text-[9px] text-upkol-jaune font-bold tracking-widest uppercase mt-0.5">Licence 1 - Informatique</p>
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-800 pt-4 flex justify-between items-end text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <div>
+                                        <span>Matricule</span>
+                                        <p class="text-white font-black text-xs mt-0.5">UPK-2026-9874</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span>Statut</span>
+                                        <p class="text-emerald-500 font-black text-xs mt-0.5">Inscrit Actif</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verso de la carte -->
+                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="text-center border-b border-slate-800 pb-4">
+                                    <h4 class="font-black text-xs text-upkol-jaune uppercase tracking-wider">Charte Campus & QR-Code</h4>
+                                    <p class="text-[8px] text-slate-400 uppercase mt-0.5">Scannez pour valider la présence aux examens</p>
+                                </div>
+
+                                <div class="bg-white p-4 rounded-2xl w-40 h-40 mx-auto flex items-center justify-center shadow-inner">
+                                    <!-- QR Code (SVG généré ou image fictive de contrôle) -->
+                                    <svg class="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
+                                        <path d="M10,10 h30 v30 h-30 z M15,15 h20 v20 h-20 z M22,22 h6 v6 h-6 z" />
+                                        <path d="M60,10 h30 v30 h-30 z M65,15 h20 v20 h-20 z M72,22 h6 v6 h-6 z" />
+                                        <path d="M10,60 h30 v30 h-30 z M15,65 h20 v20 h-20 z M22,72 h6 v6 h-6 z" />
+                                        <path d="M50,50 h10 v10 h-10 z M60,60 h10 v10 h-10 z M50,70 h15 v15 h-15 z" />
+                                        <path d="M75,50 h15 v10 h-15 z M80,75 h10 v15 h-10 z M65,55 h8 v8 h-8 z" />
+                                    </svg>
+                                </div>
+
+                                <div class="text-[8px] text-slate-400 font-bold leading-relaxed text-center uppercase tracking-wide">
+                                    <p>Cette carte est personnelle et incessible.</p>
+                                    <p class="mt-1 text-slate-500">Secrétariat Général d'UPKOL • Kolwezi, RD Congo</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- INTERACTIVE PAYMENT MODAL -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="payment-card">
+            <h3 class="text-base font-black text-slate-900 uppercase tracking-tight">Solder ma Tranche 2 - 150$</h3>
+            <p class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Veuillez choisir votre passerelle de facturation mobile money ou bancaire.</p>
+            
+            <div class="space-y-3 mt-4">
+                <button onclick="selectPaymentMethod('M-Pesa')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-red-500 hover:bg-red-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">Airtel Money / M-Pesa (Vodacom)</span>
+                    <i class="fas fa-mobile-screen-button text-red-500 text-lg"></i>
+                </button>
+                <button onclick="selectPaymentMethod('Orange Money')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-orange-500 hover:bg-orange-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">Orange Money</span>
+                    <i class="fas fa-wallet text-orange-500 text-lg"></i>
+                </button>
+                <button onclick="selectPaymentMethod('Carte Visa/MasterCard')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">Carte Bancaire Visa / MasterCard</span>
+                    <i class="fas fa-credit-card text-blue-500 text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex space-x-2 mt-6 justify-end border-t border-slate-100 pt-4">
+                <button onclick="closePaymentModal()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM DIALOGS FOR APP INTEGRITY -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modal-card">
+            <h3 id="modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Notification</h3>
+            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Détail du message.</p>
+
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button id="modal-cancel-btn" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+                <button id="modal-confirm-btn" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONSTANTES & SYNCHRONISATION ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let studentLoggedUser = null;
+
+        // --- INTERACTIVITY LOGIC ---
+        const studentGrades = [
+            { course: "Architecture des Ordinateurs", credits: 6, grade: 16 },
+            { course: "Base de données avancées", credits: 6, grade: 17 },
+            { course: "Algorithmique & Structures complexes", credits: 8, grade: 15 },
+            { course: "Anglais Technique Informatique", credits: 4, grade: 14 },
+            { course: "Mathématiques discrètes & logique", credits: 6, grade: 18 }
+        ];
+
+        // Custom dialogues
+        function showCustomConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const modalCard = document.getElementById('modal-card');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-95');
+            }, 10);
+
+            const close = () => {
+                modal.classList.add('opacity-0');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            confirmBtn.onclick = () => {
+                close();
+                onConfirm();
+            };
+
+            cancelBtn.onclick = close;
+        }
+
+        // NAVIGATION ENTRE ONGLETS
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+        }
+
+        // CHARGEMENT DU DOSSIER DES NOTES
+        function renderGradesTable() {
+            const tbody = document.getElementById('student-grades-table');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            studentGrades.forEach(g => {
+                let colorClass = 'text-slate-600 bg-slate-100';
+                let mention = 'Satis.';
+                if (g.grade >= 16) {
+                    colorClass = 'text-green-700 bg-green-50 border border-green-100';
+                    mention = 'Distinction';
+                } else if (g.grade >= 14) {
+                    colorClass = 'text-blue-700 bg-blue-50 border border-blue-100';
+                    mention = 'Satisfaisant';
+                }
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all duration-200">
+                        <td class="px-6 py-4 font-black text-slate-900">${g.course}</td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-500">${g.credits} Credits</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${g.grade}/20</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-[10px] font-black uppercase tracking-wider ${g.grade >= 16 ? 'text-green-700' : 'text-slate-600'}">${mention}</span>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        // CALCULATION DU SIMULATEUR DE MOYENNE
+        function calculateSimulatorGPA() {
+            const val1 = parseInt(document.getElementById('grade-slider-1').value);
+            const val2 = parseInt(document.getElementById('grade-slider-2').value);
+            const val3 = parseInt(document.getElementById('grade-slider-3').value);
+            const val4 = parseInt(document.getElementById('grade-slider-4').value);
+
+            document.getElementById('range-val-1').innerText = `${val1}/20`;
+            document.getElementById('range-val-2').innerText = `${val2}/20`;
+            document.getElementById('range-val-3').innerText = `${val3}/20`;
+            document.getElementById('range-val-4').innerText = `${val4}/20`;
+
+            const average = ((val1 + val2 + val3 + val4) / 4).toFixed(1);
+            document.getElementById('simulator-avg-gpa').innerText = `${average} /20`;
+
+            const label = document.getElementById('simulator-gpa-mention');
+            if (average >= 16) {
+                label.innerText = 'Distinction d\'excellence';
+                label.className = 'inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200';
+            } else if (average >= 14) {
+                label.innerText = 'Satisfaction distinguée';
+                label.className = 'inline-block mt-2 bg-blue-50 text-blue-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-blue-200';
+            } else {
+                label.innerText = 'Admis Simple';
+                label.className = 'inline-block mt-2 bg-slate-50 text-slate-600 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-slate-200';
+            }
+        }
+
+        // REMISE DES DEVOIRS AVEC PROGRESSION
+        function submitAssignment(event) {
+            event.preventDefault();
+            const course = document.getElementById('assignment-course').value;
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressPercent = document.getElementById('upload-percent');
+
+            progressContainer.classList.remove('hidden');
+            let percentage = 0;
+
+            const interval = setInterval(() => {
+                percentage += 20;
+                progressBar.style.width = `${percentage}%`;
+                progressPercent.innerText = `${percentage}%`;
+
+                if (percentage >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showCustomToast(`Le TP pour "${course}" a été déposé avec succès !`, 'success');
+                        document.getElementById('assignment-form').reset();
+                        progressContainer.classList.add('hidden');
+                        progressBar.style.width = `0%`;
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        // GESTION DU RECOUVREMENT DES FRAIS
+        function openPaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function selectPaymentMethod(method) {
+            closePaymentModal();
+            showCustomToast(`Initialisation de la passerelle ${method}...`, 'info');
+            setTimeout(() => {
+                // Solder la tranche locale
+                const badge = document.getElementById('badge-payment');
+                if (badge) badge.remove();
+
+                const costDue = document.getElementById('stat-fees-due');
+                if (costDue) costDue.innerHTML = `0$ <span class="text-xs text-green-500">Apûré</span>`;
+
+                const tr2Card = document.getElementById('tranche-2-card');
+                const tr2Icon = document.getElementById('tranche-2-icon');
+                const tr2Status = document.getElementById('tranche-2-status-desc');
+                const tr2Actions = document.getElementById('tranche-2-actions');
+
+                if (tr2Card) {
+                    tr2Card.classList.add('bg-green-50/50', 'border-green-200');
+                    tr2Icon.className = 'w-10 h-10 bg-green-100 text-green-700 rounded-xl flex items-center justify-center';
+                    tr2Icon.innerHTML = '<i class="fas fa-check-double text-lg"></i>';
+                    tr2Status.className = 'text-[10px] text-green-600 font-black uppercase';
+                    tr2Status.innerText = 'Apûré via ' + method;
+                    tr2Actions.innerHTML = `
+                        <span class="text-xs font-black bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-xl uppercase">150$ Acquis</span>
+                        <button onclick="downloadPaymentReceipt('Deuxième Tranche', '150$')" class="text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-download"></i></button>
+                    `;
+                }
+
+                showCustomToast("Tranche 2 acquittée et synchronisée avec le Rectorat !", "success");
+            }, 1500);
+        }
+
+        function downloadPaymentReceipt(tranche, montant) {
+            showCustomToast(`Génération du reçu de versement pour la ${tranche} (${montant})...`, 'info');
+        }
+
+        // CARTE ÉTUDIANT RETOURNEMENT
+        function toggleCardFlip() {
+            const cardInner = document.getElementById('student-card-inner');
+            if (cardInner) {
+                cardInner.parentNode.classList.toggle('flipped');
+            }
+        }
+
+        // --- AUTHENTICATION ---
+        document.getElementById('btn-login-student').onclick = function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (email.toLowerCase() === "jean.mukendi@upkol.cd" && pass === "Pass1234") {
+                const gateway = document.getElementById('login-gateway');
+                gateway.style.opacity = '0';
+                
+                studentLoggedUser = { name: "Jean Mukendi", matricule: "UPK-2026-9874", promotion: "Licence 1 - Informatique" };
+                localStorage.setItem('connectedStudent', JSON.stringify(studentLoggedUser));
+
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                    showCustomToast("Bienvenue sur votre portail d'études, Jean Mukendi !", 'success');
+                }, 400);
+            } else {
+                showCustomToast("Identifiants de démo non reconnus.", 'error');
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('connectedStudent');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                showCustomToast("Déconnexion réussie.", "info");
+            }, 10);
+        }
+
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // --- EXECUTION INITIALE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedStudent');
+            if (saved) {
+                studentLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+            }
+
+            showTab('overview');
+            renderGradesTable();
+            calculateSimulatorGPA();
+        });
+
+        // TOAST NOTIFICATIONS HELPER
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

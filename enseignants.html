@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Enseignant - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Chart.js for Teacher's Analytical Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        /* Interactive Card Hover effects */
+        .card-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-animate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08); }
+
+        /* Custom Scrollbar for list panels */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (TEACHER LOGIN)    -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-chalkboard-teacher text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Portail Enseignant</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Espace d'Enseignement et de Recherche</span>
+            </div>
+
+            <div class="w-full space-y-4 mb-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Académique</label>
+                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: kalala.prof@upkol.cd" value="kalala.prof@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mot de passe de sécurité</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Utilisez les identifiants pré-remplis pour charger instantanément le dossier du Dr. Kalala, titulaire du cours de Bases de Données.</span>
+                </div>
+            </div>
+
+            <button id="btn-login-teacher" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                Ouvrir ma chaire académique
+                <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR ENSEIGNANT                        -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL FACULTÉ</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Espace Enseignant</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Chaire académique</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-pie mr-3 w-5 text-lg"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-courses" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('courses')">
+                <i class="fas fa-book-open mr-3 w-5 text-lg"></i> Médiathèque & Supports
+            </a>
+
+            <a href="#" id="menu-grading" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('grading')">
+                <i class="fas fa-edit mr-3 w-5 text-lg"></i> Saisie des Notes
+            </a>
+
+            <a href="#" id="menu-attendance" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('attendance')">
+                <i class="fas fa-user-check mr-3 w-5 text-lg"></i> Appel & Présences
+                <span id="badge-attendance" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full">Aujourd'hui</span>
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Communication & Administration</div>
+
+            <a href="#" id="menu-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('messaging')">
+                <i class="fas fa-envelope-open-text mr-3 w-5 text-lg"></i> Messagerie & Avis
+                <span class="ml-auto bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">New</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- ACADEMIC HEADER -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Portail <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Académique</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="teacher-header-name" class="text-xs font-black text-slate-900 uppercase">Dr. Kalala</p>
+                    <p id="teacher-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Professeur Ordinaire</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-tie text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE BODY CONTENT -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: VUE D'ENSEMBLE (OVERVIEW)           -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Classes Actives</p>
+                                <h3 class="text-3xl font-black text-slate-900">3 Auditoires</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
+                            <span>L1 Info, L2 Info, G3 Info</span>
+                            <span class="text-blue-500 font-black">S1 2026</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Moyenne Promotionnelle</p>
+                                <h3 class="text-3xl font-black text-slate-900">14.6 <span class="text-xs text-slate-400">/20</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-chart-line text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
+                            <i class="fas fa-arrow-trend-up mr-2 text-xs"></i> +1.2pts par rapport au Semestre Précédent
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Taux d'Assiduité</p>
+                                <h3 class="text-3xl font-black text-slate-900">92.4%</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-clipboard-user text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
+                            <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i> Excellent engagement global
+                        </div>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">TPs à corriger</p>
+                                <h3 id="stat-pending-grading" class="text-3xl font-black text-slate-900">5 Devoirs</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-file-signature text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-rose-500 font-bold">
+                            <i class="fas fa-hourglass-half mr-2 text-xs animate-pulse"></i> Dépôts d'exercices à délibérer
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARTS & PLANNING -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Graph: Performance Tracking -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Évolution trimestrielle</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Taux de présence & Résultats des TPs</h3>
+                            </div>
+                            <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Données Réelles</span>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="teacherOverviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Schedule / Planning -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+                        <div class="mb-6">
+                            <h4 class="font-black text-xs uppercase text-slate-400">Emploi du temps</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Mes cours de la semaine</h3>
+                        </div>
+                        <div class="space-y-4 flex-grow overflow-y-auto max-h-80 pr-1">
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Lundi • 12:00 - 15:00</span>
+                                <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">Bases de données avancées</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">L1 Informatique • Salle Labo-Info</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Mercredi • 08:30 - 11:30</span>
+                                <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">Modélisation UML & Conceptuelle</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">L2 Technologie • Salle B4</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Vendredi • 14:00 - 17:00</span>
+                                <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">Administration des SGBD</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">G3 Informatique • Amphi-B</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: MÉDIATHÈQUE & SUPPORTS (COURSES)    -->
+            <!-- ========================================== -->
+            <div id="tab-courses" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Media / Supports list -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight mb-6">Mes Publications de Supports</h3>
+                            
+                            <div class="space-y-4" id="uploaded-supports-list">
+                                <!-- Dynamic support elements injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Diffusion de cours</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Mettre en ligne un support</h3>
+                        </div>
+
+                        <form id="support-upload-form" class="space-y-4" onsubmit="uploadSupport(event)">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Titre du Support</label>
+                                <input type="text" id="upload-title" required placeholder="ex: Chapitre 3 - Modèle Relationnel" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                            </div>
+
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Auditoire cible</label>
+                                <select id="upload-class" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                    <option value="L1 Informatique">L1 Informatique (Bases de données)</option>
+                                    <option value="L2 Technologie">L2 Technologie (Modélisation UML)</option>
+                                    <option value="G3 Informatique">G3 Informatique (SGBD SQL)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Type de Document</label>
+                                <div class="flex space-x-3">
+                                    <label class="flex items-center text-xs font-bold bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl cursor-pointer w-1/2">
+                                        <input type="radio" name="support-type" value="pdf" checked class="mr-2 accent-upkol-jaune" onchange="toggleFormInputs('pdf')">
+                                        <i class="fas fa-file-pdf text-red-500 mr-2"></i> Support PDF
+                                    </label>
+                                    <label class="flex items-center text-xs font-bold bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl cursor-pointer w-1/2">
+                                        <input type="radio" name="support-type" value="video" class="mr-2 accent-upkol-jaune" onchange="toggleFormInputs('video')">
+                                        <i class="fas fa-video text-blue-500 mr-2"></i> Vidéo (YouTube)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- PDF File Selector -->
+                            <div id="pdf-input-group">
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Fichier de cours (PDF)</label>
+                                <input type="file" id="upload-file" class="w-full text-[10px] file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-upkol-jaune file:text-black cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                            </div>
+
+                            <!-- YouTube Video Selector -->
+                            <div id="video-input-group" class="hidden">
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Lien de la vidéo YouTube</label>
+                                <input type="url" id="upload-video-url" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune" oninput="previewVideoEmbed()">
+                                <div id="video-preview-box" class="hidden mt-3 rounded-xl overflow-hidden aspect-video bg-black shadow-inner"></div>
+                            </div>
+
+                            <!-- Upload Progression Bar -->
+                            <div id="upload-progress-container" class="hidden space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase">
+                                    <span>Upload du support académique...</span>
+                                    <span id="upload-percent">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div id="upload-progress-bar" class="bg-upkol-jaune h-full w-0 transition-all duration-300"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Publier le support
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: SAISIE DES NOTES (GRADING CENTER)   -->
+            <!-- ========================================== -->
+            <div id="tab-grading" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Student Grade Input Grid -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Saisie des points du TP / Examen</h3>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">L1 Informatique • Bases de Données relationnelles</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="saveDraftGrades()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all">
+                                        <i class="fas fa-floppy-disk mr-2"></i> Brouillon
+                                    </button>
+                                    <button onclick="publishGradesToRectorat()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                                        <i class="fas fa-paper-plane mr-2"></i> Transmettre
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Grade Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left min-w-[550px]">
+                                    <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-4">Nom Complet de l'Étudiant</th>
+                                            <th class="px-6 py-4 text-center">TPs / Devoirs (/20)</th>
+                                            <th class="px-6 py-4 text-center">Examens (/20)</th>
+                                            <th class="px-6 py-4 text-center">Moyenne (/20)</th>
+                                            <th class="px-6 py-4 text-right">Mention Provisoire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="grading-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Side Stats & Real-time Class Indicators -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Statistiques en direct</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Répartition de l'auditoire</h3>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Stat Indicator 1 -->
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Taux d'admission (Moyenne >= 10/20)</span>
+                                        <span id="label-pass-rate">100%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-pass-rate" class="bg-emerald-500 h-full w-full transition-all duration-300"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Stat Indicator 2 -->
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Distinctions (Moyenne >= 16/20)</span>
+                                        <span id="label-distinction-rate">60%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div id="bar-distinction-rate" class="bg-blue-500 h-full w-[60%] transition-all duration-300"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Class summary -->
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-3xl text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Moyenne Générale de la Classe</p>
+                            <h3 id="class-average-gpa" class="text-4xl font-black text-slate-950 mt-1">16.3 /20</h3>
+                            <span id="class-average-mention" class="inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200">Excellent Niveau Académique</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: APPEL & PRÉSENCES (ATTENDANCE)      -->
+            <!-- ========================================== -->
+            <div id="tab-attendance" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Registre des Présences</h3>
+                            <p class="text-[10px] text-amber-600 font-bold uppercase mt-1">Lundi 15 Juin 2026 • Séance de Bases de données</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right hidden sm:block">
+                                <span class="text-[10px] font-black text-slate-400 uppercase">Taux de présence du cours</span>
+                                <p id="class-attendance-percent" class="text-sm font-black text-emerald-600">100%</p>
+                            </div>
+                            <button onclick="submitAttendanceSheet()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-sm">
+                                <i class="fas fa-clipboard-check mr-2"></i> Valider la fiche de présence
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[550px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Nom de l'Étudiant</th>
+                                    <th class="px-6 py-4">Matricule</th>
+                                    <th class="px-6 py-4 text-center">Présence / Retard / Absence</th>
+                                    <th class="px-6 py-4 text-right">Statut instantané</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <!-- Injected dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 5: MESSAGERIE & AVIS (MESSAGING)       -->
+            <!-- ========================================== -->
+            <div id="tab-messaging" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Student query inbox -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col h-[550px]">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Questions de l'auditoire</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Boîte de messagerie active</h3>
+                        </div>
+
+                        <!-- Message Lists -->
+                        <div class="flex-grow overflow-y-auto space-y-4 pr-1" id="student-messages-list">
+                            <!-- Dynamic messages injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Send global announcement -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Tableau d'affichage numérique</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Publier un avis général</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titre du Communiqué</label>
+                                <input type="text" id="announcement-title" placeholder="Ex: Report de la séance de TP" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Auditoire destinataire</label>
+                                <select id="announcement-target" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                    <option value="all">Tous mes auditoires</option>
+                                    <option value="L1 Informatique">L1 Informatique uniquement</option>
+                                    <option value="L2 Technologie">L2 Technologie uniquement</option>
+                                    <option value="G3 Informatique">G3 Informatique uniquement</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Contenu de l'avis / Consignes</label>
+                                <textarea id="announcement-body" rows="6" placeholder="Par la présente, les étudiants sont avisés que..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune"></textarea>
+                            </div>
+
+                            <button onclick="publishAnnouncement()" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-xs font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
+                                <i class="fas fa-bullhorn mr-2"></i> Diffuser le communiqué
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- CUSTOM INTERACTIVE DIALOG MODAL -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modal-card">
+            <h3 id="modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Notification Académique</h3>
+            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Description de la modale.</p>
+            
+            <!-- Prompt Input Box (used for answer entries) -->
+            <div id="modal-input-container" class="mt-4 hidden">
+                <textarea id="modal-input" rows="3" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune" placeholder="Votre réponse..."></textarea>
+            </div>
+
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button id="modal-cancel-btn" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+                <button id="modal-confirm-btn" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGES FOR DYNAMIC APP FEEDBACK -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- CONSTANTS & SYNCHRONIZATION ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let teacherLoggedUser = null;
+        let overviewChartInstance = null;
+
+        // Mock Students array that links with "Jean Mukendi" and "superAdminUsers" for direct integration
+        let studentsList = [
+            { id: "1", name: "Jean Mukendi", matricule: "UPK-2026-9874", tp: 16, exam: 17, attendance: "present" },
+            { id: "2", name: "Therese Kabange", matricule: "UPK-2026-1122", tp: 15, exam: 16, attendance: "present" },
+            { id: "3", name: "Dieudonné Lumbu", matricule: "UPK-2026-4433", tp: 12, exam: 13, attendance: "present" },
+            { id: "4", name: "Rachel Tshiza", matricule: "UPK-2026-9900", tp: 14, exam: 15, attendance: "late" },
+            { id: "5", name: "Patient Katanga", matricule: "UPK-2026-5544", tp: 17, exam: 18, attendance: "absent" }
+        ];
+
+        let uploadedSupports = [
+            { id: 1, title: "Modélisation Conceptuelle - Entités & Associations.pdf", type: "pdf", targetClass: "L1 Informatique", size: "2.4 MB", date: "10/06/2026" },
+            { id: 2, title: "Guide complet sur la Normalisation 3NF.pdf", type: "pdf", targetClass: "L1 Informatique", size: "1.8 MB", date: "12/06/2026" },
+            { id: 3, title: "Tutoriel SGBD PostGreSQL & Oracle", type: "video", url: "https://www.youtube.com/watch?v=F2Yv969G_W0", targetClass: "G3 Informatique", date: "14/06/2026" }
+        ];
+
+        let studentMessages = [
+            { id: 1, sender: "Jean Mukendi", course: "L1 Informatique", date: "Il y a 10 min", query: "Bonjour Professeur, concernant le TP n°2 de SGBD, doit-on utiliser MySQL ou PostgreSQL pour modéliser notre dictionnaire de données ?", replies: [] },
+            { id: 2, sender: "Rachel Tshiza", course: "L1 Informatique", date: "Il y a 2 heures", query: "Cher Docteur, j'ai eu une panne d'électricité ce matin, est-il encore possible de déposer le livrable PDF sur mon portail d'études ?", replies: [] }
+        ];
+
+        // CUSTOM DIALOG HELPERS
+        function showCustomConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const modalCard = document.getElementById('modal-card');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const inputContainer = document.getElementById('modal-input-container');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+            inputContainer.classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-95');
+            }, 10);
+
+            const close = () => {
+                modal.classList.add('opacity-0');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            confirmBtn.onclick = () => {
+                close();
+                onConfirm();
+            };
+
+            cancelBtn.onclick = close;
+        }
+
+        function showCustomPrompt(title, message, placeholder, onSubmit) {
+            const modal = document.getElementById('custom-modal');
+            const modalCard = document.getElementById('modal-card');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const inputContainer = document.getElementById('modal-input-container');
+            const input = document.getElementById('modal-input');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+            inputContainer.classList.remove('hidden');
+            input.value = '';
+            input.placeholder = placeholder;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-95');
+                input.focus();
+            }, 10);
+
+            const close = () => {
+                modal.classList.add('opacity-0');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            confirmBtn.onclick = () => {
+                const val = input.value.trim();
+                if (val) {
+                    close();
+                    onSubmit(val);
+                } else {
+                    showCustomToast("La réponse ne peut pas être vide.", "error");
+                }
+            };
+
+            cancelBtn.onclick = close;
+        }
+
+        // TOAST NOTIFICATION HELPER
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // NAVIGATION MANAGER
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+
+            // Specific Tab Initializers
+            if (tabId === 'overview') {
+                setTimeout(renderTeacherOverviewChart, 100);
+            }
+        }
+
+        // --- TAB 1: VUE D'ENSEMBLE ANALYTICS ---
+        function renderTeacherOverviewChart() {
+            const ctx = document.getElementById('teacherOverviewChart');
+            if (!ctx) return;
+
+            if (overviewChartInstance) {
+                overviewChartInstance.destroy();
+            }
+
+            overviewChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4', 'Semaine 5', 'Semaine 6'],
+                    datasets: [
+                        {
+                            label: 'Taux de présence (%)',
+                            data: [88, 92, 90, 94, 91, 95],
+                            borderColor: '#FFD700',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Moyenne des TPs (/20)',
+                            data: [13.2, 14.1, 13.8, 14.8, 14.2, 14.6],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'transparent',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- TAB 2: MÉDIATHÈQUE & SUPPORTS ---
+        function renderSupportsList() {
+            const container = document.getElementById('uploaded-supports-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+            uploadedSupports.forEach(support => {
+                const isPdf = support.type === 'pdf';
+                const iconClass = isPdf ? 'fa-file-pdf text-red-500' : 'fa-video text-blue-500';
+                const actionButton = isPdf 
+                    ? `<button onclick="showCustomToast('Téléchargement du support...', 'info')" class="text-xs bg-white hover:bg-upkol-jaune border border-slate-200 rounded-xl px-4 py-2 font-black uppercase transition-all shadow-sm">Télécharger</button>`
+                    : `<button onclick="window.open('${support.url}', '_blank')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 font-black uppercase transition-all shadow-md">Regarder</button>`;
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 bg-slate-50 border border-slate-200 hover:border-upkol-jaune rounded-2xl flex items-center justify-between transition-all card-animate">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <i class="fas ${iconClass} text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-900">${support.title}</h4>
+                                <p class="text-[10px] text-slate-500">${support.targetClass} • Publié le ${support.date} ${isPdf ? '• ' + support.size : ''}</p>
+                            </div>
+                        </div>
+                        ${actionButton}
+                    </div>
+                `);
+            });
+        }
+
+        function toggleFormInputs(type) {
+            const pdfGroup = document.getElementById('pdf-input-group');
+            const videoGroup = document.getElementById('video-input-group');
+            if (type === 'pdf') {
+                pdfGroup.classList.remove('hidden');
+                videoGroup.classList.add('hidden');
+            } else {
+                pdfGroup.classList.add('hidden');
+                videoGroup.classList.remove('hidden');
+            }
+        }
+
+        function previewVideoEmbed() {
+            const urlInput = document.getElementById('upload-video-url').value;
+            const previewBox = document.getElementById('video-preview-box');
+            if (!previewBox) return;
+
+            let videoId = '';
+            if (urlInput.includes('youtube.com/watch?v=')) {
+                videoId = urlInput.split('v=')[1].split('&')[0];
+            } else if (urlInput.includes('youtu.be/')) {
+                videoId = urlInput.split('youtu.be/')[1].split('?')[0];
+            }
+
+            if (videoId) {
+                previewBox.classList.remove('hidden');
+                previewBox.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                previewBox.classList.add('hidden');
+                previewBox.innerHTML = '';
+            }
+        }
+
+        function uploadSupport(event) {
+            event.preventDefault();
+            const title = document.getElementById('upload-title').value;
+            const targetClass = document.getElementById('upload-class').value;
+            const type = document.querySelector('input[name="support-type"]:checked').value;
+            
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressPercent = document.getElementById('upload-percent');
+
+            progressContainer.classList.remove('hidden');
+            let percentage = 0;
+
+            const interval = setInterval(() => {
+                percentage += 20;
+                progressBar.style.width = `${percentage}%`;
+                progressPercent.innerText = `${percentage}%`;
+
+                if (percentage >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const newSupport = {
+                            id: Date.now(),
+                            title: type === 'pdf' ? `${title}.pdf` : title,
+                            type: type,
+                            targetClass: targetClass,
+                            size: type === 'pdf' ? "1.4 MB" : null,
+                            url: type === 'video' ? document.getElementById('upload-video-url').value : null,
+                            date: new Date().toLocaleDateString('fr-FR')
+                        };
+
+                        uploadedSupports.unshift(newSupport);
+                        renderSupportsList();
+                        showCustomToast("Support de cours mis en ligne et partagé !", "success");
+                        
+                        document.getElementById('support-upload-form').reset();
+                        document.getElementById('video-preview-box').classList.add('hidden');
+                        progressContainer.classList.add('hidden');
+                        progressBar.style.width = `0%`;
+                    }, 500);
+                }
+            }, 250);
+        }
+
+        // --- TAB 3: SAISIE DES NOTES ---
+        function renderGradingTable() {
+            const tbody = document.getElementById('grading-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            studentsList.forEach(student => {
+                const studentAvg = ((student.tp + student.exam) / 2).toFixed(1);
+                let mentionColor = 'text-slate-600 bg-slate-100';
+                let mention = 'Ajourné';
+
+                if (studentAvg >= 16) {
+                    mentionColor = 'text-green-700 bg-green-50 border border-green-100';
+                    mention = 'Distinction';
+                } else if (studentAvg >= 14) {
+                    mentionColor = 'text-blue-700 bg-blue-50 border border-blue-100';
+                    mention = 'Grand Dist.';
+                } else if (studentAvg >= 10) {
+                    mentionColor = 'text-slate-700 bg-slate-50 border border-slate-200';
+                    mention = 'Satisfaisant';
+                }
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${student.name}</td>
+                        <td class="px-6 py-4 text-center">
+                            <input type="number" min="0" max="20" value="${student.tp}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune" onchange="updateLocalGrade('${student.id}', 'tp', this.value)">
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <input type="number" min="0" max="20" value="${student.exam}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune" onchange="updateLocalGrade('${student.id}', 'exam', this.value)">
+                        </td>
+                        <td class="px-6 py-4 text-center font-black text-slate-800">
+                            <span id="avg-${student.id}">${studentAvg}/20</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span id="mention-${student.id}" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${mentionColor}">${mention}</span>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            calculateClassStats();
+        }
+
+        function updateLocalGrade(studentId, key, value) {
+            const student = studentsList.find(s => s.id === studentId);
+            if (student) {
+                student[key] = parseFloat(value) || 0;
+                
+                // Recalculate average row
+                const studentAvg = ((student.tp + student.exam) / 2).toFixed(1);
+                document.getElementById(`avg-${studentId}`).innerText = `${studentAvg}/20`;
+                
+                // Recalculate mention
+                const mentionEl = document.getElementById(`mention-${studentId}`);
+                let mentionColor = 'text-slate-600 bg-slate-100';
+                let mention = 'Ajourné';
+
+                if (studentAvg >= 16) {
+                    mentionColor = 'text-green-700 bg-green-50 border border-green-100';
+                    mention = 'Distinction';
+                } else if (studentAvg >= 14) {
+                    mentionColor = 'text-blue-700 bg-blue-50 border border-blue-100';
+                    mention = 'Grand Dist.';
+                } else if (studentAvg >= 10) {
+                    mentionColor = 'text-slate-700 bg-slate-50 border border-slate-200';
+                    mention = 'Satisfaisant';
+                }
+
+                mentionEl.className = `text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${mentionColor}`;
+                mentionEl.innerText = mention;
+
+                calculateClassStats();
+            }
+        }
+
+        function calculateClassStats() {
+            let totalAvg = 0;
+            let totalPassed = 0;
+            let totalDistinction = 0;
+
+            studentsList.forEach(student => {
+                const studentAvg = (student.tp + student.exam) / 2;
+                totalAvg += studentAvg;
+                if (studentAvg >= 10) totalPassed++;
+                if (studentAvg >= 16) totalDistinction++;
+            });
+
+            const overallClassAvg = (totalAvg / studentsList.length).toFixed(1);
+            const passRate = ((totalPassed / studentsList.length) * 100).toFixed(0);
+            const distinctionRate = ((totalDistinction / studentsList.length) * 100).toFixed(0);
+
+            // Update DOM Elements
+            document.getElementById('class-average-gpa').innerText = `${overallClassAvg} /20`;
+            document.getElementById('label-pass-rate').innerText = `${passRate}%`;
+            document.getElementById('bar-pass-rate').style.width = `${passRate}%`;
+            document.getElementById('label-distinction-rate').innerText = `${distinctionRate}%`;
+            document.getElementById('bar-distinction-rate').style.width = `${distinctionRate}%`;
+
+            const mentionLabel = document.getElementById('class-average-mention');
+            if (overallClassAvg >= 16) {
+                mentionLabel.innerText = "Excellent Niveau Académique";
+                mentionLabel.className = 'inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200';
+            } else if (overallClassAvg >= 14) {
+                mentionLabel.innerText = "Très Bon Niveau Académique";
+                mentionLabel.className = 'inline-block mt-2 bg-blue-50 text-blue-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-blue-200';
+            } else {
+                mentionLabel.innerText = "Niveau Académique Admis";
+                mentionLabel.className = 'inline-block mt-2 bg-slate-50 text-slate-600 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-slate-200';
+            }
+        }
+
+        function saveDraftGrades() {
+            showCustomToast("Brouillon enregistré localement !", "info");
+        }
+
+        function publishGradesToRectorat() {
+            showCustomConfirm(
+                "Transmettre au Secrétariat Général",
+                "Êtes-vous certain de vouloir verrouiller et transmettre ces relevés de notes au Rectorat ? Cette action publiera les résultats dans l'espace personnel des étudiants.",
+                () => {
+                    // Update the student database inside localStorage if empty or sync
+                    let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+                    
+                    // We sync back the grades to "Jean Mukendi" if he exists in local registry
+                    const jeanIdx = users.findIndex(u => u.name === "Jean Mukendi" && u.role === "etudiant");
+                    if (jeanIdx > -1) {
+                        users[jeanIdx].tpGrade = studentsList[0].tp;
+                        users[jeanIdx].examGrade = studentsList[0].exam;
+                        localStorage.setItem('superAdminUsers', JSON.stringify(users));
+                    }
+
+                    showCustomToast("Relevé de notes transmis avec succès au SG d'UPKOL !", "success");
+                }
+            );
+        }
+
+        // --- TAB 4: APPEL & PRÉSENCES (ATTENDANCE) ---
+        function renderAttendanceTable() {
+            const tbody = document.getElementById('attendance-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            studentsList.forEach(student => {
+                const isPresent = student.attendance === 'present';
+                const isLate = student.attendance === 'late';
+                const isAbsent = student.attendance === 'absent';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${student.name}</td>
+                        <td class="px-6 py-4 text-xs font-mono">${student.matricule}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-6">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="attendance-${student.id}" value="present" ${isPresent ? 'checked' : ''} class="mr-1.5 accent-emerald-500" onchange="updateAttendanceState('${student.id}', 'present')">
+                                    <span class="text-xs font-bold text-slate-600">P</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="attendance-${student.id}" value="late" ${isLate ? 'checked' : ''} class="mr-1.5 accent-amber-500" onchange="updateAttendanceState('${student.id}', 'late')">
+                                    <span class="text-xs font-bold text-slate-600">R</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="attendance-${student.id}" value="absent" ${isAbsent ? 'checked' : ''} class="mr-1.5 accent-red-500" onchange="updateAttendanceState('${student.id}', 'absent')">
+                                    <span class="text-xs font-bold text-slate-600">A</span>
+                                </label>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span id="badge-attendance-${student.id}" class="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${isAbsent ? 'bg-red-50 text-red-600' : (isLate ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-emerald-600')}">
+                                ${isAbsent ? 'Absent' : (isLate ? 'Retard' : 'Présent')}
+                            </span>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            calculateAttendanceRate();
+        }
+
+        function updateAttendanceState(studentId, state) {
+            const student = studentsList.find(s => s.id === studentId);
+            if (student) {
+                student.attendance = state;
+                const badge = document.getElementById(`badge-attendance-${studentId}`);
+                if (badge) {
+                    badge.innerText = state === 'absent' ? 'Absent' : (state === 'late' ? 'Retard' : 'Présent');
+                    badge.className = `text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${state === 'absent' ? 'bg-red-50 text-red-600' : (state === 'late' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-emerald-600')}`;
+                }
+                calculateAttendanceRate();
+            }
+        }
+
+        function calculateAttendanceRate() {
+            let presentsCount = 0;
+            studentsList.forEach(student => {
+                if (student.attendance === 'present' || student.attendance === 'late') {
+                    presentsCount++;
+                }
+            });
+
+            const rate = ((presentsCount / studentsList.length) * 100).toFixed(0);
+            document.getElementById('class-attendance-percent').innerText = `${rate}%`;
+            
+            const badgeAttendance = document.getElementById('badge-attendance');
+            if (badgeAttendance) {
+                badgeAttendance.innerText = `Appel Fini (${rate}%)`;
+                badgeAttendance.className = 'ml-auto bg-green-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full';
+            }
+        }
+
+        function submitAttendanceSheet() {
+            showCustomToast("Fiche d'appel signée et envoyée au décanat !", "success");
+        }
+
+        // --- TAB 5: MESSAGERIE & AVIS ---
+        function renderMessagesList() {
+            const container = document.getElementById('student-messages-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+            studentMessages.forEach(msg => {
+                const repliesHtml = msg.replies.map(reply => `
+                    <div class="mt-3 bg-white border border-slate-100 p-3 rounded-2xl ml-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[9px] font-black text-slate-800 uppercase">Dr. Kalala</span>
+                            <span class="text-[8px] text-slate-400">À l'instant</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium leading-relaxed">${reply}</p>
+                    </div>
+                `).join('');
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl card-animate">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-black text-xs text-slate-900">${msg.sender}</span>
+                                <span class="text-[9px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full uppercase">${msg.course}</span>
+                            </div>
+                            <span class="text-[8px] text-slate-400 font-black uppercase tracking-wider">${msg.date}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium leading-relaxed">${msg.query}</p>
+                        ${repliesHtml}
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="replyToStudent(${msg.id})" class="text-[9px] bg-upkol-noir text-upkol-jaune hover:bg-slate-800 font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-sm transition-all">
+                                <i class="fas fa-reply mr-1.5"></i> Répondre
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function replyToStudent(msgId) {
+            const msg = studentMessages.find(m => m.id === msgId);
+            if (msg) {
+                showCustomPrompt(
+                    `Répondre à ${msg.sender}`,
+                    `Veuillez saisir votre réponse pédagogique adressée à l'étudiant :`,
+                    "Type de consigne, recommandation, ou support...",
+                    (replyText) => {
+                        msg.replies.push(replyText);
+                        renderMessagesList();
+                        showCustomToast("Réponse transmise à l'étudiant !", "success");
+                    }
+                );
+            }
+        }
+
+        function publishAnnouncement() {
+            const title = document.getElementById('announcement-title').value;
+            const target = document.getElementById('announcement-target').value;
+            const body = document.getElementById('announcement-body').value;
+
+            if (!title || !body) {
+                showCustomToast("Tous les champs sont requis pour valider le communiqué.", "error");
+                return;
+            }
+
+            showCustomToast(`Le communiqué d'enseignement pour "${target}" a été publié !`, "success");
+            document.getElementById('announcement-title').value = '';
+            document.getElementById('announcement-body').value = '';
+        }
+
+        // --- AUTHENTICATION ---
+        document.getElementById('btn-login-teacher').onclick = function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (email.toLowerCase() === "kalala.prof@upkol.cd" && pass === "Pass1234") {
+                const gateway = document.getElementById('login-gateway');
+                gateway.style.opacity = '0';
+                
+                teacherLoggedUser = { name: "Dr. Kalala", title: "Professeur Ordinaire", courses: ["Bases de données relationnelles"] };
+                localStorage.setItem('connectedTeacher', JSON.stringify(teacherLoggedUser));
+
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                    showCustomToast("Bienvenue dans votre espace d'enseignement, Dr. Kalala !", 'success');
+                }, 400);
+            } else {
+                showCustomToast("Identifiants académiques non reconnus.", 'error');
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('connectedTeacher');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                showCustomToast("Session pédagogique close.", "info");
+            }, 10);
+        }
+
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // --- INITIAL EXECUTION SEQUENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedTeacher');
+            if (saved) {
+                teacherLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+            }
+
+            showTab('overview');
+            renderSupportsList();
+            renderGradingTable();
+            renderAttendanceTable();
+            renderMessagesList();
+        });
+    </script>
+</body>
+</html>

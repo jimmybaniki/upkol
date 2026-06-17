@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secrétariat Général Académique - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Chart.js for Administrative Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        /* Interactive Card Hover effects */
+        .card-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-animate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08); }
+
+        /* Custom Scrollbar for list panels */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Printable transcript layout preview */
+        .academic-seal { background-image: radial-gradient(circle, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0) 70%); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (SG LOGIN)         -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-file-signature text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Secrétariat Général</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Affaires Académiques & Enseignement</span>
+            </div>
+
+            <div class="w-full space-y-4 mb-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Institutionnel</label>
+                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: sekela.sg@upkol.cd" value="sekela.sg@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Code d'Habilitation</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Utilisez les identifiants pré-remplis pour charger instantanément le cabinet du Prof. Dr. Sekela, Secrétaire Général Académique.</span>
+                </div>
+            </div>
+
+            <button id="btn-login-sg" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                Ouvrir le cabinet académique
+                <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR SECRÉTAIRE GÉNÉRAL                 -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-file-contract text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL SG</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Secrétaire Général</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Gestion Académique</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-line mr-3 w-5 text-lg"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-enrollments" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('enrollments')">
+                <i class="fas fa-id-card mr-3 w-5 text-lg"></i> Immatriculations
+                <span id="badge-pending-enrollments" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </a>
+
+            <a href="#" id="menu-deliberations" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('deliberations')">
+                <i class="fas fa-gavel mr-3 w-5 text-lg"></i> Arbitrage & PVs
+                <span id="badge-pending-pvs" class="ml-auto bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">New</span>
+            </a>
+
+            <a href="#" id="menu-staff" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('staff')">
+                <i class="fas fa-chalkboard-teacher mr-3 w-5 text-lg"></i> Corps Enseignant
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Bureautique & Arrêtés</div>
+
+            <a href="#" id="menu-transcripts" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('transcripts')">
+                <i class="fas fa-file-export mr-3 w-5 text-lg"></i> Délivrance de relevés
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- ACADEMIC HEADER -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Secrétariat Général <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Académique</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="sg-header-name" class="text-xs font-black text-slate-900 uppercase">Prof. Dr. Sekela</p>
+                    <p id="sg-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Secrétaire Général Académique</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-shield text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE BODY CONTENT -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: VUE D'ENSEMBLE (OVERVIEW)           -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Étudiants</p>
+                                <h3 id="stat-total-students" class="text-3xl font-black text-slate-900">148</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-user-graduate text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
+                            <span>Effectif L1, L2, L3, Master</span>
+                            <span class="text-blue-500 font-black">2025-2026</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Immatriculations en attente</p>
+                                <h3 id="stat-pending-matric" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-stamp text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-amber-600 font-bold">
+                            <i class="fas fa-circle-exclamation mr-2 text-xs"></i> En attente de signature définitive
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">PVs de Délibération</p>
+                                <h3 id="stat-pending-pvs" class="text-3xl font-black text-slate-900">1 à délibérer</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-gavel text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
+                            <i class="fas fa-clock mr-2 text-xs"></i> Transmission d'examens S1 en cours
+                        </div>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Membres du personnel</p>
+                                <h3 id="stat-total-staff" class="text-3xl font-black text-slate-900">14</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-users-gear text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
+                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> Tous les accès académiques sont actifs
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARTS & SUMMARY PANELS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Graph: Performance Tracking -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Évolution Globale</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Taux d'Inscriptions & Admissions par Semaine</h3>
+                            </div>
+                            <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Données Réelles</span>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="sgOverviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Distribution statistics and Board summary -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Répartition par Filière</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Effectif par Faculté</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Sciences de l'Informatique</span>
+                                        <span>42%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-upkol-jaune h-full w-[42%]"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Sciences de la Santé</span>
+                                        <span>28%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-blue-500 h-full w-[28%]"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Économie & Gestion</span>
+                                        <span>18%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-emerald-500 h-full w-[18%]"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Droit & Sciences Politiques</span>
+                                        <span>12%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-purple-500 h-full w-[12%]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 leading-relaxed mt-4">
+                            <i class="fas fa-university text-amber-500 mr-2"></i>
+                            Pour ce semestre, l'accent est mis sur le contrôle strict des immatriculations et la validation rapide des relevés de délibération.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: IMMATRICULATIONS (ENROLLMENTS)      -->
+            <!-- ========================================== -->
+            <div id="tab-enrollments" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Validation d'Inscription & Attribution de Matricule</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Candidatures ayant reçu l'approbation du Rectorat</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[750px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Nom de l'Étudiant</th>
+                                    <th class="px-6 py-4">Faculté / Spécialité</th>
+                                    <th class="px-6 py-4">Note d'Admission</th>
+                                    <th class="px-6 py-4">Source de Validation</th>
+                                    <th class="px-6 py-4 text-right">Actions Autorité</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrollment-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Chargement des dossiers d'immatriculation...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: ARBITRAGE & PVS (DELIBERATIONS)     -->
+            <!-- ========================================== -->
+            <div id="tab-deliberations" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Deliberation list / Pending PVs -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="p-6 border-b border-slate-100">
+                                <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Procès-verbaux de notes à statuer</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Relevés de notes soumis par les enseignants pour examen</p>
+                            </div>
+
+                            <div class="divide-y divide-slate-100" id="pending-pvs-list">
+                                <!-- Injected dynamically by JS -->
+                            </div>
+                        </div>
+                        <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                            <span class="text-xs text-slate-500 font-medium">La signature d'un PV verrouille les notes et les affiche aux étudiants.</span>
+                        </div>
+                    </div>
+
+                    <!-- Selected PV Preview Detail Panel -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Visualiseur de PV</h4>
+                            <h3 id="preview-pv-title" class="text-sm font-black text-slate-950 uppercase tracking-tight">Sélectionnez un relevé</h3>
+                            
+                            <div id="preview-pv-empty" class="py-12 text-center text-slate-400 italic text-xs">
+                                <i class="fas fa-file-invoice text-3xl mb-3 block text-slate-200"></i>
+                                Cliquez sur "Examiner" pour prévisualiser les notes complètes du cours.
+                            </div>
+
+                            <div id="preview-pv-details" class="hidden mt-6 space-y-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400">
+                                        <span>Promotion</span>
+                                        <span id="preview-pv-class" class="text-slate-800">L1 Info</span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400">
+                                        <span>Titulaire</span>
+                                        <span id="preview-pv-teacher" class="text-slate-800">Dr. Kalala</span>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400">
+                                        <span>Moyenne Générale</span>
+                                        <span id="preview-pv-avg" class="text-emerald-600 font-black">15.4 /20</span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2 max-h-56 overflow-y-auto pr-1" id="preview-pv-student-list">
+                                    <!-- Injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="preview-pv-actions" class="hidden border-t border-slate-100 pt-6 flex space-x-2">
+                            <button onclick="rejectPV()" class="w-1/2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 text-[10px] font-black uppercase py-4 rounded-xl transition-all">Rejeter le PV</button>
+                            <button onclick="approvePV()" class="w-1/2 bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">Signer et Sceller</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: CORPS ENSEIGNANT (STAFF)            -->
+            <!-- ========================================== -->
+            <div id="tab-staff" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Registre du Personnel Académique & Charges Horaires</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Habilitations administratives et affectation des cours d'UPKOL</p>
+                        </div>
+                        <button onclick="openAddStaffModal()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            <i class="fas fa-plus mr-2"></i> Recruter un membre
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[700px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Nom de l'Enseignant</th>
+                                    <th class="px-6 py-4">Titre / Grade</th>
+                                    <th class="px-6 py-4">Chaire / Cours Attribué</th>
+                                    <th class="px-6 py-4 text-center">Statut du Compte</th>
+                                    <th class="px-6 py-4 text-right">Actions Habilitation</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <!-- Injected dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 5: DÉLIVRANCE RELEVÉS (TRANSCRIPTS)    -->
+            <!-- ========================================== -->
+            <div id="tab-transcripts" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Students selection for transcripts -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Dossiers d'études & Relevés de notes officiels</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Recherchez un étudiant inscrit pour générer son relevé numérique</p>
+                        </div>
+
+                        <div class="p-6 bg-slate-50 border-b border-slate-100">
+                            <div class="relative">
+                                <i class="fas fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                                <input type="text" id="transcript-search" oninput="searchStudentsTranscripts(this.value)" placeholder="Rechercher par nom, matricule ou faculté..." class="w-full bg-white border border-slate-200 p-3 pl-11 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                            </div>
+                        </div>
+
+                        <div class="divide-y divide-slate-100" id="transcript-students-list">
+                            <!-- Injected dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Generation stats panel -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Règlement Académique</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Droits de délivrance</h3>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                                Conformément à l'arrêté rectoral d'UPKOL, la délivrance des relevés de notes officiels est subordonnée à l'apurement intégral du compte de scolarité de l'étudiant.
+                            </p>
+                            <div class="bg-amber-50 p-4 rounded-2xl border border-yellow-200 text-[10px] text-slate-600 font-bold leading-relaxed">
+                                <i class="fas fa-circle-info text-amber-600 mr-2"></i>
+                                Tout relevé émis par le Secrétariat Général Académique porte un code cryptographique unique de vérification d'authenticité.
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-3xl text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Documents délivrés ce mois</p>
+                            <h3 class="text-4xl font-black text-slate-950 mt-1">24 Relevés</h3>
+                            <span class="inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200">Verrouillage de session actif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- CUSTOM INTERACTIVE MODALS & PREVIEWS       -->
+    <!-- ========================================== -->
+    
+    <!-- 1. TRANSCRIPT PREVIEW MODAL (OFFICIAL LAYOUT) -->
+    <div id="transcript-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl transform scale-95 transition-all duration-300" id="transcript-card">
+            
+            <!-- OFFICIAL TRANSCRIPT HEADER (UPKOL STYLE) -->
+            <div class="border-2 border-slate-200 rounded-3xl p-6 relative overflow-hidden academic-seal shadow-inner bg-slate-50">
+                <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+                    <i class="fas fa-graduation-cap text-[300px]"></i>
+                </div>
+
+                <div class="text-center border-b-2 border-slate-950 pb-4 mb-6">
+                    <h2 class="text-sm font-black tracking-widest uppercase text-slate-900">République Démocratique du Congo</h2>
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase mt-0.5">Ministère de l'Enseignement Supérieur et Universitaire</h3>
+                    <h1 class="text-base font-black tracking-tighter text-slate-900 uppercase mt-2">Université Pédagogique de Kolwezi</h1>
+                    <span class="inline-block mt-1 bg-upkol-jaune text-slate-950 text-[9px] font-black px-3 py-0.5 rounded-full uppercase border border-upkol-jaune">Secrétariat Général Académique</span>
+                </div>
+
+                <!-- STUDENT REVELATIONS -->
+                <div class="grid grid-cols-2 gap-4 text-xs font-bold text-slate-600 mb-6 uppercase tracking-wider">
+                    <div>
+                        <span class="text-[9px] text-slate-400 block font-black">Nom de l'étudiant</span>
+                        <span id="trans-stu-name" class="text-slate-900 font-black">Jean Mukendi</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] text-slate-400 block font-black">Matricule Officiel</span>
+                        <span id="trans-stu-matric" class="text-slate-900 font-mono font-black">UPK-2026-9874</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] text-slate-400 block font-black">Faculté d'Études</span>
+                        <span id="trans-stu-faculty" class="text-slate-900 font-black">Sciences Informatiques</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] text-slate-400 block font-black">Année Académique</span>
+                        <span class="text-slate-900 font-black">2025 - 2026</span>
+                    </div>
+                </div>
+
+                <!-- GRADES TABLE -->
+                <div class="overflow-hidden border border-slate-200 rounded-2xl bg-white mb-6">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 font-black uppercase text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-2.5">Unité d'Enseignement / Matière</th>
+                                <th class="px-4 py-2.5 text-center">Note (/20)</th>
+                                <th class="px-4 py-2.5 text-right">Mention Provisoire</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-medium" id="trans-grades-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- OFFICAL SIGNATURES AND SEALS -->
+                <div class="grid grid-cols-2 gap-4 text-[10px] uppercase font-black tracking-widest mt-6 border-t-2 border-slate-950 pt-4">
+                    <div>
+                        <span>Fait à Kolwezi, le 17 Juin 2026</span>
+                        <p class="text-slate-400 mt-1">Le Recteur de l'Université</p>
+                        <p class="text-slate-800 text-[11px] mt-6">Prof. Dr. Mbuyi</p>
+                    </div>
+                    <div class="text-right">
+                        <span>Signé électroniquement</span>
+                        <p class="text-slate-400 mt-1">Le Secrétaire Général Académique</p>
+                        <p class="text-slate-800 text-[11px] mt-6">Prof. Dr. Sekela</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL CONTROL ACTIONS -->
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button onclick="closeTranscriptModal()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Fermer</button>
+                <button onclick="window.print()" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">
+                    <i class="fas fa-print mr-2"></i>Imprimer le relevé
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. STAFF ACQUISITION / CREATION MODAL -->
+    <div id="staff-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="staff-card">
+            <h3 class="text-base font-black text-slate-900 uppercase tracking-tight">Recruter un Membre du Personnel</h3>
+            <p class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Veuillez saisir ses coordonnées professionnelles d'UPKOL.</p>
+            
+            <form id="staff-form" class="space-y-4 mt-4" onsubmit="createNewStaff(event)">
+                <div>
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Nom complet</label>
+                    <input type="text" id="staff-name" required placeholder="ex: Prof. Dr. Jean Lumbu" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Rôle Académique</label>
+                    <select id="staff-role" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                        <option value="professeur">Professeur Ordinaire</option>
+                        <option value="chef_travaux">Chef de Travaux (CT)</option>
+                        <option value="assistant">Assistant de recherche</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Cours Attribué / Chaire</label>
+                    <input type="text" id="staff-course" required placeholder="ex: Algorithmique avancée" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">E-mail Académique</label>
+                    <input type="email" id="staff-email" required placeholder="ex: lumbu.prof@upkol.cd" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                </div>
+
+                <div class="flex space-x-2 mt-6 justify-end pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeStaffModal()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+                    <button type="submit" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. GENERAL MODAL CONFIRM / PROMPT PREVENTING POPUPS -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modal-card">
+            <h3 id="modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Notification Académique</h3>
+            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Description de la modale.</p>
+            
+            <!-- Prompt Input Box (used for answer entries) -->
+            <div id="modal-input-container" class="mt-4 hidden">
+                <textarea id="modal-input" rows="3" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune" placeholder="Votre réponse..."></textarea>
+            </div>
+
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button id="modal-cancel-btn" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+                <button id="modal-confirm-btn" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGES FOR DYNAMIC APP FEEDBACK -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- DATABASE & CONTROLLER SCRIPT               -->
+    <!-- ========================================== -->
+    <script>
+        // --- CONSTANTS & SYNCHRONIZATION ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let sgLoggedUser = null;
+        let sgOverviewChartInstance = null;
+        let selectedPVId = null;
+
+        // In-memory data mirroring teachers, courses, students and deliberations
+        let enrollmentsList = [];
+        let teachersList = [
+            { id: "st-1", name: "Dr. Kalala", role: "professeur", course: "Bases de données relationnelles", email: "kalala.prof@upkol.cd", authorized: true },
+            { id: "st-2", name: "Prof. Ilunga", role: "professeur", course: "Algorithmique complexe", email: "ilunga.prof@upkol.cd", authorized: true },
+            { id: "st-3", name: "CT Tshibangu", role: "chef_travaux", course: "Architecture des ordinateurs", email: "tshibangu.ct@upkol.cd", authorized: true },
+            { id: "st-4", name: "Assist. Mukeba", role: "assistant", course: "Tutorats & Travaux Pratiques", email: "mukeba.ast@upkol.cd", authorized: false }
+        ];
+
+        let mockPVs = [
+            {
+                id: "pv-1",
+                course: "Bases de données relationnelles",
+                teacher: "Dr. Kalala",
+                promotion: "Licence 1 - Informatique",
+                avg: "15.4",
+                date: "16 Juin 2026",
+                students: [
+                    { name: "Jean Mukendi", tp: 16, exam: 17 },
+                    { name: "Therese Kabange", tp: 15, exam: 16 },
+                    { name: "Dieudonné Lumbu", tp: 12, exam: 13 },
+                    { name: "Rachel Tshiza", tp: 14, exam: 15 },
+                    { name: "Patient Katanga", tp: 17, exam: 18 }
+                ],
+                status: "en_attente"
+            },
+            {
+                id: "pv-2",
+                course: "Architecture des ordinateurs",
+                teacher: "CT Tshibangu",
+                promotion: "Licence 1 - Informatique",
+                avg: "13.8",
+                date: "15 Juin 2026",
+                students: [
+                    { name: "Jean Mukendi", tp: 14, exam: 15 },
+                    { name: "Therese Kabange", tp: 12, exam: 14 },
+                    { name: "Dieudonné Lumbu", tp: 11, exam: 12 },
+                    { name: "Rachel Tshiza", tp: 13, exam: 14 },
+                    { name: "Patient Katanga", tp: 15, exam: 16 }
+                ],
+                status: "signe"
+            }
+        ];
+
+        // CUSTOM DIALOG HELPERS
+        function showCustomConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const modalCard = document.getElementById('modal-card');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const inputContainer = document.getElementById('modal-input-container');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+            inputContainer.classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-95');
+            }, 10);
+
+            const close = () => {
+                modal.classList.add('opacity-0');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            confirmBtn.onclick = () => {
+                close();
+                onConfirm();
+            };
+
+            cancelBtn.onclick = close;
+        }
+
+        // TOAST NOTIFICATION HELPER
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // NAVIGATION MANAGER
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+
+            // Specific Tab Initializers
+            if (tabId === 'overview') {
+                setTimeout(renderSGOverviewChart, 100);
+            } else if (tabId === 'enrollments') {
+                loadPendingEnrollments();
+            } else if (tabId === 'deliberations') {
+                renderPVsList();
+            } else if (tabId === 'staff') {
+                renderStaffTable();
+            } else if (tabId === 'transcripts') {
+                renderTranscriptsStudentsList();
+            }
+        }
+
+        // --- TAB 1: VUE D'ENSEMBLE ANALYTICS ---
+        function renderSGOverviewChart() {
+            const ctx = document.getElementById('sgOverviewChart');
+            if (!ctx) return;
+
+            if (sgOverviewChartInstance) {
+                sgOverviewChartInstance.destroy();
+            }
+
+            sgOverviewChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4', 'Semaine 5', 'Semaine 6'],
+                    datasets: [
+                        {
+                            label: 'Candidatures Reçues',
+                            data: [35, 48, 52, 65, 58, 70],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'transparent',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Matricules Délivrés',
+                            data: [25, 38, 42, 55, 48, 62],
+                            borderColor: '#FFD700',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- TAB 2: IMMATRICULATIONS (ENROLLMENTS) ---
+        async function loadPendingEnrollments() {
+            const tbody = document.getElementById('enrollment-table-body');
+            if (!tbody) return;
+
+            try {
+                // Fetch candidates who are approved by the Rectorate but lack a matriculation process Completion
+                const { data, error } = await _supabase
+                    .from('candidatures')
+                    .select('*')
+                    .eq('status', 'envoye_au_superadmin')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                enrollmentsList = data || [];
+                renderEnrollmentsTable(enrollmentsList);
+
+            } catch (err) {
+                console.error("SG: Error loading registrations:", err.message);
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-red-500 font-bold">Échec du chargement des dossiers d'immatriculation.</td></tr>`;
+            }
+        }
+
+        function renderEnrollmentsTable(list) {
+            const tbody = document.getElementById('enrollment-table-body');
+            if (!tbody) return;
+
+            const badgeCount = document.getElementById('badge-pending-enrollments');
+            const statPending = document.getElementById('stat-pending-matric');
+
+            if (list.length > 0) {
+                badgeCount.innerText = list.length;
+                badgeCount.classList.remove('hidden');
+                statPending.innerText = `${list.length} Dossiers`;
+            } else {
+                badgeCount.classList.add('hidden');
+                statPending.innerText = "0 Dossier";
+            }
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Aucune candidature en attente de génération de matricule.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            list.forEach(item => {
+                const percentage = item.percentage || 60;
+                let colorClass = 'text-slate-600 bg-slate-100';
+                if (percentage >= 70) colorClass = 'text-green-700 bg-green-50 border border-green-100';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr id="enroll-row-${item.id}" class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${item.full_name}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase border border-slate-200">${item.faculty || 'Technologie'}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${percentage}%</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-500">
+                            <i class="fas fa-university text-amber-500 mr-2"></i>Rectorat (Approuvé)
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="issueOfficialMatricule('${item.id}', '${item.full_name}', '${item.email}')" class="bg-upkol-noir hover:bg-slate-800 text-upkol-jaune px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm">
+                                <i class="fas fa-stamp mr-2"></i>Immatriculer
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        async function issueOfficialMatricule(candidatureId, fullName, email) {
+            showCustomConfirm(
+                "Générer le matricule d'UPKOL",
+                `Êtes-vous certain de vouloir générer le matricule officiel de l'étudiant ${fullName} et de l'ajouter définitivement à l'effectif d'UPKOL ?`,
+                async () => {
+                    try {
+                        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+                        const finalMatricule = `UPK-2026-${randomSuffix}`;
+
+                        // 1. Update Supabase status to fully active/inscribed
+                        const { error: updateError } = await _supabase
+                            .from('candidatures')
+                            .update({ status: 'admis' })
+                            .eq('id', candidatureId);
+
+                        if (updateError) throw updateError;
+
+                        // 2. Synchronize with localStorage superAdminUsers registry
+                        let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+                        const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+
+                        if (userIndex > -1) {
+                            users[userIndex].matricule = finalMatricule;
+                            users[userIndex].authorized = true;
+                            users[userIndex].requestedAuthorization = false;
+                        } else {
+                            users.push({
+                                id: candidatureId,
+                                name: fullName,
+                                email: email,
+                                password: 'Pass' + randomSuffix,
+                                role: 'etudiant',
+                                matricule: finalMatricule,
+                                authorized: true,
+                                requestedAuthorization: false,
+                                promotion: 'L1 Informatique',
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                        localStorage.setItem('superAdminUsers', JSON.stringify(users));
+
+                        // Visual feedback transition
+                        const row = document.getElementById(`enroll-row-${candidatureId}`);
+                        if (row) {
+                            row.classList.add('bg-green-50', 'transition-all', 'duration-500');
+                            setTimeout(() => {
+                                row.remove();
+                                loadPendingEnrollments();
+                            }, 600);
+                        }
+
+                        showCustomToast(`Immatriculation réussie ! Matricule délivré : ${finalMatricule}`, "success");
+
+                    } catch (err) {
+                        console.error("SG: Error during matriculation:", err.message);
+                        showCustomToast("Erreur d'enregistrement : " + err.message, "error");
+                    }
+                }
+            );
+        }
+
+        // --- TAB 3: ARBITRAGE & PVS (DELIBERATIONS) ---
+        function renderPVsList() {
+            const container = document.getElementById('pending-pvs-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+            mockPVs.forEach(pv => {
+                const isPending = pv.status === 'en_attente';
+                const statusBadge = isPending 
+                    ? `<span class="bg-amber-50 text-amber-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-amber-200">En attente</span>`
+                    : `<span class="bg-green-50 text-green-700 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Signé & Scellé</span>`;
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 transition-all">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-black text-xs uppercase text-slate-900">${pv.course}</h4>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">${pv.promotion} • Titulaire : ${pv.teacher} • Soumis le ${pv.date}</p>
+                        </div>
+                        <button onclick="previewPVDetails('${pv.id}')" class="mt-2 sm:mt-0 text-[10px] bg-slate-100 hover:bg-upkol-jaune border border-slate-200 hover:border-transparent font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-sm">
+                            Examiner
+                        </button>
+                    </div>
+                `);
+            });
+        }
+
+        function previewPVDetails(pvId) {
+            const pv = mockPVs.find(p => p.id === pvId);
+            if (!pv) return;
+
+            selectedPVId = pvId;
+            document.getElementById('preview-pv-empty').classList.add('hidden');
+            const detailsBox = document.getElementById('preview-pv-details');
+            const actionsBox = document.getElementById('preview-pv-actions');
+
+            detailsBox.classList.remove('hidden');
+            if (pv.status === 'en_attente') {
+                actionsBox.classList.remove('hidden');
+            } else {
+                actionsBox.classList.add('hidden');
+            }
+
+            document.getElementById('preview-pv-title').innerText = pv.course;
+            document.getElementById('preview-pv-class').innerText = pv.promotion;
+            document.getElementById('preview-pv-teacher').innerText = pv.teacher;
+            document.getElementById('preview-pv-avg').innerText = `${pv.avg} /20`;
+
+            const studentListContainer = document.getElementById('preview-pv-student-list');
+            studentListContainer.innerHTML = '';
+
+            pv.students.forEach(st => {
+                const avg = ((st.tp + st.exam) / 2).toFixed(1);
+                studentListContainer.insertAdjacentHTML('beforeend', `
+                    <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+                        <span class="font-black text-slate-700">${st.name}</span>
+                        <div class="flex space-x-3 text-slate-500 font-bold">
+                            <span>TP: ${st.tp}</span>
+                            <span>Ex: ${st.exam}</span>
+                            <span class="font-black text-slate-900">Moy: ${avg}</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function approvePV() {
+            if (!selectedPVId) return;
+
+            showCustomConfirm(
+                "Signer et Sceller le Procès-Verbal",
+                "Cette action verrouille définitivement les notes d'examens et les publie sur les portails des étudiants. Confirmer ?",
+                () => {
+                    const pv = mockPVs.find(p => p.id === selectedPVId);
+                    if (pv) {
+                        pv.status = 'signe';
+                        showCustomToast("Le Procès-Verbal a été signé et promulgué !", "success");
+                        renderPVsList();
+                        previewPVDetails(selectedPVId);
+
+                        // Synchroniser les cotes avec les données locales pour l'étudiant "Jean Mukendi"
+                        let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+                        const jeanIdx = users.findIndex(u => u.name === "Jean Mukendi" && u.role === "etudiant");
+                        if (jeanIdx > -1) {
+                            users[jeanIdx].tpGrade = pv.students[0].tp;
+                            users[jeanIdx].examGrade = pv.students[0].exam;
+                            localStorage.setItem('superAdminUsers', JSON.stringify(users));
+                        }
+                    }
+                }
+            );
+        }
+
+        function rejectPV() {
+            if (!selectedPVId) return;
+
+            showCustomConfirm(
+                "Rejeter le Procès-Verbal",
+                "Le relevé de notes sera retourné à l'enseignant pour correction. Voulez-vous continuer ?",
+                () => {
+                    mockPVs = mockPVs.filter(p => p.id !== selectedPVId);
+                    selectedPVId = null;
+                    document.getElementById('preview-pv-details').classList.add('hidden');
+                    document.getElementById('preview-pv-actions').classList.add('hidden');
+                    document.getElementById('preview-pv-empty').classList.remove('hidden');
+                    showCustomToast("Relevé renvoyé à l'enseignant.", "info");
+                    renderPVsList();
+                }
+            );
+        }
+
+        // --- TAB 4: CORPS ENSEIGNANT (STAFF) ---
+        function renderStaffTable() {
+            const tbody = document.getElementById('staff-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            teachersList.forEach(teach => {
+                const isAuthorized = teach.authorized;
+                const statusBadge = isAuthorized 
+                    ? `<span class="bg-green-50 text-green-700 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Actif</span>`
+                    : `<span class="bg-slate-100 text-slate-500 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-slate-200">Suspendu</span>`;
+
+                const actionButton = isAuthorized
+                    ? `<button onclick="toggleStaffAccess('${teach.id}', false)" class="text-red-500 hover:text-red-700 text-xs font-black uppercase">Suspendre</button>`
+                    : `<button onclick="toggleStaffAccess('${teach.id}', true)" class="bg-slate-100 hover:bg-upkol-jaune text-slate-700 hover:text-black px-3.5 py-1.5 rounded-xl text-xs font-black uppercase transition-all shadow-sm">Activer</button>`;
+
+                let roleLabel = 'Assistant';
+                if (teach.role === 'professeur') roleLabel = 'Professeur Ordinaire';
+                else if (teach.role === 'chef_travaux') roleLabel = 'Chef de Travaux (CT)';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${teach.name}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${roleLabel}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase border border-slate-200">${teach.course}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">${statusBadge}</td>
+                        <td class="px-6 py-4 text-right">${actionButton}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        function toggleStaffAccess(teachId, allow) {
+            const teach = teachersList.find(t => t.id === teachId);
+            if (teach) {
+                teach.authorized = allow;
+                showCustomToast(allow ? "Accès autorisé" : "Accès révoqué", "info");
+                renderStaffTable();
+            }
+        }
+
+        function openAddStaffModal() {
+            const modal = document.getElementById('staff-modal');
+            const card = document.getElementById('staff-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeStaffModal() {
+            const modal = document.getElementById('staff-modal');
+            const card = document.getElementById('staff-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function createNewStaff(event) {
+            event.preventDefault();
+            const name = document.getElementById('staff-name').value;
+            const role = document.getElementById('staff-role').value;
+            const course = document.getElementById('staff-course').value;
+            const email = document.getElementById('staff-email').value;
+
+            const newTeacher = {
+                id: 'st-' + Date.now(),
+                name: name,
+                role: role,
+                course: course,
+                email: email,
+                authorized: true
+            };
+
+            teachersList.unshift(newTeacher);
+            showCustomToast("Nouvel enseignant enregistré !", "success");
+            closeStaffModal();
+            document.getElementById('staff-form').reset();
+            renderStaffTable();
+        }
+
+        // --- TAB 5: DÉLIVRANCE RELEVÉS (TRANSCRIPTS) ---
+        function renderTranscriptsStudentsList(filter = '') {
+            const container = document.getElementById('transcript-students-list');
+            if (!container) return;
+
+            // Retreive students registered in superAdminUsers localStorage
+            let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+            let students = users.filter(u => u.role === 'etudiant');
+
+            // Fallback default student if empty
+            if (students.length === 0) {
+                students = [
+                    { id: "s-1", name: "Jean Mukendi", matricule: "UPK-2026-9874", promotion: "Licence 1 - Informatique", tpGrade: 16, examGrade: 17 }
+                ];
+            }
+
+            if (filter.trim() !== '') {
+                students = students.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.matricule.toLowerCase().includes(filter.toLowerCase()));
+            }
+
+            container.innerHTML = '';
+            if (students.length === 0) {
+                container.innerHTML = `<p class="p-6 text-center text-slate-400 italic text-xs">Aucun étudiant trouvé.</p>`;
+                return;
+            }
+
+            students.forEach(st => {
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 transition-all">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-900">${st.name}</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">Matricule : ${st.matricule || 'UPK-2026-X'} • Promotion : ${st.promotion || 'L1 Informatique'}</p>
+                            </div>
+                        </div>
+                        <button onclick="openTranscriptModal('${st.id}')" class="mt-2 sm:mt-0 text-[10px] bg-upkol-noir hover:bg-slate-800 text-upkol-jaune font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                            Générer Relevé
+                        </button>
+                    </div>
+                `);
+            });
+        }
+
+        function searchStudentsTranscripts(value) {
+            renderTranscriptsStudentsList(value);
+        }
+
+        function openTranscriptModal(studentId) {
+            let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+            let st = users.find(u => u.id === studentId);
+
+            // Default fallback if not in local storage
+            if (!st) {
+                st = { name: "Jean Mukendi", matricule: "UPK-2026-9874", promotion: "Licence 1 - Informatique", tpGrade: 16, examGrade: 17 };
+            }
+
+            document.getElementById('trans-stu-name').innerText = st.name;
+            document.getElementById('trans-stu-matric').innerText = st.matricule || "UPK-2026-9874";
+            document.getElementById('trans-stu-faculty').innerText = st.promotion || "Sciences de l'Informatique";
+
+            // Grades calculations
+            const tpGrade = st.tpGrade !== undefined ? st.tpGrade : 16;
+            const examGrade = st.examGrade !== undefined ? st.examGrade : 17;
+            const avg = ((tpGrade + examGrade) / 2).toFixed(1);
+
+            let mention = 'Satisfaction';
+            if (avg >= 16) mention = 'Distinction';
+
+            const gradesBody = document.getElementById('trans-grades-body');
+            gradesBody.innerHTML = `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2">Bases de données relationnelles</td>
+                    <td class="px-4 py-2 text-center font-black">${avg} /20</td>
+                    <td class="px-4 py-2 text-right text-emerald-600 font-black">${mention}</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2">Architecture & Technologies des Systèmes</td>
+                    <td class="px-4 py-2 text-center font-black">14.0 /20</td>
+                    <td class="px-4 py-2 text-right text-slate-600 font-black">Satisfaction</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2">Algorithmique & Structures complexes</td>
+                    <td class="px-4 py-2 text-center font-black">15.0 /20</td>
+                    <td class="px-4 py-2 text-right text-slate-600 font-black">Satisfaction</td>
+                </tr>
+            `;
+
+            const modal = document.getElementById('transcript-modal');
+            const card = document.getElementById('transcript-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeTranscriptModal() {
+            const modal = document.getElementById('transcript-modal');
+            const card = document.getElementById('transcript-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // --- AUTHENTICATION ---
+        document.getElementById('btn-login-sg').onclick = function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (email.toLowerCase() === "sekela.sg@upkol.cd" && pass === "Pass1234") {
+                const gateway = document.getElementById('login-gateway');
+                gateway.style.opacity = '0';
+                
+                sgLoggedUser = { name: "Prof. Dr. Sekela", title: "Secrétaire Général Académique" };
+                localStorage.setItem('connectedSG', JSON.stringify(sgLoggedUser));
+
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                    showCustomToast("Cabinet du Secrétariat Général Ouvert !", 'success');
+                }, 400);
+            } else {
+                showCustomToast("Clef d'habilitation non valide.", 'error');
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('connectedSG');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                showCustomToast("Déconnexion du Secrétariat Général.", "info");
+            }, 10);
+        }
+
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // --- INITIAL EXECUTION SEQUENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedSG');
+            if (saved) {
+                sgLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+            }
+
+            showTab('overview');
+        });
+    </script>
+</body>
+</html>

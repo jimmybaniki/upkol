@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direction Générale des Rapports Financiers - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js for Financial Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        .card-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-animate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Printable stylesheet overrides */
+        @media print {
+            aside, header, #non-printable-actions, #toast-container, .no-print { display: none !important; }
+            main { width: 100% !important; height: auto !important; overflow: visible !important; }
+            .print-full { width: 100% !important; border: none !important; shadow: none !important; }
+            .print-page-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR RAPPORTAGE ET AUDIT                -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-file-invoice-dollar text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL REPORTS</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Rapporteur Général</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Synthèse de Gestion</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-pie mr-3 w-5 text-lg"></i> Vue Consolidée
+            </a>
+            
+            <a href="#" id="menu-revenues" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('revenues')">
+                <i class="fas fa-arrow-trend-up mr-3 w-5 text-lg"></i> Rapport des Recettes
+            </a>
+
+            <a href="#" id="menu-expenses" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('expenses')">
+                <i class="fas fa-arrow-trend-down mr-3 w-5 text-lg"></i> Rapport des Dépenses
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Modèles d'Analyse</div>
+
+            <a href="#" id="menu-ledger" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('ledger')">
+                <i class="fas fa-book mr-3 w-5 text-lg"></i> Audit du Grand Livre
+            </a>
+
+            <a href="#" id="menu-ai-audit" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('ai-audit')">
+                <i class="fas fa-robot mr-3 w-5 text-lg text-upkol-jaune"></i> Audit Financier IA
+                <span class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full">Gemini</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 mb-2">
+                <p class="text-[9px] text-slate-500 uppercase font-black">Mode Applicatif</p>
+                <p class="text-xs text-upkol-jaune font-bold">Rapport Annuel 2026</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative bg-slate-50">
+        <!-- HEADER ACADEMIQUE -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0 no-print">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Rapport & <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Audit Financier</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Profile Info & Export Shortcut -->
+            <div class="flex items-center space-x-4">
+                <button onclick="window.print()" class="hidden sm:flex items-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200">
+                    <i class="fas fa-print mr-2"></i> Imprimer Rapport
+                </button>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-file-invoice text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE BODY CONTENT -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10" id="print-area">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: VUE CONSOLIDÉE (OVERVIEW)           -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- KPI 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Budget Initial Prévu</p>
+                                <h3 id="overview-planned-budget" class="text-3xl font-black text-slate-900">1.450.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-wallet text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
+                            <span>Exercice budgétaire 2026</span>
+                            <span class="text-blue-500 font-black">UPKOL</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Recettes Consolidées</p>
+                                <h3 id="overview-revenues" class="text-3xl font-black text-emerald-600">980.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-circle-arrow-up text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold" id="revenue-progress-label">
+                            67% de l'objectif annuel collecté
+                        </div>
+                    </div>
+
+                    <!-- KPI 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Dépenses Liquidées</p>
+                                <h3 id="overview-expenses" class="text-3xl font-black text-rose-500">620.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-circle-arrow-down text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-rose-600 font-bold" id="expense-progress-label">
+                            42% de l'enveloppe consommée
+                        </div>
+                    </div>
+
+                    <!-- KPI 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Solde Net Disponible</p>
+                                <h3 id="overview-cash" class="text-3xl font-black text-slate-900">360.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-vault text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold justify-between">
+                            <span>Excédent de Trésorerie</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-[8px] font-black px-2 py-0.5 rounded">SÉCURISÉ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS CHARTS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Graphique: Flux Financiers Consolidated -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Audits Trimestriels</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Flux financiers : Entrées vs Sorties</h3>
+                            </div>
+                            <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Trésorerie UPKOL</span>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="consolidatedFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Department Allocation Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Postes de charges</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Répartition Analytique</h3>
+                            
+                            <div class="relative h-48 flex justify-center items-center">
+                                <canvas id="chargesDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 leading-relaxed mt-4">
+                            <i class="fas fa-circle-info text-amber-500 mr-2"></i>
+                            Les salaires des professeurs et les infrastructures de laboratoires constituent 70% des charges décaissées de la période.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: RAPPORT DES RECETTES (REVENUES)     -->
+            <!-- ========================================== -->
+            <div id="tab-revenues" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Canaux d'Alimentation Budgétaire</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Origine des fonds constituant le budget d'UPKOL</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left min-w-[550px]">
+                                <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-4">Source de Financement</th>
+                                        <th class="px-6 py-4">Type de Canal</th>
+                                        <th class="px-6 py-4 text-center">Cible Estimée</th>
+                                        <th class="px-6 py-4 text-center">Perçu Réel</th>
+                                        <th class="px-6 py-4 text-right">Taux de Collecte</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenues-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Simulateur / Modification Interactive Recettes -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Guichet d'Alimentation</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Enregistrer une recette</h3>
+                            
+                            <form id="revenue-upload-form" class="space-y-4" onsubmit="registerNewRevenue(event)">
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Libellé du Versement</label>
+                                    <input type="text" id="rev-title" required placeholder="ex: Subvention Minière Lualaba" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Catégorie d'Origine</label>
+                                    <select id="rev-category" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                        <option value="rc-1">Frais Académiques (Minerval)</option>
+                                        <option value="rc-2">Subventions Nationales (ESU)</option>
+                                        <option value="rc-3">Partenariats & Donateurs</option>
+                                        <option value="rc-4">Activité Propre / Prestations</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Montant Perçu ($)</label>
+                                    <input type="number" id="rev-amount" required placeholder="ex: 45000" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <button type="submit" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">
+                                    <i class="fas fa-plus mr-2"></i> Créditer la Trésorerie
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: RAPPORT DES DÉPENSES (EXPENSES)     -->
+            <!-- ========================================== -->
+            <div id="tab-expenses" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Postes de Décaissements Budgétaires</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Ventilation des charges par département & investissement</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left min-w-[550px]">
+                                <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-4">Poste Analytique</th>
+                                        <th class="px-6 py-4">Section Concernée</th>
+                                        <th class="px-6 py-4 text-center">Budget Alloué</th>
+                                        <th class="px-6 py-4 text-center">Montant Engagé</th>
+                                        <th class="px-6 py-4 text-right">Consommation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenses-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Enregistrer un nouveau Décaissement -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Guichet des Dépenses</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Enregistrer un décaissement</h3>
+                            
+                            <form id="expense-upload-form" class="space-y-4" onsubmit="registerNewExpense(event)">
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Désignation de la Charge</label>
+                                    <input type="text" id="exp-title" required placeholder="ex: Achat Réactifs de Chimie" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Poste Budgétaire</label>
+                                    <select id="exp-category" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                        <option value="ec-1">Salaires & Émoluments Enseignants</option>
+                                        <option value="ec-2">Infrastructures & Équipements</option>
+                                        <option value="ec-3">Recherche & Publications</option>
+                                        <option value="ec-4">Bourses & Affaires Sociales</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Montant Débité ($)</label>
+                                    <input type="number" id="exp-amount" required placeholder="ex: 15000" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">
+                                    <i class="fas fa-minus-circle mr-2"></i> Débiter la Trésorerie
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: AUDIT DU GRAND LIVRE (LEDGER)       -->
+            <!-- ========================================== -->
+            <div id="tab-ledger" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Registre Historique des Écritures</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Audit complet et rapprochement bancaire des comptes de l'Université</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="ledger-search" oninput="searchLedgerTransactions(this.value)" placeholder="Rechercher un compte, projet..." class="w-full bg-white border border-slate-200 p-3 pl-11 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                        </div>
+                        <button onclick="exportAccountingLedger()" class="bg-upkol-noir hover:bg-slate-800 text-upkol-jaune px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm">
+                            <i class="fas fa-file-export mr-2"></i> Exporter CSV
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[700px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4">Compte Analytique</th>
+                                    <th class="px-6 py-4">Désignation</th>
+                                    <th class="px-6 py-4 text-center">Type de flux</th>
+                                    <th class="px-6 py-4 text-right">Montant ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <!-- Injected dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 5: AUDIT FINANCIER IA (AI AUDIT)       -->
+            <!-- ========================================== -->
+            <div id="tab-ai-audit" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Configuration and triggers -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 h-fit">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-upkol-jaune/10 text-upkol-jaune rounded-xl flex items-center justify-center">
+                                <i class="fas fa-robot text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Auditeur IA</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Générer un Rapport d'Audit</h3>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                            En croisant la balance des comptes, le rythme de perception du minerval des étudiants et le grand livre analytique, l'IA d'UPKOL (Gemini 3 Flash) dresse un diagnostic de santé financière instantané.
+                        </p>
+
+                        <div class="space-y-3">
+                            <label class="block text-[9px] font-black uppercase text-slate-400">Axe d'analyse privilégié</label>
+                            <select id="ai-focus" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                <option value="general">Rapport général et conformité</option>
+                                <option value="liquidity">Analyse de liquidité et trésorerie</option>
+                                <option value="optimization">Optimisation fiscale et réduction de charges</option>
+                            </select>
+                        </div>
+
+                        <button onclick="generateAIFinancialAudit()" id="btn-generate-ai" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-xs font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md flex items-center justify-center space-x-2">
+                            <span>Exécuter l'Audit Gemini</span>
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                        </button>
+                    </div>
+
+                    <!-- AI Report rendering area -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col justify-between min-h-[500px]">
+                        <div id="ai-report-empty" class="flex flex-col items-center justify-center text-center my-auto space-y-4">
+                            <i class="fas fa-chart-line text-6xl text-slate-200"></i>
+                            <div>
+                                <h4 class="font-black text-sm text-slate-900 uppercase">Aucun audit en cours</h4>
+                                <p class="text-xs text-slate-400 mt-1">Configurez l'axe d'analyse et cliquez sur "Exécuter l'Audit Gemini" à gauche.</p>
+                            </div>
+                        </div>
+
+                        <!-- Spinner during generation -->
+                        <div id="ai-report-loading" class="hidden flex-col items-center justify-center text-center my-auto space-y-4">
+                            <div class="w-12 h-12 border-4 border-slate-200 border-t-upkol-jaune rounded-full animate-spin"></div>
+                            <div>
+                                <h4 class="font-black text-sm text-slate-900 uppercase animate-pulse">L'Auditeur IA analyse les comptes...</h4>
+                                <p class="text-xs text-slate-400 mt-1">Analyse du Grand Livre d'UPKOL • Modèle Gemini 3 Flash</p>
+                            </div>
+                        </div>
+
+                        <!-- Generated Report -->
+                        <div id="ai-report-content" class="hidden space-y-6">
+                            <div class="border-b border-slate-150 pb-4 flex justify-between items-start">
+                                <div>
+                                    <span class="text-[9px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-black uppercase border border-emerald-200">Audit Conforme</span>
+                                    <h2 class="text-lg font-black uppercase text-slate-900 tracking-tight mt-2">Rapport de Diagnostic Économique</h2>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Généré par Intelligence Artificielle • UPKOL 2026</p>
+                                </div>
+                                <button onclick="printAIReport()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase px-4 py-2.5 rounded-xl transition-all border border-slate-200 flex items-center">
+                                    <i class="fas fa-print mr-2"></i> Imprimer Rapport d'Audit
+                                </button>
+                            </div>
+
+                            <div class="prose prose-sm max-w-none text-slate-700 font-medium leading-relaxed" id="ai-response-text">
+                                <!-- AI markdown text injected here -->
+                            </div>
+
+                            <div class="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-200 text-[10px] text-slate-600 font-bold leading-relaxed">
+                                <i class="fas fa-circle-info text-amber-600 mr-2"></i>
+                                Note légale : Ce document est une simulation d'analyse par intelligence artificielle générative basée sur l'état de trésorerie consolidé d'UPKOL.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- DATABASE & CONTROLLER SCRIPTS              -->
+    <!-- ========================================== -->
+    <script>
+        
+        let flowChartInstance = null;
+        let chargesChartInstance = null;
+
+        // Interactive states: Revenue Channels
+        let revenueChannels = [
+            { id: "rc-1", source: "Minerval & Frais d'Inscriptions", type: "Frais Académiques", target: 800000, collected: 550000 },
+            { id: "rc-2", source: "Subventions du Ministère de l'ESU", type: "Trésor Public", target: 400000, collected: 300000 },
+            { id: "rc-3", source: "Partenariats Privés & Donateurs", type: "Fonds Propres", target: 150000, collected: 80000 },
+            { id: "rc-4", source: "Prestations Externes & Consultance", type: "Activité Propre", target: 100000, collected: 50000 }
+        ];
+
+        // Interactive states: Expense Categories
+        let expenseCategories = [
+            { id: "ec-1", title: "Salaires & Émoluments Enseignants", section: "Académie / Personnel", budget: 600000, spent: 340000 },
+            { id: "ec-2", title: "Infrastructures & Équipements Labos", section: "Investissement", budget: 450000, spent: 180000 },
+            { id: "ec-3", title: "Recherche Scientifique & Publications", section: "Recherche", budget: 250000, spent: 70000 },
+            { id: "ec-4", title: "Bourses & Affaires Sociales", section: "Social Étudiants", budget: 150000, spent: 30000 }
+        ];
+
+        // Historical analytical ledger of UPKOL
+        let ledgerTransactions = [
+            { id: "t-1", date: "16/06/2026", account: "Crédit - Minerval", description: "Perception Tranche 2 - Faculté Sciences", type: "entree", amount: 45000 },
+            { id: "t-2", date: "15/06/2026", account: "Débit - Infrastructures", description: "Achat serveurs informatiques labo chiffrage", type: "sortie", amount: 12000 },
+            { id: "t-3", date: "14/06/2026", account: "Crédit - Subvention", description: "Versement Fonds de Roulement Gouvernorat Lualaba", type: "entree", amount: 25000 },
+            { id: "t-4", date: "10/06/2026", account: "Débit - Salaires", description: "Paiement des salaires mensuels du corps académique", type: "sortie", amount: 85000 },
+            { id: "t-5", date: "05/06/2026", account: "Débit - Bourses", description: "Délivrance bourses d'excellence semestre 1", type: "sortie", amount: 15000 }
+        ];
+
+        // TOAST NOTIFICATIONS SYSTEM
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // TABS MANAGER
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+
+            // Triggers updates
+            if (tabId === 'overview') {
+                setTimeout(() => {
+                    renderFlowCharts();
+                    renderChargesCharts();
+                }, 100);
+            } else if (tabId === 'revenues') {
+                renderRevenuesTable();
+            } else if (tabId === 'expenses') {
+                renderExpensesTable();
+            } else if (tabId === 'ledger') {
+                renderLedgerTable();
+            }
+        }
+
+        // CHART RENDERING
+        function renderFlowCharts() {
+            const ctx = document.getElementById('consolidatedFlowChart');
+            if (!ctx) return;
+
+            if (flowChartInstance) {
+                flowChartInstance.destroy();
+            }
+
+            flowChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Janv', 'Févr', 'Mars', 'Avril', 'Mai', 'Juin'],
+                    datasets: [
+                        {
+                            label: 'Entrées réelles ($)',
+                            data: [150000, 220000, 180000, 160000, 210000, 60000],
+                            backgroundColor: 'rgba(255, 215, 0, 0.85)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Sorties réelles ($)',
+                            data: [90000, 110000, 130000, 95000, 140000, 55000],
+                            backgroundColor: 'rgba(18, 18, 18, 0.85)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderChargesCharts() {
+            const ctx = document.getElementById('chargesDistributionChart');
+            if (!ctx) return;
+
+            if (chargesChartInstance) {
+                chargesChartInstance.destroy();
+            }
+
+            // Map data dynamically from state
+            const labels = expenseCategories.map(ec => ec.title.split(' ')[0]);
+            const dataValues = expenseCategories.map(ec => ec.spent);
+
+            chargesChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: ['#121212', '#3B82F6', '#FFD700', '#F43F5E'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // RENDER DATA TABLES
+        function renderRevenuesTable() {
+            const tbody = document.getElementById('revenues-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            revenueChannels.forEach(chan => {
+                const percent = ((chan.collected / chan.target) * 100).toFixed(0);
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${chan.source}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${chan.type}</td>
+                        <td class="px-6 py-4 text-center font-black text-slate-700">${chan.target.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-center font-black text-emerald-600">${chan.collected.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">${percent}%</span>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expenses-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            expenseCategories.forEach(cat => {
+                const percent = ((cat.spent / cat.budget) * 100).toFixed(0);
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${cat.title}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${cat.section}</td>
+                        <td class="px-6 py-4 text-center font-black text-slate-700">${cat.budget.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-center font-black text-rose-500">${cat.spent.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-100">${percent}%</span>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function renderLedgerTable(filter = '') {
+            const tbody = document.getElementById('ledger-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            let list = ledgerTransactions;
+
+            if (filter.trim() !== '') {
+                list = ledgerTransactions.filter(t => 
+                    t.account.toLowerCase().includes(filter.toLowerCase()) || 
+                    t.description.toLowerCase().includes(filter.toLowerCase())
+                );
+            }
+
+            list.forEach(t => {
+                const isEntree = t.type === 'entree';
+                const fluxBadge = isEntree 
+                    ? `<span class="bg-green-50 text-emerald-700 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Crédit</span>`
+                    : `<span class="bg-red-50 text-rose-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-red-100">Débit</span>`;
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">${t.date}</td>
+                        <td class="px-6 py-4 text-xs font-black text-slate-700 uppercase">${t.account}</td>
+                        <td class="px-6 py-4 text-xs font-medium text-slate-600">${t.description}</td>
+                        <td class="px-6 py-4 text-center">${fluxBadge}</td>
+                        <td class="px-6 py-4 text-right font-black ${isEntree ? 'text-emerald-600' : 'text-rose-500'}">
+                            ${isEntree ? '+' : '-'}${t.amount.toLocaleString()}$
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function searchLedgerTransactions(val) {
+            renderLedgerTable(val);
+        }
+
+        function exportAccountingLedger() {
+            showCustomToast("Exportation du Grand Livre au format CSV initiée !", "success");
+        }
+
+        // CREATE NEW RECORDS
+        function registerNewRevenue(event) {
+            event.preventDefault();
+            const title = document.getElementById('rev-title').value.trim();
+            const categoryId = document.getElementById('rev-category').value;
+            const amount = parseFloat(document.getElementById('rev-amount').value) || 0;
+
+            if (!title || amount <= 0) return;
+
+            // Update local state value
+            const chan = revenueChannels.find(c => c.id === categoryId);
+            if (chan) {
+                chan.collected += amount;
+            }
+
+            // Write into Historical ledger
+            ledgerTransactions.unshift({
+                id: 't-' + Date.now(),
+                date: new Date().toLocaleDateString('fr-FR'),
+                account: `Crédit - ${chan ? chan.type : 'Recettes'}`,
+                description: title,
+                type: "entree",
+                amount: amount
+            });
+
+            recalculateFinancialKPIs();
+            showCustomToast(`Versement de ${amount.toLocaleString()}$ validé en caisse !`, "success");
+            document.getElementById('revenue-upload-form').reset();
+            renderRevenuesTable();
+        }
+
+        function registerNewExpense(event) {
+            event.preventDefault();
+            const title = document.getElementById('exp-title').value.trim();
+            const categoryId = document.getElementById('exp-category').value;
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+
+            if (!title || amount <= 0) return;
+
+            // Update local state value
+            const cat = expenseCategories.find(c => c.id === categoryId);
+            if (cat) {
+                cat.spent += amount;
+            }
+
+            // Write into Historical ledger
+            ledgerTransactions.unshift({
+                id: 't-' + Date.now(),
+                date: new Date().toLocaleDateString('fr-FR'),
+                account: `Débit - ${cat ? cat.section : 'Dépenses'}`,
+                description: title,
+                type: "sortie",
+                amount: amount
+            });
+
+            recalculateFinancialKPIs();
+            showCustomToast(`Décaissement de ${amount.toLocaleString()}$ liquidé avec succès !`, "success");
+            document.getElementById('expense-upload-form').reset();
+            renderExpensesTable();
+        }
+
+        // RECALCULATE METRICS
+        function recalculateFinancialKPIs() {
+            let totalRevenues = 0;
+            let totalExpenses = 0;
+
+            revenueChannels.forEach(rc => totalRevenues += rc.collected);
+            expenseCategories.forEach(ec => totalExpenses += ec.spent);
+
+            const cashAvailable = totalRevenues - totalExpenses;
+
+            document.getElementById('overview-revenues').innerText = `${totalRevenues.toLocaleString()}$`;
+            document.getElementById('overview-expenses').innerText = `${totalExpenses.toLocaleString()}$`;
+            document.getElementById('overview-cash').innerText = `${cashAvailable.toLocaleString()}$`;
+
+            const revProgress = ((totalRevenues / 1450000

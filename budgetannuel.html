@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direction des Finances & Budget - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Chart.js for Financial Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        .card-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-animate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (TREASURER LOGIN)   -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-wallet text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Trésorerie Centrale</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Direction du Budget & Finances</span>
+            </div>
+
+            <div class="w-full space-y-4 mb-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Identifiant Budgétaire</label>
+                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: kasongo.finances@upkol.cd" value="kasongo.finances@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Clef de Chiffrement Financier</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Connectez-vous avec les identifiants pré-remplis de l'Intendant Général / Directeur des Finances.</span>
+                </div>
+            </div>
+
+            <button id="btn-login-budget" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                Ouvrir les coffres académiques
+                <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR BUDGET & TRESORERIE                -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-coins text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL BUDGET</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Trésorier Général</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Pilotage Financier</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-line mr-3 w-5 text-lg"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-revenue" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('revenue')">
+                <i class="fas fa-funnel-dollar mr-3 w-5 text-lg"></i> Recettes & Flux
+            </a>
+
+            <a href="#" id="menu-requests" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('requests')">
+                <i class="fas fa-file-invoice-dollar mr-3 w-5 text-lg"></i> Allocations Doyens
+                <span id="badge-pending-requests" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full">2</span>
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Modélisation & Audit</div>
+
+            <a href="#" id="menu-modeler" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('modeler')">
+                <i class="fas fa-sliders mr-3 w-5 text-lg"></i> Optimiseur Budgétaire
+            </a>
+
+            <a href="#" id="menu-ledger" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('ledger')">
+                <i class="fas fa-book mr-3 w-5 text-lg"></i> Grand Livre Comptable
+            </a>
+
+            <a href="#" id="menu-directives" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('directives')">
+                <i class="fas fa-bullhorn mr-3 w-5 text-lg"></i> Circulaires Financières
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- HEADER ACADEMIQUE -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Direction <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Financière</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="financial-header-name" class="text-xs font-black text-slate-900 uppercase">Prof. Dr. Kasongo</p>
+                    <p id="financial-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Intendant Général d'UPKOL</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-tie text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE BODY CONTENT -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: VUE D'ENSEMBLE (OVERVIEW)           -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Budget Annuel Global</p>
+                                <h3 id="stat-annual-budget" class="text-3xl font-black text-slate-900">1.450.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-shield-halved text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
+                            <span>Exercice budgétaire 2026</span>
+                            <span class="text-blue-500 font-black">UPKOL</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Recettes Perçues (To Date)</p>
+                                <h3 id="stat-revenues-collected" class="text-3xl font-black text-slate-900">980.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-funnel-dollar text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
+                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> 67% des objectifs de collecte
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Dépenses Liquidées</p>
+                                <h3 id="stat-expenses-liquidated" class="text-3xl font-black text-slate-900">620.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-receipt text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
+                            <i class="fas fa-calculator mr-2 text-xs"></i> 42% d'enveloppe consommée
+                        </div>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Trésorerie Disponible</p>
+                                <h3 id="stat-cash-available" class="text-3xl font-black text-slate-900">360.000$</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-wallet text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-amber-600 font-bold">
+                            <i class="fas fa-vault mr-1 text-emerald-500"></i> Solde excédentaire net
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS CHARTS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Graphique: Flux de Trésorerie Mensuelle -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Évaluation Semestrielle</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Flux financiers : Entrées vs Sorties</h3>
+                            </div>
+                            <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Trésorerie Centrale</span>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="budgetFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Department Allocation Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Répartition Analytique</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Allocations par Postes</h3>
+                            
+                            <div class="relative h-48 flex justify-center items-center">
+                                <canvas id="allocationOverviewPie"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 leading-relaxed mt-4">
+                            <i class="fas fa-university text-amber-500 mr-2"></i>
+                            Les salaires et l'amélioration des infrastructures laboratoires constituent les priorités stratégiques de cette période.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: RECETTES & FLUX (REVENUE)           -->
+            <!-- ========================================== -->
+            <div id="tab-revenue" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Saisie / Visualisation des lignes de Recettes -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Canaux d'Alimentation Budgétaire</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Origine des fonds constituant le budget d'UPKOL</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left min-w-[550px]">
+                                <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-4">Source de Financement</th>
+                                        <th class="px-6 py-4">Type de Canal</th>
+                                        <th class="px-6 py-4 text-center">Cible Estimée</th>
+                                        <th class="px-6 py-4 text-center">Perçu Réel</th>
+                                        <th class="px-6 py-4 text-right">Taux de Collecte</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenue-channels-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Enregistrer un nouveau financement direct -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Guichet d'Alimentation</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Déclarer un versement externe</h3>
+                            
+                            <form id="revenue-upload-form" class="space-y-4" onsubmit="registerNewRevenue(event)">
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Libellé du versement</label>
+                                    <input type="text" id="rev-title" required placeholder="ex: Subvention du Gouvernorat Lualaba" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Catégorie</label>
+                                    <select id="rev-category" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                        <option value="state">Subvention de l'État</option>
+                                        <option value="donations">Donateurs & Partenariats</option>
+                                        <option value="fees">Frais d'Inscription (Complémentaire)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Montant Injecté ($)</label>
+                                    <input type="number" id="rev-amount" required placeholder="ex: 50000" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune shadow-inner">
+                                </div>
+                                <button type="submit" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">
+                                    <i class="fas fa-plus mr-2"></i> Créditer la trésorerie
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="bg-amber-50 p-4 rounded-2xl border border-yellow-200 text-[10px] text-slate-600 font-bold leading-relaxed mt-4">
+                            <i class="fas fa-circle-info text-amber-600 mr-2"></i>
+                            Toute injection budgétaire doit être appuyée par un bordereau de versement bancaire officiel.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: ALLOCATIONS DOYENS (REQUESTS)       -->
+            <!-- ========================================== -->
+            <div id="tab-requests" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Requêtes de Financement des Faculté & Départements</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Arbitrage requis du Trésorier pour activer et solder l'enveloppe budgétaire</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[700px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Faculté Émettrice</th>
+                                    <th class="px-6 py-4">Projet / Libellé de Charge</th>
+                                    <th class="px-6 py-4 text-center">Montant Soumis</th>
+                                    <th class="px-6 py-4">Demandeur</th>
+                                    <th class="px-6 py-4 text-right">Arbitrage financier</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requests-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: OPTIMISEUR BUDGÉTAIRE (MODELER)     -->
+            <!-- ========================================== -->
+            <div id="tab-modeler" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Simulateur interactif sliders -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2 space-y-6">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Simulation Exécutive</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Répartition Budgétaire d'Élite</h3>
+                        </div>
+
+                        <div class="space-y-6">
+                            <!-- Slider 1 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
+                                    <span>Salaires & Émoluments Enseignants</span>
+                                    <span id="label-val-salaries">40%</span>
+                                </div>
+                                <input type="range" id="slider-salaries" min="10" max="60" value="40" class="w-full accent-upkol-jaune cursor-pointer animate-pulse" oninput="updateBudgetSimulation()">
+                            </div>
+
+                            <!-- Slider 2 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
+                                    <span>Infrastructures & Équipements de Laboratoire</span>
+                                    <span id="label-val-infra">30%</span>
+                                </div>
+                                <input type="range" id="slider-infra" min="10" max="50" value="30" class="w-full accent-upkol-jaune cursor-pointer" oninput="updateBudgetSimulation()">
+                            </div>
+
+                            <!-- Slider 3 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
+                                    <span>Recherche Scientifique & Publications</span>
+                                    <span id="label-val-recherche">20%</span>
+                                </div>
+                                <input type="range" id="slider-recherche" min="5" max="40" value="20" class="w-full accent-upkol-jaune cursor-pointer" oninput="updateBudgetSimulation()">
+                            </div>
+
+                            <!-- Slider 4 -->
+                            <div>
+                                <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
+                                    <span>Bourses & Affaires Sociales Étudiantes</span>
+                                    <span id="label-val-bourses">10%</span>
+                                </div>
+                                <input type="range" id="slider-bourses" min="5" max="30" value="10" class="w-full accent-upkol-jaune cursor-pointer" oninput="updateBudgetSimulation()">
+                            </div>
+                        </div>
+
+                        <div id="budget-warning" class="hidden bg-red-50 text-red-700 text-xs font-black px-4 py-3 rounded-2xl border border-red-200">
+                            <i class="fas fa-triangle-exclamation mr-2 animate-bounce"></i> La distribution budgétaire totale dépasse 100%. Veuillez équilibrer l'enveloppe globale d'UPKOL.
+                        </div>
+
+                        <button onclick="saveBudgetAllocations()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-xs font-black uppercase tracking-wider py-4 px-8 rounded-xl transition-all shadow-md">
+                            <i class="fas fa-save mr-2"></i> Verrouiller l'Enveloppe Budgétaire
+                        </button>
+                    </div>
+
+                    <!-- Graphe Répartition Doughnut -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-center">
+                        <div class="text-center mb-4">
+                            <h3 class="font-black text-sm text-slate-900 uppercase">Aperçu Prévisionnel</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">Ventilation des Tranches</p>
+                        </div>
+                        <div class="relative max-h-64 flex justify-center">
+                            <canvas id="modelerDoughnutChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 5: GRAND LIVRE COMPTABLE (LEDGER)      -->
+            <!-- ========================================== -->
+            <div id="tab-ledger" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Registre Analytique des Transactions</h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Audit complet des flux financiers et des sorties de caisse</p>
+                    </div>
+
+                    <div class="p-6 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="ledger-search" oninput="searchLedgerTransactions(this.value)" placeholder="Filtrer par compte, projet, etc..." class="w-full bg-white border border-slate-200 p-3 pl-11 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                        </div>
+                        <button onclick="exportAccountingLedger()" class="bg-upkol-noir hover:bg-slate-800 text-upkol-jaune px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm">
+                            <i class="fas fa-file-export mr-2"></i> Exporter au format CSV
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[700px]">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Date de Valeur</th>
+                                    <th class="px-6 py-4">Compte Analytique</th>
+                                    <th class="px-6 py-4">Libellé Transactionnel</th>
+                                    <th class="px-6 py-4 text-center">Type de Flux</th>
+                                    <th class="px-6 py-4 text-right">Montant ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-body" class="text-sm divide-y divide-slate-100 font-medium">
+                                <!-- Injected dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 6: CIRCULAIRES FINANCIÈRES (DIRECTIVES)-->
+            <!-- ========================================== -->
+            <div id="tab-directives" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form to issue financial directive -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Communication de Trésorerie</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Rédiger une directive budgétaire</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titre de la Circulaire</label>
+                                <input type="text" id="dir-title" placeholder="Ex: Rappel sur l'apurement de la Tranche 2" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Corps du Communiqué Financier</label>
+                                <textarea id="dir-body" rows="6" placeholder="La Direction des Finances rappelle aux étudiants que..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune"></textarea>
+                            </div>
+                            
+                            <button onclick="publishFinancialDirective()" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-xs font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
+                                <i class="fas fa-bullhorn mr-2"></i> Diffuser la directive
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Displaying published directives -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Avis Actifs</h4>
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Bulletin financier de l'Université</h3>
+                        </div>
+
+                        <div class="space-y-4 flex-grow overflow-y-auto max-h-[480px]" id="published-directives-feed">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODALS & TOAST SYSTEMS                     -->
+    <!-- ========================================== -->
+    
+    <!-- 1. SYSTEM DIALOG CONFIRM -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modal-card">
+            <h3 id="modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Notification Financière</h3>
+            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Description de l'action comptable.</p>
+
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button id="modal-cancel-btn" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
+                <button id="modal-confirm-btn" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 shadow-md">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- CONSTANTS & DATABASE MOCKING ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let budgetLoggedUser = null;
+        let flowChartInstance = null;
+        let allocationPieInstance = null;
+        let modelerPieInstance = null;
+
+        // Seeding interactive budget channels (Revenues)
+        let revenueChannels = [
+            { id: "rc-1", source: "Minerval & Frais d'Inscriptions", type: "Frais Académiques", target: 800000, collected: 550000 },
+            { id: "rc-2", source: "Subventions du Ministère de l'ESU", type: "Trésor Public", target: 400000, collected: 300000 },
+            { id: "rc-3", source: "Partenariats Privés & Donateurs", type: "Fonds Propres", target: 150000, collected: 80000 },
+            { id: "rc-4", source: "Prestations Externes & Consultance", type: "Activité Propre", target: 100000, collected: 50000 }
+        ];
+
+        // Seeding interactive Deanery allocations (Expenses)
+        let deaneryAllocations = [
+            { id: "da-1", dean: "Prof. Dr. Kakudji", faculty: "Sciences & Technologies", project: "Acquisition serveurs de cryptographie", amount: 15000, status: "attente_tresorerie" },
+            { id: "da-2", dean: "CT Mukendi", faculty: "Sciences de la Santé", project: "Abonnement bibliothèque médicale numérique", amount: 8000, status: "attente_tresorerie" },
+            { id: "da-3", dean: "Prof. Dr. Ilunga", faculty: "Droit & Sciences Politiques", project: "Rénovation de la salle de procès d'entraînement", amount: 12000, status: "valide" }
+        ];
+
+        // Ledger of recent transactional receipts/expenses
+        let ledgerTransactions = [
+            { id: "t-1", date: "16/06/2026", account: "Crédit - Minerval", description: "Perception Tranche 2 - Jean Mukendi", type: "entree", amount: 150 },
+            { id: "t-2", date: "15/06/2026", account: "Débit - Infrastructures", description: "Achat projecteurs pour les auditoires", type: "sortie", amount: 4500 },
+            { id: "t-3", date: "14/06/2026", account: "Crédit - Subvention", description: "Acompte d'équipement du Cabinet Lualaba", type: "entree", amount: 10000 },
+            { id: "t-4", date: "10/06/2026", account: "Débit - Salaires", description: "Mensualités du corps professoral (Mai)", type: "sortie", amount: 85000 },
+            { id: "t-5", date: "05/06/2026", account: "Débit - Bourses", description: "Versement bourses d'excellence L1 Informatique", type: "sortie", amount: 12000 }
+        ];
+
+        // Financial directives circulars
+        let financialDirectives = [
+            { id: 1, title: "Moratoire sur l'apurement de la Deuxième Tranche", body: "La Direction des Finances informe tous les étudiants que l'accès aux salles d'examens du S1 reste strictement conditionné par la présentation du reçu d'apurement de la tranche de 150$. Aucun arrangement ne sera toléré après le 22 Juin 2026.", date: "15/06/2026" },
+            { id: 2, title: "Rapprochement des fiches de syllabus", body: "Il est demandé à tous les directeurs de départements de rapprocher les fiches de syllabus dûment validées par le Décanat auprès du Secrétariat Général Administratif afin de débloquer l'enveloppe forfaitaire d'appui pédagogique.", date: "10/06/2026" }
+        ];
+
+        // --- SYSTEM DIALOG HELPER ---
+        function showCustomConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const modalCard = document.getElementById('modal-card');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalCard.classList.remove('scale-95');
+            }, 10);
+
+            const close = () => {
+                modal.classList.add('opacity-0');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            confirmBtn.onclick = () => {
+                close();
+                onConfirm();
+            };
+
+            cancelBtn.onclick = close;
+        }
+
+        // --- TOAST NOTIFICATIONS ---
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- NAVIGATION BETWEEN TABS ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+
+            // Specific tab render triggers
+            if (tabId === 'overview') {
+                setTimeout(() => {
+                    renderBudgetFlowChart();
+                    renderAllocationOverviewPie();
+                }, 100);
+            } else if (tabId === 'revenue') {
+                renderRevenueChannelsTable();
+            } else if (tabId === 'requests') {
+                renderRequestsTable();
+            } else if (tabId === 'modeler') {
+                setTimeout(updateBudgetSimulation, 100);
+            } else if (tabId === 'ledger') {
+                renderLedgerTable();
+            } else if (tabId === 'directives') {
+                renderFinancialDirectives();
+            }
+        }
+
+        // --- TAB 1: FLOW CHARTS (CHART.JS) ---
+        function renderBudgetFlowChart() {
+            const ctx = document.getElementById('budgetFlowChart');
+            if (!ctx) return;
+
+            if (flowChartInstance) {
+                flowChartInstance.destroy();
+            }
+
+            flowChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Janv', 'Févr', 'Mars', 'Avril', 'Mai', 'Juin'],
+                    datasets: [
+                        {
+                            label: 'Entrées ($)',
+                            data: [150000, 220000, 180000, 160000, 210000, 60000],
+                            backgroundColor: 'rgba(255, 215, 0, 0.85)', // Gold
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Sorties ($)',
+                            data: [90000, 110000, 130000, 95000, 140000, 55000],
+                            backgroundColor: 'rgba(18, 18, 18, 0.85)', // Black
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderAllocationOverviewPie() {
+            const ctx = document.getElementById('allocationOverviewPie');
+            if (!ctx) return;
+
+            if (allocationPieInstance) {
+                allocationPieInstance.destroy();
+            }
+
+            allocationPieInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Salaires', 'Infrastructures', 'Recherche', 'Bourses'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#121212', '#3B82F6', '#FFD700', '#F43F5E'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // --- TAB 2: REVENUE CHANNELS INJECTION ---
+        function renderRevenueChannelsTable() {
+            const tbody = document.getElementById('revenue-channels-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            revenueChannels.forEach(chan => {
+                const percent = ((chan.collected / chan.target) * 100).toFixed(0);
+                let colorClass = 'text-slate-600 bg-slate-100';
+                if (percent >= 70) colorClass = 'text-green-700 bg-green-50 border border-green-100';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-black text-slate-900">${chan.source}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${chan.type}</td>
+                        <td class="px-6 py-4 text-center font-black text-slate-700">${chan.target.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-center font-black text-emerald-600">${chan.collected.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${percent}%</span>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function registerNewRevenue(event) {
+            event.preventDefault();
+            const title = document.getElementById('rev-title').value.trim();
+            const category = document.getElementById('rev-category').value;
+            const amount = parseFloat(document.getElementById('rev-amount').value) || 0;
+
+            if (!title || amount <= 0) {
+                showCustomToast("Tous les champs de versement doivent être renseignés.", "error");
+                return;
+            }
+
+            // Find matching allocation channel to update collected stats
+            let channel;
+            if (category === 'state') channel = revenueChannels.find(c => c.id === "rc-2");
+            else if (category === 'donations') channel = revenueChannels.find(c => c.id === "rc-3");
+            else channel = revenueChannels.find(c => c.id === "rc-1");
+
+            if (channel) {
+                channel.collected += amount;
+            }
+
+            // Push into historical ledger registry
+            ledgerTransactions.unshift({
+                id: 't-' + Date.now(),
+                date: new Date().toLocaleDateString('fr-FR'),
+                account: `Crédit - ${category.toUpperCase()}`,
+                description: title,
+                type: "entree",
+                amount: amount
+            });
+
+            // Recalculate KPIs
+            recalculateOverviewKPIs();
+            renderRevenueChannelsTable();
+            showCustomToast(`Versement de ${amount.toLocaleString()}$ validé en trésorerie !`, "success");
+            document.getElementById('revenue-upload-form').reset();
+        }
+
+        // --- TAB 3: DEANERY FINANCING REQUESTS ---
+        function renderRequestsTable() {
+            const tbody = document.getElementById('requests-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const pendingRequests = deaneryAllocations.filter(req => req.status === 'attente_tresorerie');
+
+            if (pendingRequests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Aucune enveloppe facultaire en attente de décaissement.</td></tr>`;
+                document.getElementById('badge-pending-requests').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('badge-pending-requests').innerText = pendingRequests.length;
+            document.getElementById('badge-pending-requests').classList.remove('hidden');
+
+            pendingRequests.forEach(req => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all" id="req-row-${req.id}">
+                        <td class="px-6 py-4 font-black text-slate-900">${req.faculty}</td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-700 uppercase">${req.project}</td>
+                        <td class="px-6 py-4 text-center font-black text-red-600">${req.amount.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-xs text-slate-500">${req.dean}</td>
+                        <td class="px-6 py-4 text-right flex space-x-2 justify-end">
+                            <button onclick="arbitrateRequest('${req.id}', 'rejet')" class="text-rose-500 hover:text-rose-700 text-xs font-black uppercase">Rejeter</button>
+                            <button onclick="arbitrateRequest('${req.id}', 'valide')" class="bg-upkol-noir hover:bg-slate-800 text-upkol-jaune px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all shadow-sm">Décaisser</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function arbitrateRequest(requestId, decision) {
+            const request = deaneryAllocations.find(r => r.id === requestId);
+            if (!request) return;
+
+            const actionLabel = decision === 'valide' ? 'd' : 'rejet';
+            showCustomConfirm(
+                "Arbitrage de demande financière",
+                `Confirmez-vous le ${decision === 'valide' ? 'décaissement immédiat' : 'rejet'} de l'enveloppe de ${request.amount.toLocaleString()}$ demandée par le ${request.dean} pour : "${request.project}" ?`,
+                () => {
+                    request.status = decision;
+                    
+                    if (decision === 'valide') {
+                        // Push into ledger
+                        ledgerTransactions.unshift({
+                            id: 't-' + Date.now(),
+                            date: new Date().toLocaleDateString('fr-FR'),
+                            account: "Débit - Allocations",
+                            description: `Projet Doyen : ${request.project} (${request.faculty})`,
+                            type: "sortie",
+                            amount: request.amount
+                        });
+                        recalculateOverviewKPIs();
+                        showCustomToast("Enveloppe décaissée avec succès !", "success");
+                    } else {
+                        showCustomToast("Demande de financement rejetée.", "info");
+                    }
+
+                    renderRequestsTable();
+                }
+            );
+        }
+
+        // --- TAB 4: INTERACTIVE BUDGET OPTIMIZER ---
+        function updateBudgetSimulation() {
+            const valSalaries = parseInt(document.getElementById('slider-salaries').value);
+            const valInfra = parseInt(document.getElementById('slider-infra').value);
+            const valRecherche = parseInt(document.getElementById('slider-recherche').value);
+            const valBourses = parseInt(document.getElementById('slider-bourses').value);
+
+            const total = valSalaries + valInfra + valRecherche + valBourses;
+
+            document.getElementById('label-val-salaries').innerText = `${valSalaries}%`;
+            document.getElementById('label-val-infra').innerText = `${valInfra}%`;
+            document.getElementById('label-val-recherche').innerText = `${valRecherche}%`;
+            document.getElementById('label-val-bourses').innerText = `${valBourses}%`;
+
+            const warning = document.getElementById('budget-warning');
+            if (total > 100) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+
+            renderModelerPieChart(valSalaries, valInfra, valRecherche, valBourses);
+        }
+
+        function renderModelerPieChart(s, i, r, b) {
+            const ctx = document.getElementById('modelerDoughnutChart');
+            if (!ctx) return;
+
+            if (modelerPieInstance) {
+                modelerPieInstance.destroy();
+            }
+
+            modelerPieInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Salaires', 'Infrastructures', 'Recherche', 'Bourses'],
+                    datasets: [{
+                        data: [s, i, r, b],
+                        backgroundColor: ['#121212', '#3B82F6', '#FFD700', '#F43F5E'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        function saveBudgetAllocations() {
+            const s = parseInt(document.getElementById('slider-salaries').value);
+            const i = parseInt(document.getElementById('slider-infra').value);
+            const r = parseInt(document.getElementById('slider-recherche').value);
+            const b = parseInt(document.getElementById('slider-bourses').value);
+
+            if (s + i + r + b > 100) {
+                showCustomToast("Enregistrement impossible : le total des tranches allouées dépasse 100%", "error");
+                return;
+            }
+
+            showCustomToast("Enveloppe budgétaire annuelle scellée par la Trésorerie !", "success");
+        }
+
+        // --- TAB 5: COMPTABLE LEDGER AUDIT ---
+        function renderLedgerTable(filter = '') {
+            const tbody = document.getElementById('ledger-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            let list = ledgerTransactions;
+
+            if (filter.trim() !== '') {
+                list = ledgerTransactions.filter(t => 
+                    t.account.toLowerCase().includes(filter.toLowerCase()) || 
+                    t.description.toLowerCase().includes(filter.toLowerCase())
+                );
+            }
+
+            list.forEach(t => {
+                const isEntree = t.type === 'entree';
+                const typeBadge = isEntree 
+                    ? `<span class="bg-green-50 text-emerald-700 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Recette (Crédit)</span>`
+                    : `<span class="bg-red-50 text-rose-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-red-100">Dépense (Débit)</span>`;
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">${t.date}</td>
+                        <td class="px-6 py-4 text-xs font-black text-slate-700 uppercase">${t.account}</td>
+                        <td class="px-6 py-4 text-xs font-medium text-slate-600">${t.description}</td>
+                        <td class="px-6 py-4 text-center">${typeBadge}</td>
+                        <td class="px-6 py-4 text-right font-black ${isEntree ? 'text-emerald-600' : 'text-rose-500'}">
+                            ${isEntree ? '+' : '-'}${t.amount.toLocaleString()}$
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function searchLedgerTransactions(val) {
+            renderLedgerTable(val);
+        }
+
+        function exportAccountingLedger() {
+            showCustomToast("Exportation comptable CSV générée avec succès !", "info");
+        }
+
+        // --- TAB 6: RESOLUTIONS & ANNOUNCEMENTS ---
+        function renderFinancialDirectives() {
+            const feed = document.getElementById('published-directives-feed');
+            if (!feed) return;
+
+            feed.innerHTML = '';
+            financialDirectives.forEach(dir => {
+                feed.insertAdjacentHTML('beforeend', `
+                    <div class="p-5 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 relative shadow-sm">
+                        <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">${dir.date}</span>
+                        <h4 class="font-black text-sm text-slate-950 uppercase">${dir.title}</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">${dir.body}</p>
+                        <div class="text-right text-[8px] font-black text-slate-400 uppercase tracking-widest pt-2">
+                            La Direction des Finances • Signé électroniquement
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function publishFinancialDirective() {
+            const title = document.getElementById('dir-title').value.trim();
+            const body = document.getElementById('dir-body').value.trim();
+
+            if (!title || !body) {
+                showCustomToast("Tous les champs sont requis pour diffuser un avis.", "error");
+                return;
+            }
+
+            const newDir = {
+                id: Date.now(),
+                title: title,
+                body: body,
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+
+            financialDirectives.unshift(newDir);
+            renderFinancialDirectives();
+            showCustomToast("La directive financière a été promulguée !", "success");
+
+            document.getElementById('dir-title').value = '';
+            document.getElementById('dir-body').value = '';
+        }
+
+        // --- RECALCULATE OVERVIEW ---
+        function recalculateOverviewKPIs() {
+            let totalRevenues = 0;
+            let totalExpenses = 0;
+
+            revenueChannels.forEach(c => totalRevenues += c.collected);
+            ledgerTransactions.forEach(t => {
+                if (t.type === 'sortie') totalExpenses += t.amount;
+            });
+
+            const cashAvailable = totalRevenues - totalExpenses;
+
+            document.getElementById('stat-revenues-collected').innerText = `${totalRevenues.toLocaleString()}$`;
+            document.getElementById('stat-expenses-liquidated').innerText = `${totalExpenses.toLocaleString()}$`;
+            document.getElementById('stat-cash-available').innerText = `${cashAvailable.toLocaleString()}$`;
+        }
+
+        // --- AUTHENTICATION ---
+        document.getElementById('btn-login-budget').onclick = function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (email.toLowerCase() === "kasongo.finances@upkol.cd" && pass === "Pass1234") {
+                const gateway = document.getElementById('login-gateway');
+                gateway.style.opacity = '0';
+                
+                budgetLoggedUser = { name: "Prof. Dr. Kasongo", title: "Intendant Général d'UPKOL" };
+                localStorage.setItem('connectedTreasurer', JSON.stringify(budgetLoggedUser));
+
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                    showCustomToast("Direction financière officiellement ouverte !", 'success');
+                }, 400);
+            } else {
+                showCustomToast("Identifiants comptables incorrects.", 'error');
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('connectedTreasurer');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                showCustomToast("Coffres financiers d'UPKOL clos.", "info");
+            }, 10);
+        }
+
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // --- INITIAL SEQUENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedTreasurer');
+            if (saved) {
+                budgetLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+            }
+
+            recalculateOverviewKPIs();
+            showTab('overview');
+        });
+    </script>
+</body>
+</html>

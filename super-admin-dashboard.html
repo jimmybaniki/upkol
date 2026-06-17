@@ -112,15 +112,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Comptes</p>
-                        <h3 class="text-2xl font-black text-gray-800" id="stat-total">0</h3>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Étudiants Inscrits</p>
+                        <h3 class="text-2xl font-black text-gray-800" id="stat-inscribed">0</h3>
                     </div>
                     <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-users"></i></div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-green-500 flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Actifs</p>
-                        <h3 class="text-2xl font-black text-gray-800" id="stat-active">0</h3>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Actifs</p>
+                        <h3 class="text-2xl font-black text-gray-800" id="stat-total-active">0</h3>
                     </div>
                     <div class="w-10 h-10 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-user-check"></i></div>
                 </div>
@@ -310,6 +310,7 @@
 
         // Charger les utilisateurs depuis le localStorage (partagé avec le dashboard gateway)
         let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+        console.log("Initial users from localStorage:", users);
 
         // --- FONCTIONS INITIALES ---
         async function initAdmin() {
@@ -320,22 +321,108 @@
                     { id: generateId(), name: 'Dr. Kalala', email: 'kalala@upkol.cd', password: 'pass', role: 'enseignant', matricule: 'ENS-24-2045', authorized: true, createdAt: new Date().toISOString() },
                     { id: generateId(), name: 'Jean Mukendi', email: 'jean@upkol.cd', password: 'pass', role: 'etudiant', matricule: 'ETU-24-8890', authorized: false, createdAt: new Date().toISOString() } // Non autorisé par défaut
                 ];
+                // Initialize submittedBy for demo users to avoid 'undefined' if not explicitly set
+                users.forEach(user => user.submittedBy = user.submittedBy || '---');
                 saveData();
             }
             
-            // Récupérer les emails validés par le rectorat
-            const { data } = await _supabase
-                .from('candidatures')
-                .select('email')
-                .eq('status', 'validé');
-            
-            validatedCandidaturesEmails = data ? data.map(c => c.email.toLowerCase()) : [];
+            // Récupérer les candidatures envoyées au Super Admin par le Recteur
+            const candidatures = await chargerCandidaturesRecues();
+            validatedCandidaturesEmails = candidatures.map(c => c.email.toLowerCase());
+
+            // Intégrer les candidatures reçues dans le tableau de Super Admin
+            candidatures.forEach(candidature => {
+                const emailLower = candidature.email.toLowerCase();
+                if (!users.some(u => u.email.toLowerCase() === emailLower)) {
+                    users.push({
+                        id: candidature.user_id || generateId(),
+                        name: candidature.full_name || 'Candidat(e)',
+                        email: candidature.email,
+                        password: 'Temp@1234',
+                        role: 'etudiant',
+                        matricule: generateMatricule('etudiant'),
+                        authorized: false,
+                        requestedAuthorization: true,
+                        submittedBy: 'Recteur',
+                        createdAt: candidature.created_at || new Date().toISOString(),
+                        candidatureId: candidature.id
+                    });
+                }
+            });
+
             renderTable();
         }
 
         function saveData() {
+            console.log("Saving data to localStorage:", users);
             localStorage.setItem('superAdminUsers', JSON.stringify(users));
             updateStats();
+        }
+
+        async function chargerCandidaturesRecues() {
+            try {
+                const { data, error } = await _supabase
+                    .from('candidatures')
+                    .select('*')
+                    .eq('status', 'envoye_au_superadmin');
+
+                if (error) {
+                    showCustomToast("Erreur lors de la récupération des candidatures : " + error.message, 'error');
+                    return [];
+                }
+
+                console.log("Candidatures en attente de création de compte par le Super Admin :", data);
+                return data || [];
+            } catch (error) {
+                console.error("Erreur lors du chargement des candidatures reçues :", error);
+                showCustomToast('Erreur lors du chargement des candidatures.', 'error');
+                return [];
+            }
+        }
+
+        async function finaliserInscriptionParSuperAdmin(candidature) {
+            try {
+                const userId = candidature.user_id || candidature.id;
+
+                const { error: updateError } = await _supabase
+                    .from('candidatures')
+                    .update({ status: 'approuve' })
+                    .eq('id', candidature.id);
+
+                if (updateError) {
+                    showCustomToast('Erreur lors de la validation finale : ' + updateError.message, 'error');
+                    return;
+                }
+
+                const { error: insertError } = await _supabase
+                    .from('profiles')
+                    .insert([{ 
+                        id: userId,
+                        name: candidature.full_name,
+                        email: candidature.email,
+                        role: 'etudiant',
+                        authorized: true,
+                        candidature_id: candidature.id
+                    }]);
+
+                if (insertError) {
+                    showCustomToast('Erreur lors de la création du profil : ' + insertError.message, 'error');
+                    return;
+                }
+
+                showCustomToast('Inscription finale approuvée par le Super Admin.', 'success');
+
+                const localUser = users.find(u => u.candidatureId === candidature.id || u.email.toLowerCase() === candidature.email.toLowerCase());
+                if (localUser) {
+                    localUser.authorized = true;
+                    localUser.requestedAuthorization = false;
+                    saveData();
+                    renderTable(document.getElementById('searchInput').value);
+                }
+            } catch (error) {
+                console.error('Erreur critique lors de la finalisation de l\'inscription :', error);
+                showCustomToast('Erreur critique lors de la finalisation de l\'inscription.', 'error');
+            }
         }
 
         // --- GÉNÉRATION D'IDENTIFIANTS ---
@@ -353,6 +440,7 @@
         // --- GESTION DU TABLEAU ---
         function renderTable(filterText = '') {
             const tbody = document.getElementById('usersTableBody');
+            console.log("Rendering table. Current users array:", users);
             const emptyState = document.getElementById('emptyState');
             tbody.innerHTML = '';
 
@@ -381,6 +469,7 @@
                 });
             }
 
+            console.log("Filtered users for display:", filteredUsers);
             if (filteredUsers.length === 0) {
                 emptyState.classList.remove('hidden');
                 emptyState.classList.add('flex');
@@ -404,7 +493,7 @@
                 } else if (user.requestedAuthorization) {
                     statusBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-[10px] font-black uppercase"><i class="fas fa-hourglass-half mr-1"></i> Soumis pour autorisation</span>`;
                     actionButton = `
-                        <button onclick="approveAuthorization('${user.id}')" class="w-8 h-8 rounded bg-upkol-jaune hover:bg-yellow-400 text-black flex items-center justify-center" title="Approuver la demande">
+                        <button onclick="processPendingAccount('${user.id}')" class="w-8 h-8 rounded bg-upkol-jaune hover:bg-yellow-400 text-black flex items-center justify-center" title="Approuver la demande">
                             <i class="fas fa-user-check"></i>
                         </button>
                     `;
@@ -449,7 +538,7 @@
                                 ${statusBadge}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">
+                                <span class="text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-2 py-1 rounded">
                                     ${user.submittedBy || '---'}
                                 </span>
                             </td>
@@ -478,8 +567,8 @@
     }
 
     function updateStats() {
-        document.getElementById('stat-total').innerText = users.length;
-        document.getElementById('stat-active').innerText = users.filter(u => u.authorized).length;
+        document.getElementById('stat-inscribed').innerText = users.filter(u => u.role === 'etudiant' && u.authorized).length;
+        document.getElementById('stat-total-active').innerText = users.filter(u => u.authorized).length;
         document.getElementById('stat-inactive').innerText = users.filter(u => !u.authorized).length;
     }
 
@@ -509,6 +598,22 @@
             saveData();
             renderTable(document.getElementById('searchInput').value);
             showCustomToast(`Demande d'autorisation pour ${users[userIndex].name} approuvée. Le compte est maintenant actif.`, 'success');
+        }
+    }
+
+    async function processPendingAccount(userId) {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        if (user.candidatureId) {
+            await finaliserInscriptionParSuperAdmin({
+                id: user.candidatureId,
+                user_id: user.id,
+                full_name: user.name,
+                email: user.email
+            });
+        } else {
+            approveAuthorization(userId);
         }
     }
 

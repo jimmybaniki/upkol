@@ -6,6 +6,20 @@
     <title>Inscription - UPKOL</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -84,7 +98,7 @@
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Nom Complet</label>
-                                <input type="text" required placeholder="Ex: Jean Mukendi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="text" id="fullName" required placeholder="Ex: Jean Mukendi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Lieu de naissance</label>
@@ -96,11 +110,11 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Email de contact</label>
-                                <input type="email" required placeholder="votre@email.com" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="email" id="email" required placeholder="votre@email.com" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Numéro de Téléphone</label>
-                                <input type="tel" required placeholder="+243 ..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="tel" id="phone" required placeholder="+243 ..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
                             </div>
                         </div>
                     </div>
@@ -131,7 +145,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Niveau d'étude souhaité</label>
-                                <select required class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
+                                <select required id="academicLevel" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
                                     <option>Licence 1 (LMD)</option>
                                     <option>Licence 2 (LMD)</option>
                                     <option>Licence 3 (LMD)</option>
@@ -143,7 +157,7 @@
 
                     <hr class="border-gray-100">
 
-                    <!-- Documents -->
+                    <!-- Parcours -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
                             <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">3</span>
@@ -152,11 +166,11 @@
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">École de provenance</label>
-                                <input type="text" required placeholder="Ex: Institut de la Mine" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="text" id="previousSchool" required placeholder="Ex: Institut de la Mine" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Pourcentage obtenu au diplôme d'état</label>
-                                <input type="number" required placeholder="Ex: 65" min="50" max="100" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="number" id="percentage" required placeholder="Ex: 65" min="50" max="100" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
                             </div>
                         </div>
                     </div>
@@ -255,53 +269,82 @@
         </div>
     </footer>
 
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
     <script>
+        // Init Supabase Client
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Système de notification Toast (Évite les alert() bloquants)
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[280px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        // Écouteur de soumission du formulaire connecté à Supabase
         document.getElementById('registrationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Bouton de soumission pour l'animation
-            const btn = e.target.querySelector('button');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Envoi en cours...';
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Traitement en cours...';
             btn.disabled = true;
 
-            // 1. Récupération et alignement des données avec les colonnes exactes de la table 'candidatures'
-           const registrationData = {
-    full_name: e.target.querySelector('input[placeholder="Ex: Jean Mukendi"]').value,
-    email: e.target.querySelector('input[type="email"]').value,
-    phone: e.target.querySelector('input[type="tel"]').value,
-    birth_place: document.getElementById('birthPlace').value,
-    birth_date: document.getElementById('birthDate').value,
-    faculty: document.getElementById('facultySelect').value,
-    academic_level: e.target.querySelectorAll('select')[1].value, // Ajouté
-    previous_school: e.target.querySelector('input[placeholder="Ex: Institut de la Mine"]').value, // Ajouté
-    percentage: parseInt(e.target.querySelector('input[type="number"]').value), // Ajouté
-    status: 'en_attente'
-};
+            // Récupération rigoureuse des données avec IDs uniques
+            const registrationData = {
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                birth_place: document.getElementById('birthPlace').value,
+                birth_date: document.getElementById('birthDate').value,
+                faculty: document.getElementById('facultySelect').value,
+                academic_level: document.getElementById('academicLevel').value,
+                previous_school: document.getElementById('previousSchool').value,
+                percentage: parseInt(document.getElementById('percentage').value) || 0,
+                status: 'en_attente' // Fixe le statut en attente de traitement pour le Recteur
+            };
 
-            // 2. Sauvegarde dans Supabase
-            const { error } = await _supabase
-                .from('candidatures')
-                .insert([registrationData]);
+            try {
+                // Envoi des données vers la table candidatures de Supabase
+                const { data, error } = await _supabase
+                    .from('candidatures')
+                    .insert([registrationData]);
 
-            // En cas d'erreur renvoyée par Supabase
-            if (error) {
-                btn.innerHTML = 'Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>';
+                if (error) throw error;
+
+                // Toast de succès à la place d'une popup
+                showCustomToast("Candidature enregistrée avec succès ! Redirection en cours...", "success");
+
+                setTimeout(() => {
+                    e.target.reset();
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                    window.location.href = 'index.html';
+                }, 2500);
+
+            } catch (error) {
+                console.error("Erreur d'insertion Supabase:", error.message);
+                showCustomToast("Une erreur s'est produite : " + error.message, "error");
+                btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
-                return alert("Erreur lors de l'envoi : " + error.message);
             }
-
-            // Animation de succès si tout s'est bien passé
-            setTimeout(() => {
-                alert("Félicitations ! Votre demande de pré-inscription a été envoyée avec succès. \n\nUn conseiller académique vous contactera par email sous 48h pour la suite de votre dossier.");
-                e.target.reset();
-                btn.innerHTML = 'Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>';
-                btn.disabled = false;
-                window.location.href = 'index.html';
-            }, 2000);
         });
 
         // FAQ Accordion Logic
@@ -309,28 +352,16 @@
             button.addEventListener('click', () => {
                 const content = button.nextElementSibling;
                 const icon = button.querySelector('i');
-                
-                // Toggle current item
                 const isHidden = content.classList.contains('hidden');
                 
-                // Fermer tous les autres (optionnel)
                 document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
                 document.querySelectorAll('.faq-toggle i').forEach(i => i.classList.remove('rotate-180'));
 
-                // Ouvrir si c'était caché
                 if (isHidden) {
                     content.classList.remove('hidden');
                     icon.classList.add('rotate-180');
                 }
             });
-        });
-
-        // Logique de tracking si l'utilisateur est connecté (optionnel)
-        document.addEventListener('DOMContentLoaded', () => {
-            const userEmail = localStorage.getItem('userEmail');
-            if (userEmail) {
-                // On pourrait pré-remplir certains champs
-            }
         });
     </script>
 </body>
