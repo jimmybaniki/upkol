@@ -145,6 +145,14 @@
             <a href="#" id="menu-transcripts" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('transcripts')">
                 <i class="fas fa-file-export mr-3 w-5 text-lg"></i> Délivrance de relevés
             </a>
+
+            <a href="#" id="menu-profile" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('profile')">
+                <i class="fas fa-user-circle mr-3 w-5 text-lg"></i> Mon Profil
+            </a>
+
+            <a href="#" id="menu-inter-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('inter-messaging')">
+                <i class="fas fa-comments mr-3 w-5 text-lg"></i> Messagerie Inter-Académique
+            </a>
         </nav>
 
         <div class="p-4 border-t border-slate-800 bg-slate-950/40">
@@ -506,6 +514,66 @@
                 </div>
             </div>
 
+            <!-- ========================================== -->
+            <!-- TAB 6: MESSAGERIE INTER-ACADÉMIQUE         -->
+            <!-- ========================================== -->
+            <div id="tab-inter-messaging" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-[600px] flex">
+                    <!-- Contacts List -->
+                    <div class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/30">
+                        <div class="p-6 border-b border-slate-100 bg-white">
+                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight">Membres du Corps Académique</h3>
+                        </div>
+                        <div class="flex-grow overflow-y-auto" id="inter-messaging-contacts">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                    <!-- Chat Window -->
+                    <div class="flex-grow flex flex-col bg-slate-50/50">
+                        <div id="chat-header" class="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="inter-chat-avatar" class="w-10 h-10 rounded-2xl bg-upkol-jaune flex items-center justify-center font-black text-upkol-noir shadow-sm border border-upkol-noir/10 text-lg">?</div>
+                                <h4 id="inter-chat-target-name" class="font-black text-xs uppercase text-slate-900 tracking-tight">Sélectionnez un interlocuteur académique</h4>
+                            </div>
+                        </div>
+                        <div id="inter-chat-messages" class="flex-grow p-6 overflow-y-auto space-y-4 flex flex-col">
+                            <!-- Les messages s'affichent ici -->
+                        </div>
+                        <div class="p-6 bg-white border-t border-slate-100">
+                            <form id="inter-msg-form" onsubmit="sendInterMessage(event)" class="flex gap-2">
+                                <input type="text" id="inter-msg-input" class="flex-grow bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-upkol-jaune" placeholder="Saisissez votre message...">
+                                <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md hover:bg-slate-800">
+                                    <i class="fas fa-paper-plane mr-2"></i> Envoyer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 7: MON PROFIL                          -->
+            <!-- ========================================== -->
+            <div id="tab-profile" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 max-w-2xl mx-auto">
+                    <h3 class="font-black text-xl text-slate-900 uppercase tracking-tight mb-6">Paramètres du Profil</h3>
+                    <form onsubmit="saveProfile(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nom Complet</label>
+                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="Prof. Dr. Sekela">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail de fonction</label>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="sekela.sg@upkol.cd" readonly>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold">Non modifiable</span>
+                        </div>
+                        <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md hover:bg-slate-800 w-full">
+                            Mettre à jour mon profil
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -659,6 +727,7 @@
 
         let sgLoggedUser = null;
         let sgOverviewChartInstance = null;
+        let sgOverviewChartInstance = null; // Chart.js instance for sgOverviewChart
         let selectedPVId = null;
 
         // In-memory data mirroring teachers, courses, students and deliberations
@@ -741,6 +810,7 @@
 
         // TOAST NOTIFICATION HELPER
         function showCustomToast(message, type = 'success') {
+        window.showCustomToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
@@ -789,8 +859,101 @@
                 renderStaffTable();
             } else if (tabId === 'transcripts') {
                 renderTranscriptsStudentsList();
+            } else if (tabId === 'inter-messaging') { // New: Initialize inter-messaging
+                renderInterMessagingContacts();
+                if (currentInterChatTarget) renderInterChatMessages();
             }
         }
+
+        // --- SYSTÈME DE MESSAGERIE INTER-ACADÉMIQUE ---
+        let currentInterChatTarget = null;
+        const connectedUserRole = 'sg'; // Set role for Secretariat General
+        const interAcademicContacts = [
+            { id: 'recteur', name: 'Cabinet Recteur', role: 'Rectorat' },
+            { id: 'sg', name: 'Secrétariat Général', role: 'Académique' }, // Self, will be filtered out
+            { id: 'doyen', name: 'Décanat (Doyen)', role: 'Direction Faculté' },
+            { id: 'chef_dept', name: 'Chef de Département', role: 'Coordination' },
+            { id: 'tresorerie', name: 'Trésorerie Centrale', role: 'Finances' },
+            { id: 'enseignant', name: 'Corps Enseignant', role: 'Chaire Académique' }
+        ];
+
+        function renderInterMessagingContacts() {
+            const contactsList = document.getElementById('inter-messaging-contacts');
+            if (!contactsList) return;
+            contactsList.innerHTML = '';
+            interAcademicContacts.forEach(contact => {
+                if (contact.id === connectedUserRole) return; // Don't show self in contacts
+                contactsList.insertAdjacentHTML('beforeend', `
+                    <button onclick="selectInterChatTarget('${contact.id}')" class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors border-b border-slate-100 text-left ${currentInterChatTarget === contact.id ? 'bg-white shadow-inner' : ''}">
+                        <div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-slate-500 shadow-sm border border-slate-300/50">${contact.name.charAt(0)}</div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-900 uppercase tracking-tight">${contact.name}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${contact.role}</p>
+                        </div>
+                    </button>
+                `);
+            });
+        }
+
+        window.selectInterChatTarget = function(id) {
+            currentInterChatTarget = id;
+            const contact = interAcademicContacts.find(c => c.id === id);
+            document.getElementById('inter-chat-target-name').innerText = contact.name;
+            document.getElementById('inter-chat-avatar').innerText = contact.name.charAt(0);
+            renderInterMessagingContacts();
+            renderInterChatMessages();
+        };
+
+        function renderInterChatMessages() {
+            const container = document.getElementById('inter-chat-messages');
+            if (!container || !currentInterChatTarget) return;
+            container.innerHTML = '';
+            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
+            const filtered = store.filter(m => 
+                (m.from === connectedUserRole && m.to === currentInterChatTarget) || 
+                (m.from === currentInterChatTarget && m.to === connectedUserRole)
+            );
+            filtered.forEach(m => {
+                const isMine = m.from === connectedUserRole;
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
+                            <p class="text-xs font-semibold leading-relaxed">${m.text}</p>
+                            <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest">${m.date}</span>
+                        </div>
+                    </div>
+                `);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendInterMessage = function(e) {
+            e.preventDefault();
+            const input = document.getElementById('inter-msg-input');
+            const text = input.value.trim();
+            if (!text || !currentInterChatTarget) return;
+            const now = new Date();
+            const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
+            store.push({ from: connectedUserRole, to: currentInterChatTarget, text, date: time });
+            localStorage.setItem('upkolInterMessages', JSON.stringify(store));
+            input.value = '';
+            const time = now.toISOString();
+
+            const { error } = await _supabase.from('messages').insert([{
+                sender_role: connectedUserRole,
+                receiver_role: currentInterChatTarget,
+                message_text: text,
+                sent_at: time
+            }]);
+
+            if (error) {
+                console.error('Error sending message:', error.message);
+                showCustomToast('Erreur lors de l\'envoi du message.', 'error');
+            } else {
+                input.value = '';
+            renderInterChatMessages();
+        };
 
         // --- TAB 1: VUE D'ENSEMBLE ANALYTICS ---
         function renderSGOverviewChart() {
@@ -801,10 +964,22 @@
                 sgOverviewChartInstance.destroy();
             }
 
+            // Fetch data from Supabase for student counts over time
+            const { data: candidaturesCount, error: candError } = await _supabase.from('candidatures').select('created_at', { count: 'exact' });
+            const { data: matriculesCount, error: matricError } = await _supabase.from('profiles').select('created_at', { count: 'exact' }).eq('role', 'etudiant').eq('authorized', true);
+
+            if (candError || matricError) {
+                console.error('Error fetching overview data:', candError?.message || matricError?.message);
+                // Fallback to mock data if Supabase fails
+                candidaturesCount = [{ count: 35 }, { count: 48 }, { count: 52 }, { count: 65 }, { count: 58 }, { count: 70 }];
+                matriculesCount = [{ count: 25 }, { count: 38 }, { count: 42 }, { count: 55 }, { count: 48 }, { count: 62 }];
+            }
+
             sgOverviewChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4', 'Semaine 5', 'Semaine 6'],
+                    labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4', 'Semaine 5', 'Semaine 6'], // Dynamically generate labels
                     datasets: [
                         {
                             label: 'Candidatures Reçues',
@@ -839,9 +1014,21 @@
 
         // --- TAB 2: IMMATRICULATIONS (ENROLLMENTS) ---
         async function loadPendingEnrollments() {
+        async function loadPendingEnrollments() { // Renamed to loadPendingEnrollments for clarity
             const tbody = document.getElementById('enrollment-table-body');
             if (!tbody) return;
 
+            // Fetch total student count
+            const { count: totalStudents, error: totalStudentsError } = await _supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'etudiant').eq('authorized', true);
+            if (!totalStudentsError) {
+                document.getElementById('stat-total-students').innerText = totalStudents;
+            } else {
+                console.error('Error fetching total students:', totalStudentsError.message);
+            }
+
+            // Fetch pending PVs count
+            const pendingPVsCount = mockPVs.filter(pv => pv.status === 'en_attente').length;
+            document.getElementById('stat-pending-pvs').innerText = `${pendingPVsCount} à délibérer`;
             try {
                 // Fetch candidates who are approved by the Rectorate but lack a matriculation process Completion
                 const { data, error } = await _supabase
@@ -921,6 +1108,7 @@
 
                         // 1. Update Supabase status to fully active/inscribed
                         const { error: updateError } = await _supabase
+                        const { error: updateCandidatureError } = await _supabase
                             .from('candidatures')
                             .update({ status: 'admis' })
                             .eq('id', candidatureId);
@@ -942,12 +1130,39 @@
                                 email: email,
                                 password: 'Pass' + randomSuffix,
                                 role: 'etudiant',
+                        // This part should update the 'profiles' table in Supabase
+                        const { error: updateProfileError } = await _supabase
+                            .from('profiles')
+                            .update({
                                 matricule: finalMatricule,
                                 authorized: true,
                                 requestedAuthorization: false,
                                 promotion: 'L1 Informatique',
                                 createdAt: new Date().toISOString()
                             });
+                                requested_authorization: false,
+                                submitted_by: 'SG' // Indicate SG processed it
+                            })
+                            .eq('email', email); // Assuming email is unique for profiles
+
+                        if (updateProfileError) throw updateProfileError;
+
+                        // Log the action
+                        await _supabase.from('action_logs').insert([{
+                            user_id: sgLoggedUser.id, // Assuming SG user ID
+                            user_email: sgLoggedUser.email,
+                            action_type: "Immatriculation Étudiant",
+                            details: `Matricule ${finalMatricule} attribué à ${fullName}.`
+                        }]);
+
+                        // Update local storage for superAdminUsers (for demo purposes)
+                        let superAdminUsers = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+                        const userToUpdateIndex = superAdminUsers.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+                        if (userToUpdateIndex !== -1) {
+                            superAdminUsers[userToUpdateIndex].matricule = finalMatricule;
+                            superAdminUsers[userToUpdateIndex].authorized = true;
+                            superAdminUsers[userToUpdateIndex].requested_authorization = false;
+                            localStorage.setItem('superAdminUsers', JSON.stringify(superAdminUsers));
                         }
                         localStorage.setItem('superAdminUsers', JSON.stringify(users));
 
@@ -973,8 +1188,18 @@
 
         // --- TAB 3: ARBITRAGE & PVS (DELIBERATIONS) ---
         function renderPVsList() {
+        async function renderPVsList() {
             const container = document.getElementById('pending-pvs-list');
             if (!container) return;
+
+            // Fetch PVs from Supabase
+            const { data: pvs, error } = await _supabase.from('pvs').select('*').order('date', { ascending: false });
+            if (error) {
+                console.error('Error fetching PVs:', error.message);
+                // Fallback to mock data
+                pvs = mockPVs;
+            }
+            mockPVs = pvs; // Update local mock with fetched data
 
             container.innerHTML = '';
             mockPVs.forEach(pv => {
@@ -991,6 +1216,7 @@
                                 ${statusBadge}
                             </div>
                             <p class="text-[10px] text-slate-500 mt-1">${pv.promotion} • Titulaire : ${pv.teacher} • Soumis le ${pv.date}</p>
+                            <p class="text-[10px] text-slate-500 mt-1">${pv.promotion} • Titulaire : ${pv.teacher} • Soumis le ${new Date(pv.date).toLocaleDateString('fr-FR')}</p>
                         </div>
                         <button onclick="previewPVDetails('${pv.id}')" class="mt-2 sm:mt-0 text-[10px] bg-slate-100 hover:bg-upkol-jaune border border-slate-200 hover:border-transparent font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-sm">
                             Examiner
@@ -1001,6 +1227,7 @@
         }
 
         function previewPVDetails(pvId) {
+        async function previewPVDetails(pvId) {
             const pv = mockPVs.find(p => p.id === pvId);
             if (!pv) return;
 
@@ -1022,10 +1249,21 @@
             document.getElementById('preview-pv-avg').innerText = `${pv.avg} /20`;
 
             const studentListContainer = document.getElementById('preview-pv-student-list');
+            
+            // Fetch student grades for this PV from Supabase (if available)
+            const { data: studentGrades, error } = await _supabase.from('grades').select('*').eq('pv_id', pvId);
+            if (error) {
+                console.error('Error fetching student grades for PV preview:', error.message);
+                // Fallback to mock data if Supabase fails
+                studentGrades = pv.students;
+            }
+
             studentListContainer.innerHTML = '';
 
             pv.students.forEach(st => {
                 const avg = ((st.tp + st.exam) / 2).toFixed(1);
+            studentGrades.forEach(st => {
+                const avg = ((st.tp_grade + st.exam_grade) / 2).toFixed(1);
                 studentListContainer.insertAdjacentHTML('beforeend', `
                     <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
                         <span class="font-black text-slate-700">${st.name}</span>
@@ -1040,19 +1278,34 @@
         }
 
         function approvePV() {
+        async function approvePV() {
             if (!selectedPVId) return;
 
             showCustomConfirm(
                 "Signer et Sceller le Procès-Verbal",
                 "Cette action verrouille définitivement les notes d'examens et les publie sur les portails des étudiants. Confirmer ?",
                 () => {
+                async () => {
                     const pv = mockPVs.find(p => p.id === selectedPVId);
                     if (pv) {
                         pv.status = 'signe';
+                        const { error } = await _supabase.from('pvs').update({ status: 'signe' }).eq('id', selectedPVId);
+                        if (error) {
+                            console.error('Error approving PV:', error.message);
+                            showCustomToast('Erreur lors de la signature du PV.', 'error');
+                            return;
+                        }
+
+                        pv.status = 'signe'; // Update local mock
                         showCustomToast("Le Procès-Verbal a été signé et promulgué !", "success");
                         renderPVsList();
                         previewPVDetails(selectedPVId);
+                        renderPVsList(); // Re-render to update status badge
+                        previewPVDetails(selectedPVId); // Update preview panel
 
+                        // Log the action
+                        await _supabase.from('action_logs').insert([{ user_id: sgLoggedUser.id, user_email: sgLoggedUser.email, action_type: "Signature PV", details: `PV de ${pv.course} signé.` }]);
+                        
                         // Synchroniser les cotes avec les données locales pour l'étudiant "Jean Mukendi"
                         let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
                         const jeanIdx = users.findIndex(u => u.name === "Jean Mukendi" && u.role === "etudiant");
@@ -1067,6 +1320,7 @@
         }
 
         function rejectPV() {
+        async function rejectPV() {
             if (!selectedPVId) return;
 
             showCustomConfirm(
@@ -1080,6 +1334,21 @@
                     document.getElementById('preview-pv-empty').classList.remove('hidden');
                     showCustomToast("Relevé renvoyé à l'enseignant.", "info");
                     renderPVsList();
+                async () => {
+                    const { error } = await _supabase.from('pvs').update({ status: 'rejete' }).eq('id', selectedPVId);
+                    if (error) {
+                        console.error('Error rejecting PV:', error.message);
+                        showCustomToast('Erreur lors du rejet du PV.', 'error');
+                        return;
+                    }
+
+                    mockPVs = mockPVs.filter(p => p.id !== selectedPVId); // Remove from local mock
+                    selectedPVId = null; // Clear selection
+                    document.getElementById('preview-pv-details').classList.add('hidden'); // Hide preview
+                    document.getElementById('preview-pv-actions').classList.add('hidden'); // Hide actions
+                    document.getElementById('preview-pv-empty').classList.remove('hidden'); // Show empty state
+                    showCustomToast("Relevé renvoyé à l'enseignant.", "info"); // Show toast
+                    renderPVsList(); // Re-render list
                 }
             );
         }
@@ -1088,9 +1357,20 @@
         function renderStaffTable() {
             const tbody = document.getElementById('staff-table-body');
             if (!tbody) return;
+            if (!tbody) return; 
 
+            // Fetch staff profiles from Supabase
+            const { data: staffProfiles, error } = await _supabase.from('profiles').select('*').in('role', ['professeur', 'chef_travaux', 'assistant']).order('name', { ascending: true });
+            if (error) {
+                console.error('Error fetching staff profiles:', error.message);
+                // Fallback to mock data
+                staffProfiles = teachersList;
+            }
+            teachersList = staffProfiles; // Update local mock with fetched data
+            
             tbody.innerHTML = '';
             teachersList.forEach(teach => {
+            teachersList.forEach(teach => { // Use updated teachersList
                 const isAuthorized = teach.authorized;
                 const statusBadge = isAuthorized 
                     ? `<span class="bg-green-50 text-green-700 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Actif</span>`
@@ -1109,6 +1389,7 @@
                         <td class="px-6 py-4 font-black text-slate-900">${teach.name}</td>
                         <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${roleLabel}</td>
                         <td class="px-6 py-4">
+                        <td class="px-6 py-4"> 
                             <span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase border border-slate-200">${teach.course}</span>
                         </td>
                         <td class="px-6 py-4 text-center">${statusBadge}</td>
@@ -1119,9 +1400,19 @@
         }
 
         function toggleStaffAccess(teachId, allow) {
+        async function toggleStaffAccess(teachId, allow) {
             const teach = teachersList.find(t => t.id === teachId);
             if (teach) {
                 teach.authorized = allow;
+                const { error } = await _supabase.from('profiles').update({ authorized: allow }).eq('id', teachId);
+                if (error) {
+                    console.error('Error toggling staff access:', error.message);
+                    showCustomToast('Erreur lors de la modification de l\'accès.', 'error');
+                    return;
+                }
+
+                teach.authorized = allow; // Update local mock
+                // Re-render to update UI
                 showCustomToast(allow ? "Accès autorisé" : "Accès révoqué", "info");
                 renderStaffTable();
             }
@@ -1146,6 +1437,7 @@
         }
 
         function createNewStaff(event) {
+        async function createNewStaff(event) {
             event.preventDefault();
             const name = document.getElementById('staff-name').value;
             const role = document.getElementById('staff-role').value;
@@ -1154,15 +1446,32 @@
 
             const newTeacher = {
                 id: 'st-' + Date.now(),
+            // Insert new staff profile into Supabase
+            const { data, error } = await _supabase.from('profiles').insert([{
                 name: name,
+                email: email,
                 role: role,
                 course: course,
                 email: email,
                 authorized: true
             };
+                course_name: course, // Assuming 'course_name' field in profiles
+                authorized: true,
+                created_at: new Date().toISOString()
+            }]);
 
             teachersList.unshift(newTeacher);
+            if (error) {
+                console.error('Error creating new staff:', error.message);
+                showCustomToast('Erreur lors de l\'enregistrement du personnel.', 'error');
+                return;
+            }
+
+            // Add to local mock list (optional, as renderStaffTable will re-fetch)
+            // teachersList.unshift(data[0]);
+
             showCustomToast("Nouvel enseignant enregistré !", "success");
+            // Close modal and re-render table
             closeStaffModal();
             document.getElementById('staff-form').reset();
             renderStaffTable();
@@ -1172,10 +1481,22 @@
         function renderTranscriptsStudentsList(filter = '') {
             const container = document.getElementById('transcript-students-list');
             if (!container) return;
+            
+            // Fetch students from Supabase profiles table
+            const { data: studentsData, error } = await _supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'etudiant')
+                .eq('authorized', true)
+                .order('name', { ascending: true });
 
             // Retreive students registered in superAdminUsers localStorage
             let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
             let students = users.filter(u => u.role === 'etudiant');
+            if (error) {
+                console.error('Error fetching students for transcripts:', error.message);
+                studentsData = []; // Fallback
+            }
 
             // Fallback default student if empty
             if (students.length === 0) {
@@ -1183,6 +1504,7 @@
                     { id: "s-1", name: "Jean Mukendi", matricule: "UPK-2026-9874", promotion: "Licence 1 - Informatique", tpGrade: 16, examGrade: 17 }
                 ];
             }
+            } else students = studentsData;
 
             if (filter.trim() !== '') {
                 students = students.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.matricule.toLowerCase().includes(filter.toLowerCase()));
@@ -1221,16 +1543,160 @@
         function openTranscriptModal(studentId) {
             let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
             let st = users.find(u => u.id === studentId);
+            // Fetch student profile and grades from Supabase
+            _supabase.from('profiles').select('*').eq('id', studentId).single()
+                .then(async ({ data: studentProfile, error: profileError }) => {
+                    if (profileError) {
+                        console.error('Error fetching student profile for transcript:', profileError.message);
+                        showCustomToast('Erreur lors du chargement du profil étudiant.', 'error');
+                        return;
+                    }
 
             // Default fallback if not in local storage
             if (!st) {
                 st = { name: "Jean Mukendi", matricule: "UPK-2026-9874", promotion: "Licence 1 - Informatique", tpGrade: 16, examGrade: 17 };
+                    document.getElementById('trans-stu-name').innerText = studentProfile.name;
+                    document.getElementById('trans-stu-matric').innerText = studentProfile.matricule || "N/A";
+                    document.getElementById('trans-stu-faculty').innerText = studentProfile.promotion || "N/A";
+
+                    const { data: studentGrades, error: gradesError } = await _supabase.from('grades').select('*').eq('student_id', studentId);
+                    if (gradesError) {
+                        console.error('Error fetching student grades for transcript:', gradesError.message);
+                        showCustomToast('Erreur lors du chargement des notes de l\'étudiant.', 'error');
+                        return;
+                    }
+
+                    const gradesBody = document.getElementById('trans-grades-body');
+                    gradesBody.innerHTML = '';
+
+                    studentGrades.forEach(grade => {
+                        const avg = ((grade.tp_grade + grade.exam_grade) / 2).toFixed(1);
+                        let mention = 'Satisfaction';
+                        if (avg >= 16) mention = 'Distinction';
+
+                        gradesBody.insertAdjacentHTML('beforeend', `
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2">${grade.course_name}</td>
+                                <td class="px-4 py-2 text-center font-black">${avg} /20</td>
+                                <td class="px-4 py-2 text-right text-emerald-600 font-black">${mention}</td>
+                            </tr>
+                        `);
+                    });
+
+                    const modal = document.getElementById('transcript-modal');
+                    const card = document.getElementById('transcript-card');
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        card.classList.remove('scale-95');
+                    }, 10);
+                })
+                .catch(err => console.error('Error opening transcript modal:', err.message));
+        }
+
+        function closeTranscriptModal() {
+            const modal = document.getElementById('transcript-modal');
+            const card = document.getElementById('transcript-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // --- AUTHENTICATION ---
+        document.getElementById('btn-login-sg').onclick = async function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+
+            // Authenticate with Supabase Auth
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: email,
+                password: pass,
+            });
+
+            if (error) {
+                console.error('Supabase Auth Error:', error.message);
+                showCustomToast("Clef d'habilitation non valide.", 'error');
+            } else if (data.user) {
+                // Fetch profile data from 'profiles' table
+                const { data: profile, error: profileError } = await _supabase.from('profiles').select('*').eq('id', data.user.id).single();
+
+                if (profileError) {
+                    console.error('Supabase Profile Fetch Error:', profileError.message);
+                    showCustomToast("Erreur lors du chargement du profil Secrétaire Général.", 'error');
+                } else {
+                    const gateway = document.getElementById('login-gateway');
+                    gateway.style.opacity = '0';
+                    
+                    sgLoggedUser = profile; // Use fetched profile data
+                    localStorage.setItem('connectedSG', JSON.stringify(sgLoggedUser));
+
+                    setTimeout(() => {
+                        gateway.classList.add('hidden');
+                        showCustomToast("Cabinet du Secrétariat Général Ouvert !", 'success');
+                        initializeDashboard();
+                    }, 400);
+                }
+            } else {
+                showCustomToast("Clef d'habilitation non valide.", 'error');
             }
+        };
 
             document.getElementById('trans-stu-name').innerText = st.name;
             document.getElementById('trans-stu-matric').innerText = st.matricule || "UPK-2026-9874";
             document.getElementById('trans-stu-faculty').innerText = st.promotion || "Sciences de l'Informatique";
+        function logout() {
+            localStorage.removeItem('connectedSG');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                _supabase.auth.signOut(); // Sign out from Supabase
+                showCustomToast("Déconnexion du Secrétariat Général.", "info");
+            }, 10);
+        }
 
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        async function initializeDashboard() {
+            if (sgLoggedUser) {
+                document.getElementById('sg-header-name').innerText = sgLoggedUser.name || 'Secrétaire Général';
+                document.getElementById('sg-header-title').innerText = sgLoggedUser.title || 'Secrétaire Général Académique';
+                document.getElementById('profile-name').value = sgLoggedUser.name || '';
+                document.getElementById('profile-email').value = sgLoggedUser.email || '';
+            }
+            showTab('overview');
+        }
+
+        // --- INITIAL EXECUTION SEQUENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedSG');
+            if (saved) {
+                sgLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+                initializeDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
             // Grades calculations
             const tpGrade = st.tpGrade !== undefined ? st.tpGrade : 16;
             const examGrade = st.examGrade !== undefined ? st.examGrade : 17;

@@ -101,17 +101,19 @@
 
         // Fonction pour enregistrer des actions spécifiques (ex: clics, téléchargements)
         function logAction(email, userId, action, details) {
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: userId,
-                    email: email,
-                    action: action,
-                    details: details
-                })
+            // Supabase client is initialized globally in other files, assuming it will be here too.
+            // For index.html, we'll add the Supabase client initialization.
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('action_logs').insert([{
+                user_id: userId,
+                user_email: email,
+                action_type: action,
+                details: details
+            }]).then(response => {
+                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
             });
         }
 
@@ -130,28 +132,42 @@
                 details: "Authentification via Google Identity Services"
             };
 
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
+            // Supabase client initialization (if not already global)
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-            // Envoi des données vers Google Apps Script
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            })
-            .then(() => {
-                // Sauvegarde de la session pour logAction sur les autres pages
-                localStorage.setItem('userEmail', userData.email);
-                localStorage.setItem('userId', userData.id);
-                localStorage.setItem('userName', userData.nom_complet); // Stocker le nom complet
-                localStorage.setItem('userPicture', userData.picture); // Stocker l'URL de la photo
-
-                // Mettre à jour l'UI après la connexion
-                updateAuthUI();
-                
-                console.log("Données transmises avec succès :", userData);
-            })
-            .catch(error => console.error("Erreur lors de la transmission :", error));
+            // Check if user already exists in 'profiles' table
+            _supabase.from('profiles').select('id').eq('email', userData.email).single()
+                .then(async ({ data: existingUser, error }) => {
+                    if (existingUser) {
+                        // User exists, update their profile if needed
+                        await _supabase.from('profiles').update({
+                            name: userData.nom_complet,
+                            picture: userData.picture,
+                            last_login: new Date().toISOString()
+                        }).eq('id', existingUser.id);
+                    } else {
+                        // User does not exist, insert new profile
+                        await _supabase.from('profiles').insert([{
+                            id: userData.id,
+                            name: userData.nom_complet,
+                            email: userData.email,
+                            picture: userData.picture,
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre', // Map to Supabase role
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        }]);
+                    }
+                    localStorage.setItem('userEmail', userData.email);
+                    localStorage.setItem('userId', userData.id);
+                    localStorage.setItem('userName', userData.nom_complet);
+                    localStorage.setItem('userPicture', userData.picture);
+                    updateAuthUI();
+                    logAction(userData.email, userData.id, userData.action, userData.details); // Log the login action
+                    console.log("Données transmises avec succès :", userData);
+                })
+                .catch(error => console.error("Erreur lors de la transmission ou de la mise à jour Supabase :", error));
         }
     </script>
     <style>
@@ -617,6 +633,10 @@
     </footer>
 
     <script>
+        // Supabase client initialization for global use in this file
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');

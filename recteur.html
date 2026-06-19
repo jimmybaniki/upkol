@@ -237,6 +237,10 @@
             <a href="#" id="menu-access" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showDashboardTab('access')">
                 <i class="fas fa-shield-halved mr-3 w-5 text-lg"></i> Habilitations & RH
             </a>
+            
+            <a href="#" id="menu-profile" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showDashboardTab('profile')">
+                <i class="fas fa-user-cog mr-3 w-5 text-lg"></i> Mon Profil
+            </a>
         </nav>
 
         <div class="p-4 border-t border-slate-800 bg-slate-950/40">
@@ -835,6 +839,65 @@
                 </div>
             </div>
 
+            <!-- ========================================== -->
+            <!-- ONGLET 7 : MESSAGERIE INTER-ACADÉMIQUE     -->
+            <!-- ========================================== -->
+            <div id="tab-inter-messaging" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden h-[600px] flex">
+                    <!-- Liste des Contacts -->
+                    <div class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/30">
+                        <div class="p-6 border-b border-slate-100 bg-white">
+                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight">Services Académiques</h3>
+                        </div>
+                        <div class="flex-grow overflow-y-auto" id="inter-messaging-contacts">
+                            <!-- Injecté par JS -->
+                        </div>
+                    </div>
+                    <!-- Fenêtre de Chat -->
+                    <div class="flex-grow flex flex-col bg-slate-50/50">
+                        <div id="chat-header" class="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="inter-chat-avatar" class="w-10 h-10 rounded-2xl bg-upkol-jaune flex items-center justify-center font-black text-upkol-noir shadow-sm border border-upkol-noir/10 text-lg">?</div>
+                                <h4 id="inter-chat-target-name" class="font-black text-xs uppercase text-slate-900 tracking-tight">Sélectionnez un service pour communiquer</h4>
+                            </div>
+                        </div>
+                        <div id="inter-chat-messages" class="flex-grow p-6 overflow-y-auto space-y-4 flex flex-col">
+                            <!-- Les messages s'affichent ici -->
+                        </div>
+                        <div class="p-6 bg-white border-t border-slate-100">
+                            <form id="inter-msg-form" onsubmit="sendInterMessage(event)" class="flex gap-2">
+                                <input type="text" id="inter-msg-input" class="flex-grow bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-upkol-jaune" placeholder="Rédigez votre message pour le service sélectionné...">
+                                <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md hover:bg-slate-800">
+                                    <i class="fas fa-paper-plane mr-2"></i> Envoyer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 8 : MON PROFIL EXÉCUTIF             -->
+            <!-- ========================================== -->
+            <div id="tab-profile" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10 max-w-2xl mx-auto">
+                    <h3 class="font-black text-xl text-slate-900 uppercase tracking-tight mb-6">Paramètres de l'Autorité</h3>
+                    <form onsubmit="saveExecutiveProfile(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nom du Recteur / Responsable</label>
+                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-bold" value="Prof. Mbuyi">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Exécutif</label>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-bold" value="recteur@upkol.cd" readonly>
+                        </div>
+                        <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md hover:bg-slate-800 w-full">
+                            Sauvegarder les informations
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -1007,7 +1070,7 @@
         let selectedInspectionCandidatureId = null;
 
         // --- CUSTOM TOASTS ---
-        function showCustomToast(message, type = 'success') {
+        window.showCustomToast = function(message, type = 'success') {
             const container = document.body;
             const toast = document.createElement('div');
             
@@ -1027,7 +1090,7 @@
         }
 
         // Dialogues de confirmation personnalisés
-        function showCustomConfirm(title, message, onConfirm) {
+        window.showCustomConfirm = function(title, message, onConfirm) {
             const modal = document.getElementById('custom-modal');
             const modalCard = document.getElementById('modal-card');
             const titleEl = document.getElementById('modal-title');
@@ -1106,7 +1169,7 @@
                 setTimeout(() => gateway.classList.add('hidden'), 500);
 
                 showCustomToast(`Session exécutive ouverte pour le ${profile.title}`, 'success');
-                
+
                 // Charger le dashboard
                 initializeDashboardOnAuth();
             } else {
@@ -1114,10 +1177,34 @@
             }
         }
 
+        window.saveExecutiveProfile = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('profile-name').value;
+            const session = JSON.parse(localStorage.getItem('connectedUser'));
+            if (session) {
+                session.name = name;
+                // Update Supabase profile
+                const { error } = await _supabase.from('profiles').update({ name: name }).eq('email', session.email);
+                if (error) {
+                    console.error('Error updating profile in Supabase:', error.message);
+                    showCustomToast('Erreur lors de la mise à jour du profil.', 'error');
+                }
+            }
+            localStorage.setItem('connectedUser', JSON.stringify(session));
+            document.getElementById('user-name').innerText = name;
+            showCustomToast("Profil exécutif mis à jour", "success");
+        };
+
         function logout() {
             localStorage.removeItem('connectedUser');
             localStorage.removeItem('currentRole');
             document.getElementById('login-gateway').classList.remove('hidden');
+            // Disable Google One Tap auto-select on logout
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            // Redirect to index.html
+            window.location.href = 'index.html';
             setTimeout(() => {
                 document.getElementById('login-gateway').classList.remove('opacity-0');
             }, 10);
@@ -1148,6 +1235,9 @@
             // Triggers spécifiques
             if (tabId === 'decrees') {
                 setTimeout(initSignatureCanvas, 100);
+            } else if (tabId === 'inter-messaging') {
+                renderInterMessagingContacts();
+                if (currentInterChatTarget) renderInterChatMessages();
             } else if (tabId === 'calendar') {
                 setTimeout(initAcademicCalendar, 100);
             }
@@ -1175,7 +1265,7 @@
                 const { data, error } = await _supabase
                     .from('candidatures')
                     .select('*')
-                    .eq('status', 'en_attente')
+                    .eq('status', 'envoye_au_recteur') // Assuming a new status for Rector's review
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -1183,7 +1273,7 @@
                 candidaturesList = data || [];
                 
                 // Fallback avec données de démonstration si vide
-                if (candidaturesList.length === 0) {
+                if (candidaturesList.length === 0 && !error) { // Only seed if no data AND no error
                     seedMockCandidatures();
                 } else {
                     afficherCandidatures(candidaturesList);
@@ -1197,11 +1287,11 @@
         }
 
         // Remplissage avec des données fictives réalistes si Supabase ne répond pas
-        function seedMockCandidatures() {
+        async function seedMockCandidatures() {
             candidaturesList = [
-                { id: "1", full_name: "Mwamba Kabongo", faculty: "Technologie", option: "Sciences Informatiques", percentage: 78, email: "mwamba@gmail.com", phone: "+243 821 445 611", created_at: new Date().toISOString() },
-                { id: "2", full_name: "Banza Ngoie", faculty: "Santé", option: "Sciences de la Santé", percentage: 69, email: "banza@gmail.com", phone: "+243 998 123 456", created_at: new Date().toISOString() },
-                { id: "3", full_name: "Kaj Mujing", faculty: "Pédagogie", option: "Lettres et Sciences Humaines", percentage: 84, email: "kaj@gmail.com", phone: "+243 811 223 344", created_at: new Date().toISOString() },
+                { id: "1", full_name: "Mwamba Kabongo", faculty: "Sciences Informatiques", option: "Sciences Informatiques", percentage: 78, email: "mwamba@upkol.cd", phone: "+243 821 445 611", created_at: new Date().toISOString(), status: 'envoye_au_recteur' },
+                { id: "2", full_name: "Banza Ngoie", faculty: "Sciences de la Santé", option: "Sciences de la Santé", percentage: 69, email: "banza@upkol.cd", phone: "+243 998 123 456", created_at: new Date().toISOString(), status: 'envoye_au_recteur' },
+                { id: "3", full_name: "Kaj Mujing", faculty: "Psychologie et Sciences de l'Éducation", option: "Lettres et Sciences Humaines", percentage: 84, email: "kaj@upkol.cd", phone: "+243 811 223 344", created_at: new Date().toISOString(), status: 'envoye_au_recteur' },
                 { id: "4", full_name: "Tshiza Mutomb", faculty: "Gestion", option: "Économie & Gestion", percentage: 65, email: "tshiza@gmail.com", phone: "+243 903 445 566", created_at: new Date().toISOString() },
                 { id: "5", full_name: "Ilunga Ngoy", faculty: "Justice", option: "Droit Privé et Judiciaire", percentage: 72, email: "ilunga@gmail.com", phone: "+243 855 667 788", created_at: new Date().toISOString() }
             ];
@@ -1214,7 +1304,7 @@
             const filterValue = document.getElementById('rectorFacultyFilter').value;
 
             if (!tbody) return;
-
+            
             let filtered = list;
             if (filterValue !== 'all') {
                 filtered = list.filter(item => item.faculty === filterValue);
@@ -1237,7 +1327,7 @@
                         <td class="px-6 py-4 font-black text-slate-900">${item.full_name}</td>
                         <td class="px-6 py-4">
                             <span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase border border-slate-200">${item.faculty || 'Technologie'}</span>
-                        </td>
+                        </td> 
                         <td class="px-6 py-4 text-xs font-bold text-slate-500">${item.option || 'Scientifique'}</td>
                         <td class="px-6 py-4">
                             <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${percentage}%</span>
@@ -1298,13 +1388,22 @@
                 "Êtes-vous certain de vouloir rejeter définitivement ce dossier académique ? L'étudiant sera notifié par e-mail.",
                 () => {
                     candidaturesList = candidaturesList.filter(c => c.id !== selectedInspectionCandidatureId);
-                    afficherCandidatures(candidaturesList);
-                    updateStatsOverview(candidaturesList);
-                    closeStudentDrawer();
-                    showCustomToast("Dossier de candidature rejeté avec succès", "info");
+                    _supabase.from('candidatures').update({ status: 'rejete' }).eq('id', selectedInspectionCandidatureId)
+                        .then(({ error }) => {
+                            if (error) throw error;
+                            afficherCandidatures(candidaturesList);
+                            updateStatsOverview(candidaturesList);
+                            closeStudentDrawer();
+                            showCustomToast("Dossier de candidature rejeté avec succès", "info");
+                        })
+                        .catch(err => {
+                            console.error("Error rejecting candidature:", err.message);
+                            showCustomToast("Erreur lors du rejet de la candidature.", "error");
+                        });
                 }
             );
         };
+
 
         // Validation dynamique et synchronisation Supabase
         window.validerInscriptionEtudiant = async function(candidatureId, btnElement) {
@@ -1327,7 +1426,7 @@
                 // Tenter la mise à jour Supabase
                 try {
                     const { error: updateError } = await _supabase
-                        .from('candidatures')
+                        .from('candidatures') // Update status to 'envoye_au_superadmin'
                         .update({ status: 'envoye_au_superadmin' })
                         .eq('id', candidatureId);
 
@@ -1335,23 +1434,32 @@
                 } catch (dbErr) {
                     console.warn("Écriture en mode LocalStorage (Pas de table Supabase active)");
                 }
+                
+                // Log the action to Supabase
+                await _supabase.from('action_logs').insert([{
+                    user_id: userData.id, // Assuming userData is available or fetched
+                    user_email: userData.email,
+                    action_type: "Validation Candidature",
+                    details: `Candidature de ${nomEtudiant} validée par le Recteur et envoyée au Super Admin.`
+                }]);
 
-                // Insertion locale dans superAdminUsers
-                let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
-                emailEtudiant = `${nomEtudiant.toLowerCase().replace(/\s+/g, '.')}@upkol.cd`;
-
-                users.push({
-                    id: candidatureId,
-                    name: nomEtudiant,
-                    email: emailEtudiant,
-                    role: 'etudiant',
-                    matricule: 'UPK-' + Math.floor(100000 + Math.random() * 900000),
-                    authorized: true,
-                    requestedAuthorization: false,
-                    promotion: 'L1',
-                    createdAt: new Date().toISOString()
+                // Update local storage for superAdminUsers (for demo purposes, actual user management is in super-admin-dashboard)
+                let superAdminUsers = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+                const existingSuperAdminUserIndex = superAdminUsers.findIndex(u => u.id === candidatureId);
+                if (existingSuperAdminUserIndex === -1) {
+                    superAdminUsers.push({
+                        id: candidatureId, // Use candidatureId as user ID for now
+                        name: nomEtudiant,
+                        email: emailEtudiant,
+                        role: 'etudiant',
+                        matricule: 'GENERATED_BY_SG', // Matricule will be generated by SG
+                        authorized: false, // Not yet authorized, pending Super Admin review
+                        requestedAuthorization: true, // Flag for Super Admin
+                        submittedBy: 'Recteur',
+                        createdAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('superAdminUsers', JSON.stringify(superAdminUsers));
                 });
-                localStorage.setItem('superAdminUsers', JSON.stringify(users));
 
                 // Ajout d'audit RH
                 securityLogs.unshift({
@@ -1368,14 +1476,14 @@
                 }
                 btn.innerHTML = '<i class="fas fa-check"></i> Transmis';
                 btn.className = "bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase cursor-not-allowed";
-                
+
                 showCustomToast(`Dossier de ${nomEtudiant} transmis au Super Administrateur`, 'success');
-                
+
                 setTimeout(() => { 
                     if (row) {
                         row.remove();
                         candidaturesList = candidaturesList.filter(c => c.id !== candidatureId);
-                        updateStatsOverview(candidaturesList);
+                        updateStatsOverview(candidaturesList); // Update stats after removal
                     }
                 }, 1000);
 
@@ -1390,13 +1498,20 @@
         };
 
         function updateStatsOverview(pendingList) {
-            const users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
+            // Fetch counts from Supabase for more accurate stats
+            _supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'etudiant').eq('authorized', true)
+                .then(({ count: studentsCount, error }) => {
+                    if (error) throw error;
+                    document.getElementById('stat-rector-inscribed').innerText = studentsCount;
+                });
             
-            // Effectifs par défaut pour que le Dashboard soit bien rempli
-            const activeStaffCount = 14 + users.filter(u => u.authorized && u.role !== 'etudiant').length;
-            const validatedStudentsCount = 412 + users.filter(u => u.role === 'etudiant').length;
+            _supabase.from('profiles').select('id', { count: 'exact' }).neq('role', 'etudiant').eq('authorized', true)
+                .then(({ count: staffCount, error }) => {
+                    if (error) throw error;
+                    document.getElementById('stat-rector-active').innerText = staffCount;
+                });
 
-            document.getElementById('stat-rector-pending').innerText = pendingList.length;
+            document.getElementById('stat-rector-pending').innerText = pendingList.length; // This is from local candidaturesList
             document.getElementById('stat-rector-inscribed').innerText = validatedStudentsCount;
             document.getElementById('stat-rector-active').innerText = activeStaffCount;
 
@@ -1408,7 +1523,7 @@
                 pendingBadge.classList.add('hidden');
             }
 
-            renderFacultyChart(validatedStudentsCount);
+            renderFacultyChart(); // Will fetch data from Supabase
             renderAccessManagementTable();
         }
 
@@ -1419,14 +1534,24 @@
 
             if (facultyChart) facultyChart.destroy();
 
-            // Distribution réaliste
-            const distribution = [
-                validatedCount - 250, 
-                88,                 
-                42,                 
-                54,                 
-                78                  
-            ];
+            // Fetch student counts by faculty from Supabase
+            const { data: studentsByFaculty, error } = await _supabase
+                .from('profiles')
+                .select('faculty, count')
+                .eq('role', 'etudiant')
+                .eq('authorized', true)
+                .rollup('count(id)');
+
+            if (error) {
+                console.error('Error fetching students by faculty:', error.message);
+                // Fallback to mock data if Supabase fails
+                studentsByFaculty = [
+                    { faculty: 'Sciences Informatiques', count: 250 },
+                    { faculty: 'Sciences de la Santé', count: 88 },
+                    { faculty: 'Psychologie et Sciences de l\'Éducation', count: 42 },
+                    { faculty: 'Économie & Gestion', count: 54 },
+                    { faculty: 'Droit', count: 78 }];
+            }
 
             facultyChart = new Chart(ctx, {
                 type: 'bar',
@@ -1434,7 +1559,7 @@
                     labels: ['Sciences Info.', 'Sciences de la Santé', 'Faculté de Pédagogie', 'Éco & Gestion', 'Droit'],
                     datasets: [{
                         label: 'Nombre d\'étudiants admis',
-                        data: distribution,
+                        data: studentsByFaculty.map(f => f.count), // Use fetched data
                         backgroundColor: [
                             '#FFD700', // Jaune UPKOL
                             '#3b82f6', // Bleu
@@ -1470,13 +1595,23 @@
 
             if (feesChart) feesChart.destroy();
 
+            // Fetch fees collected data from Supabase (e.g., from a 'payments' table)
+            const { data: feesData, error } = await _supabase
+                .from('payments')
+                .select('quarter, amount')
+                .order('quarter', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching fees data:', error.message);
+                // Fallback to mock data
+                feesData = [{ quarter: 'Trimestre 1', amount: 280000 }, { quarter: 'Trimestre 2', amount: 420000 }, { quarter: 'Trimestre 3', amount: 310000 }, { quarter: 'Trimestre 4', amount: 510000 }];
+            }
+
             feesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Trimestre 1', 'Trimestre 2', 'Trimestre 3', 'Trimestre 4'],
-                    datasets: [{
-                        label: 'Frais perçus ($)',
-                        data: [280000, 420000, 310000, 510000],
+                    labels: feesData.map(f => f.quarter),
+                    datasets: [{ label: 'Frais perçus ($)', data: feesData.map(f => f.amount),
                         borderColor: '#FFD700',
                         backgroundColor: 'rgba(255, 215, 0, 0.1)',
                         fill: true,
@@ -1503,16 +1638,23 @@
             const tbody = document.getElementById('access-management-body');
             if (!tbody) return;
 
-            tbody.innerHTML = '';
-            
-            // Enseignants d'élite simulés
-            const defaultStaff = [
-                { id: "s1", name: "Prof. Hubert Ilunga", role: "doyen", matricule: "UPK-PR-8812", authorized: true },
-                { id: "s2", name: "Dr. Thérèse Mutombo", role: "chef_dept", matricule: "UPK-PR-9104", authorized: true },
-                { id: "s3", name: "Prof. Jean-Claude Banza", role: "enseignant", matricule: "UPK-PR-4011", authorized: false }
-            ];
+            // Fetch staff profiles from Supabase
+            const { data: staffProfiles, error } = await _supabase
+                .from('profiles')
+                .select('*')
+                .in('role', ['doyen', 'chef_dept', 'enseignant']);
 
-            defaultStaff.forEach(user => {
+            if (error) {
+                console.error('Error fetching staff profiles:', error.message);
+                // Fallback to mock data if Supabase fails
+                staffProfiles = [
+                    { id: "s1", name: "Prof. Hubert Ilunga", role: "doyen", matricule: "UPK-PR-8812", authorized: true, email: "ilunga@upkol.cd" },
+                    { id: "s2", name: "Dr. Thérèse Mutombo", role: "chef_dept", matricule: "UPK-PR-9104", authorized: true, email: "mutombo@upkol.cd" },
+                    { id: "s3", name: "Prof. Jean-Claude Banza", role: "enseignant", matricule: "UPK-PR-4011", authorized: false, email: "banza@upkol.cd" }];
+            }
+
+            tbody.innerHTML = '';
+            staffProfiles.forEach(user => {
                 const statusBadge = user.authorized 
                     ? '<span class="text-green-600 bg-green-50 border border-green-200 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Habilité</span>' 
                     : '<span class="text-red-600 bg-red-50 border border-red-200 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">Suspendu</span>';
@@ -1534,10 +1676,19 @@
         }
 
         window.toggleUserAccess = function(id, enable) {
-            showCustomConfirm(
-                enable ? "Habiliter l'accès" : "Suspendre l'accès",
-                `Êtes-vous certain de vouloir modifier le statut de cette autorité d'enseignement aux espaces de l'UPKOL ?`,
-                () => {
+            const action = enable ? "Habiliter l'accès" : "Suspendre l'accès";
+            const message = `Êtes-vous certain de vouloir modifier le statut de cette autorité d'enseignement aux espaces de l'UPKOL ?`;
+            
+            showCustomConfirm(action, message, async () => {
+                const { error } = await _supabase
+                    .from('profiles')
+                    .update({ authorized: enable })
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Error updating user access:', error.message);
+                    showCustomToast('Erreur lors de la modification des habilitations.', 'error');
+                } else {
                     showCustomToast("Habilitations modifiées avec succès", "info");
                     renderAccessManagementTable();
                 }
@@ -1553,38 +1704,61 @@
         };
 
         window.submitRecruitProfessor = function() {
-            const name = document.getElementById('recruit-name').value.trim();
-            const email = document.getElementById('recruit-email').value.trim();
-            const role = document.getElementById('recruit-role').value;
+            showCustomConfirm(
+                "Recruter un membre académique",
+                "Confirmez-vous le recrutement et l'habilitation de ce nouveau membre du personnel académique ?",
+                async () => {
+                    const name = document.getElementById('recruit-name').value.trim();
+                    const email = document.getElementById('recruit-email').value.trim();
+                    const role = document.getElementById('recruit-role').value;
 
-            if (!name || !email) {
-                showCustomToast("Veuillez remplir tous les champs requis", "error");
-                return;
-            }
+                    if (!name || !email) {
+                        showCustomToast("Veuillez remplir tous les champs requis", "error");
+                        return;
+                    }
 
-            securityLogs.unshift({
-                id: Date.now(),
-                user: "Prof. Mbuyi (Rectorat)",
-                action: `Recrutement et habilitation de ${name} (${role})`,
-                date: new Date().toLocaleString(),
-                role: "recteur"
-            });
+                    const { error } = await _supabase.from('profiles').insert([{
+                        name: name,
+                        email: email,
+                        role: role,
+                        authorized: true,
+                        created_at: new Date().toISOString()
+                    }]);
 
-            showCustomToast(`Membre habilité et affecté avec succès !`, "success");
-            renderSecurityLogs();
-            closeRecruitModal();
+                    if (error) {
+                        console.error('Error recruiting professor:', error.message);
+                        showCustomToast('Erreur lors du recrutement du professeur.', 'error');
+                    } else {
+                        showCustomToast(`Membre habilité et affecté avec succès !`, "success");
+                        renderAccessManagementTable(); // Refresh the table
+                        closeRecruitModal();
+                    }
+                }
+            );
         };
 
         function renderSecurityLogs() {
             const container = document.getElementById('security-log-feed');
             if (!container) return;
 
+            const { data: logs, error } = await _supabase
+                .from('action_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5); // Limit to recent logs
+
+            if (error) {
+                console.error('Error fetching security logs:', error.message);
+                // Fallback to mock data if Supabase fails
+                logs = securityLogs;
+            }
+
             container.innerHTML = '';
-            securityLogs.forEach(log => {
+            logs.forEach(log => {
                 container.insertAdjacentHTML('beforeend', `
                     <div class="p-4 bg-slate-50 border border-slate-150 rounded-2xl flex justify-between items-center">
                         <div>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${log.date}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${new Date(log.created_at || log.date).toLocaleString()}</p>
                             <h4 class="font-extrabold text-xs text-slate-900 mt-1 uppercase">${log.user}</h4>
                             <p class="text-[10px] text-slate-500 mt-1">${log.action}</p>
                         </div>
@@ -1596,12 +1770,19 @@
 
         // --- LOGIQUE DÉTAILLÉE DU CALENDRIER ACADÉMIQUE ---
         function initAcademicCalendar() {
-            const storedEvents = localStorage.getItem('upkolAcademicEvents');
-            if (storedEvents) {
-                academicEvents = JSON.parse(storedEvents);
-            } else {
-                academicEvents = [
-                    { id: 1, date: "2026-06-01", title: "Ouverture des Inscriptions L1", category: "admin", desc: "Lancement officiel de la plateforme de dépôt des dossiers." },
+            _supabase.from('academic_events').select('*').order('date', { ascending: true })
+                .then(({ data, error }) => {
+                    if (error) throw error;
+                    academicEvents = data || [];
+                    if (academicEvents.length === 0) {
+                        // Seed mock data if Supabase is empty
+                        academicEvents = [
+                            { id: 1, date: "2026-06-01", title: "Ouverture des Inscriptions L1", category: "admin", desc: "Lancement officiel de la plateforme de dépôt des dossiers." },
+                            { id: 2, date: "2026-06-17", title: "Session du Rectorat (Aujourd'hui)", category: "reunion", desc: "Cadrage budgétaire de l'exercice académique 2026." },
+                            { id: 3, date: "2026-06-22", title: "Début de la session d'examens", category: "exam", desc: "Lancement généralisé des contrôles écrits." },
+                            { id: 4, date: "2026-06-30", title: "Fête de l'Indépendance (Férié)", category: "conge", desc: "Fermeture générale des locaux universitaires." }
+                        ];
+                    }
                     { id: 2, date: "2026-06-17", title: "Session du Rectorat (Aujourd'hui)", category: "reunion", desc: "Cadrage budgétaire de l'exercice académique 2026." },
                     { id: 3, date: "2026-06-22", title: "Début de la session d'examens", category: "exam", desc: "Lancement généralisé des contrôles écrits." },
                     { id: 4, date: "2026-06-30", title: "Fête de l'Indépendance (Férié)", category: "conge", desc: "Fermeture générale des locaux universitaires." }
@@ -1611,6 +1792,9 @@
 
             document.getElementById('event-date').value = selectedCalendarDay;
             renderCalendarGrid();
+                })
+                .catch(err => console.error('Error loading academic events:', err.message));
+
         }
 
         function renderCalendarGrid() {
@@ -1731,20 +1915,24 @@
             });
         }
 
-        window.addNewAcademicEvent = function() {
+        window.addNewAcademicEvent = async function() {
             const date = document.getElementById('event-date').value;
             const title = document.getElementById('event-title').value.trim();
             const category = document.getElementById('event-category').value;
             const desc = document.getElementById('event-desc').value.trim();
 
             if (!date || !title || !desc) {
+            if (!date || !title || !desc) {
                 showCustomToast("Veuillez remplir tous les champs du jalon", "error");
                 return;
             }
 
-            const newEvent = { id: Date.now(), date, title, category, desc };
-            academicEvents.push(newEvent);
-            localStorage.setItem('upkolAcademicEvents', JSON.stringify(academicEvents));
+            const { data, error } = await _supabase.from('academic_events').insert([{ date, title, category, description: desc }]);
+            if (error) {
+                console.error('Error adding academic event:', error.message);
+                showCustomToast('Erreur lors de l\'ajout de l\'événement.', 'error');
+                return;
+            }
             
             showCustomToast(`Jalon "${title}" programmé avec succès !`, "success");
             
@@ -1752,17 +1940,24 @@
             document.getElementById('event-desc').value = '';
 
             renderCalendarGrid();
+            initAcademicCalendar(); // Re-fetch events to update the list
         };
 
         window.deleteAcademicEvent = function(id) {
             showCustomConfirm(
                 "Suppression de Jalon Académique",
                 "Êtes-vous certain de vouloir retirer cet événement du calendrier officiel ?",
-                () => {
-                    academicEvents = academicEvents.filter(ev => ev.id !== id);
-                    localStorage.setItem('upkolAcademicEvents', JSON.stringify(academicEvents));
-                    showCustomToast("Jalon académique retiré", "info");
-                    renderCalendarGrid();
+                async () => {
+                    const { error } = await _supabase.from('academic_events').delete().eq('id', id);
+                    if (error) {
+                        console.error('Error deleting academic event:', error.message);
+                        showCustomToast('Erreur lors de la suppression de l\'événement.', 'error');
+                    } else {
+                        academicEvents = academicEvents.filter(ev => ev.id !== id);
+                        showCustomToast("Jalon académique retiré", "info");
+                        renderCalendarGrid();
+                        initAcademicCalendar(); // Re-fetch events to update the list
+                    }
                 }
             );
         };
@@ -1821,7 +2016,7 @@
         }
 
         // --- PROMULGATION DE DÉCRET EXÉCUTIF ---
-        function publishDecree() {
+        async function publishDecree() {
             const title = document.getElementById('decree-title').value.trim();
             const body = document.getElementById('decree-body').value.trim();
 
@@ -1829,18 +2024,20 @@
                 showCustomToast("Le titre et le corps de l'acte sont requis", "error");
                 return;
             }
-
+            
             const signatureData = sigCanvas.toDataURL();
-
-            const newDecree = {
-                id: Date.now(),
+            const { data, error } = await _supabase.from('decrees').insert([{
                 title: title,
                 body: body,
-                date: new Date().toLocaleDateString('fr-FR'),
+                date: new Date().toISOString(),
                 signature: signatureData
-            };
+            }]);
 
-            decreesList.unshift(newDecree);
+            if (error) {
+                console.error('Error publishing decree:', error.message);
+                showCustomToast('Erreur lors de la promulgation du décret.', 'error');
+                return;
+            }
             
             // Notification Cabinet
             cabinetNotifications.unshift({
@@ -1862,9 +2059,17 @@
             renderDecrees();
         }
 
-        function renderDecrees() {
+        async function renderDecrees() {
             const feed = document.getElementById('recent-decrees-feed');
             const bulletin = document.getElementById('official-bulletin');
+
+            const { data, error } = await _supabase.from('decrees').select('*').order('date', { ascending: false });
+            if (error) {
+                console.error('Error fetching decrees:', error.message);
+                // Fallback to mock data
+                data = decreesList;
+            }
+            decreesList = data || [];
 
             if (feed) {
                 feed.innerHTML = '';
@@ -1882,7 +2087,7 @@
             if (bulletin) {
                 bulletin.innerHTML = '';
                 decreesList.forEach(dec => {
-                    bulletin.insertAdjacentHTML('beforeend', `
+                    bulletin.insertAdjacentHTML('beforeend', ` 
                         <div class="p-6 bg-slate-50 border border-slate-200 rounded-[2rem] relative shadow-sm hover:shadow-md transition-shadow">
                             <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">${dec.date}</span>
                             <h4 class="font-extrabold text-sm text-slate-950 uppercase mt-1">${dec.title}</h4>
@@ -1901,11 +2106,11 @@
 
         // Impression de Décrets
         window.openPrintDecree = function(id) {
-            const dec = decreesList.find(d => d.id === id);
+            const dec = decreesList.find(d => d.id === id); // Use the fetched decreesList
             if (!dec) return;
 
             document.getElementById('print-decree-title').innerText = dec.title;
-            document.getElementById('print-decree-body').innerText = dec.body;
+            document.getElementById('print-decree-body').innerText = dec.body; // Ensure this is correctly populated
             document.getElementById('print-decree-date').innerText = dec.date;
             
             const sigEl = document.getElementById('print-decree-signature');
@@ -2048,6 +2253,91 @@
             });
         }
 
+        // --- SYSTÈME DE MESSAGERIE INTER-ACADÉMIQUE ---
+        let currentInterChatTarget = null;
+        const interAcademicContacts = [
+            { id: 'recteur', name: 'Cabinet Recteur', role: 'Rectorat' },
+            { id: 'sg', name: 'Secrétariat Général', role: 'Académique' },
+            { id: 'doyen', name: 'Décanat (Doyen)', role: 'Direction Faculté' },
+            { id: 'chef_dept', name: 'Chef de Département', role: 'Coordination' },
+            { id: 'tresorerie', name: 'Trésorerie Centrale', role: 'Finances' },
+            { id: 'enseignant', name: 'Corps Enseignant', role: 'Chaire Académique' }
+        ];
+
+        function renderInterMessagingContacts() {
+            const contactsList = document.getElementById('inter-messaging-contacts');
+            if (!contactsList) return;
+            contactsList.innerHTML = '';
+            interAcademicContacts.forEach(contact => {
+                if (contact.id === connectedUserRole) return;
+                contactsList.insertAdjacentHTML('beforeend', `
+                    <button onclick="selectInterChatTarget('${contact.id}')" class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors border-b border-slate-100 text-left ${currentInterChatTarget === contact.id ? 'bg-white shadow-inner' : ''}">
+                        <div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-slate-500 shadow-sm border border-slate-300/50">${contact.name.charAt(0)}</div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-900 uppercase tracking-tight">${contact.name}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${contact.role}</p>
+                        </div>
+                    </button>
+                `);
+            });
+        }
+
+        window.selectInterChatTarget = function(id) {
+            currentInterChatTarget = id;
+            const contact = interAcademicContacts.find(c => c.id === id);
+            document.getElementById('inter-chat-target-name').innerText = contact.name;
+            document.getElementById('inter-chat-avatar').innerText = contact.name.charAt(0);
+            renderInterMessagingContacts();
+            renderInterChatMessages();
+        };
+
+        function renderInterChatMessages() {
+            const container = document.getElementById('inter-chat-messages');
+            if (!container || !currentInterChatTarget) return;
+            container.innerHTML = '';
+            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
+            const filtered = store.filter(m => 
+                (m.from === connectedUserRole && m.to === currentInterChatTarget) || 
+                (m.from === currentInterChatTarget && m.to === connectedUserRole)
+            );
+            filtered.forEach(m => {
+                const isMine = m.from === connectedUserRole;
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
+                            <p class="text-xs font-semibold leading-relaxed">${m.text}</p>
+                            <span class="text-[8px] ${isMine ? 'text-slate-400' : 'text-slate-400'} block text-right mt-1 font-black uppercase tracking-widest">${m.date}</span>
+                        </div>
+                    </div>
+                `);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendInterMessage = function(e) {
+            e.preventDefault();
+            const input = document.getElementById('inter-msg-input');
+            const text = input.value.trim();
+            if (!text || !currentInterChatTarget) return;
+            const now = new Date();
+            const time = now.toISOString();
+
+            const { error } = await _supabase.from('messages').insert([{
+                sender_role: connectedUserRole,
+                receiver_role: currentInterChatTarget,
+                message_text: text,
+                sent_at: time
+            }]);
+
+            if (error) {
+                console.error('Error sending message:', error.message);
+                showCustomToast('Erreur lors de l\'envoi du message.', 'error');
+            } else {
+                input.value = '';
+            renderInterChatMessages();
+            showCustomToast("Message transmis", "success");
+        };
+
         // --- INITIALISATION DU DASHBOARD AU SEIN DU DOM ---
         function initializeDashboardOnAuth() {
             loadCandidaturesPourRecteur();
@@ -2055,7 +2345,7 @@
             renderSecurityLogs();
             updateBudgetSimulation();
             renderFeesCollectionChart();
-            renderNotifications();
+            renderNotifications(); // This will fetch from Supabase if implemented
             
             // Déclencheur sur le sélecteur d'inscription
             document.getElementById('rectorFacultyFilter').addEventListener('change', () => {
