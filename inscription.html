@@ -92,7 +92,7 @@
                     <!-- Identité -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">1</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">1</span>
                             Informations Personnelles
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
@@ -124,7 +124,7 @@
                     <!-- Choix Académique -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">2</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">2</span>
                             Choix de la Filière
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
@@ -160,7 +160,7 @@
                     <!-- Parcours -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3">3</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">3</span>
                             Parcours Scolaire
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
@@ -175,15 +175,171 @@
                         </div>
                     </div>
 
+                    <hr class="border-gray-100">
+
+                    <!-- Documents demandés -->
+                    <div>
+                        <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">4</span>
+                            Documents requis pour le dossier
+                        </h3>
+                        
+                        <!-- Note alternative de passage physique au bureau -->
+                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-2xl mb-6">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-amber-600 mt-1"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-xs text-amber-800 font-bold uppercase tracking-wider">Note importante aux candidats :</p>
+                                    <p class="text-[11px] text-amber-700 mt-1 font-semibold leading-relaxed">
+                                        Si vous ne disposez pas des versions numériques de vos documents à téléverser aujourd'hui, vous pouvez cocher l'option <strong>"Je déposerai mes documents physiques au bureau d'inscription"</strong> ci-dessous. Vous viendrez les présenter directement lors de votre validation finale sur notre campus.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option dépôt physique -->
+                        <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-gray-200">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="physicalSubmissionCheckbox" class="w-5 h-5 accent-upkol-jaune rounded cursor-pointer" onchange="toggleFileInputsRequirement()">
+                                <span class="text-xs font-black uppercase text-slate-700">Je déposerai mes documents physiques au bureau (Pas de fichiers en ligne)</span>
+                            </label>
+                        </div>
+
+                        <!-- Inputs Fichiers -->
+                        <div id="fileInputsContainer" class="grid md:grid-cols-2 gap-6 transition-all duration-300">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Curriculum Vitae (CV) <span class="text-red-500 font-bold">*</span></label>
+                                <input type="file" id="cvFile" accept=".pdf,.doc,.docx" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <p class="text-[9px] text-gray-400 mt-1">Format PDF, DOC ou DOCX accepté</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Diplôme d'État ou Équivalent <span class="text-red-500 font-bold">*</span></label>
+                                <input type="file" id="diplomaFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <p class="text-[9px] text-gray-400 mt-1">Format PDF ou image scannée accepté</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Photo d'identité <span class="text-red-500 font-bold">*</span></label>
+                                <input type="file" id="photoFile" accept="image/*" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <p class="text-[9px] text-gray-400 mt-1">Format image (PNG, JPG) de préférence de face</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Certificat d'Aptitude Physique <span class="text-red-500 font-bold">*</span></label>
+                                <input type="file" id="medicalFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <p class="text-[9px] text-gray-400 mt-1">Délivré par un médecin agréé</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-6">
-                        <button type="submit" class="w-full bg-upkol-jaune text-black font-black py-5 rounded-2xl hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-[1.02] uppercase tracking-widest shadow-xl">
-                            Soumettre ma candidature <i class="fas fa-paper-plane ml-2"></i>
+                        <!-- Bouton Déclencheur : Préparer la confirmation -->
+                        <button type="button" onclick="prepareConfirmationSummary()" class="w-full bg-upkol-jaune text-black font-black py-5 rounded-2xl hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-[1.02] uppercase tracking-widest shadow-xl">
+                            Vérifier mes informations <i class="fas fa-search ml-2"></i>
                         </button>
-                        <p class="text-center text-[10px] text-gray-400 mt-4 italic">
-                            En soumettant ce formulaire, vous acceptez d'être contacté par le service des inscriptions de l'UPKOL.
-                        </p>
                     </div>
                 </form>
+            </div>
+
+            <!-- TABLEAU DE CONFIRMATION DES INFORMATIONS (CACHÉ PAR DÉFAUT) -->
+            <div id="confirmationSummaryModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden animate__animated animate__fadeIn">
+                <div class="bg-white rounded-[2rem] shadow-2xl p-6 md:p-8 max-w-2xl w-full border border-slate-100 max-h-[90vh] overflow-y-auto">
+                    
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-upkol-jaune text-black rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md">
+                            <i class="fas fa-clipboard-check text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-900 uppercase">Confirmez vos informations</h3>
+                        <p class="text-xs text-slate-500 mt-1 font-semibold">Vérifiez que toutes les données saisies sont correctes avant de soumettre.</p>
+                    </div>
+
+                    <!-- Petit Tableau récapitulatif -->
+                    <div class="border border-gray-200 rounded-2xl overflow-hidden mb-6 bg-slate-50 text-xs font-semibold">
+                        <table class="w-full text-left divide-y divide-gray-200">
+                            <tbody class="divide-y divide-gray-200 text-slate-700">
+                                <tr class="bg-slate-100">
+                                    <th class="px-4 py-3 text-slate-500 uppercase text-[9px] font-black w-1/3">Donnée</th>
+                                    <th class="px-4 py-3 text-slate-500 uppercase text-[9px] font-black w-2/3">Valeur Saisie</th>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Nom Complet</td>
+                                    <td id="summaryName" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Naissance</td>
+                                    <td id="summaryBirth" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Email de Contact</td>
+                                    <td id="summaryEmail" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Téléphone</td>
+                                    <td id="summaryPhone" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Choix de Faculté</td>
+                                    <td id="summaryFaculty" class="px-4 py-2.5 font-black text-upkol-jaune bg-upkol-noir rounded px-2 py-0.5 inline-block"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Niveau d'étude</td>
+                                    <td id="summaryLevel" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">École & Diplôme</td>
+                                    <td id="summarySchool" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Documents requis</td>
+                                    <td id="summaryDocs" class="px-4 py-2.5 text-slate-900"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Message d'explication d'e-mail -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl text-xs text-blue-800 leading-relaxed font-bold mb-6">
+                        <i class="fas fa-envelope-open-text text-blue-600 mr-2"></i>
+                        Une fois votre candidature soumise avec succès, un e-mail officiel de confirmation vous sera envoyé à l'adresse renseignée ci-dessus (<span id="summaryEmailSpan" class="underline"></span>) pour vous notifier de l'étude de votre dossier, puis de votre acceptation ou refus par le Rectorat.
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeConfirmationSummary()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all">
+                            Modifier les infos
+                        </button>
+                        <button type="button" onclick="submitRegistration()" id="confirmSubmitBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center">
+                            <span>Confirmer & Envoyer</span> <i class="fas fa-check ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message de Réussite Finale (Caché au départ) -->
+            <div id="successMessageOverlay" class="fixed inset-0 bg-upkol-noir/95 backdrop-blur-md z-[150] flex items-center justify-center p-4 hidden">
+                <div class="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 max-w-xl w-full text-center border-4 border-upkol-jaune animate__animated animate__zoomIn">
+                    <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <i class="fas fa-paper-plane text-4xl animate-bounce"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-900 uppercase">Candidature Envoyée !</h3>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">Université Pédagogique de Kolwezi</p>
+                    
+                    <div class="w-16 h-1 bg-upkol-jaune mx-auto my-6"></div>
+                    
+                    <p class="text-sm text-slate-700 font-medium leading-relaxed mb-6">
+                        Merci d'avoir choisi l'UPKOL.  
+                        <strong>Un email vous sera transmis après traitement de votre dossier par le service académique et signature du Recteur</strong> pour confirmer votre admission définitive ou le refus de votre candidature.
+                    </p>
+
+                    <div class="bg-yellow-50 p-4 rounded-2xl text-xs text-slate-800 leading-relaxed font-bold border border-upkol-jaune/20 mb-8 text-left">
+                        <i class="fas fa-calendar-check text-upkol-jaune mr-2"></i> 
+                        N'oubliez pas de préparer vos originaux physiques si vous avez choisi l'option de dépôt au bureau.
+                    </div>
+
+                    <a href="index.html" class="inline-block bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-upkol-jaune hover:text-black transition-all shadow-md">
+                        Retourner à l'accueil <i class="fas fa-home ml-2"></i>
+                    </a>
+                </div>
             </div>
 
             <!-- Information cards -->
@@ -278,7 +434,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Système de notification Toast (Évite les alert() bloquants)
+        // Toast Notification System
         function showCustomToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -298,54 +454,162 @@
             }, 4500);
         }
 
-        // Écouteur de soumission du formulaire connecté à Supabase
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Action de modification de l'obligation de téléversement si passage au bureau coché
+        function toggleFileInputsRequirement() {
+            const checkbox = document.getElementById('physicalSubmissionCheckbox');
+            const container = document.getElementById('fileInputsContainer');
+            const fileInputs = container.querySelectorAll('input[type="file"]');
             
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Traitement en cours...';
-            btn.disabled = true;
+            if (checkbox.checked) {
+                container.classList.add('opacity-50');
+                fileInputs.forEach(input => {
+                    input.required = false;
+                    input.disabled = true;
+                    input.value = ""; // Vider les fichiers pour éviter la confusion
+                });
+            } else {
+                container.classList.remove('opacity-50');
+                fileInputs.forEach(input => {
+                    input.required = true;
+                    input.disabled = false;
+                });
+            }
+        }
 
-            // Récupération rigoureuse des données avec IDs uniques
-            const registrationData = {
-                full_name: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                birth_place: document.getElementById('birthPlace').value,
-                birth_date: document.getElementById('birthDate').value,
-                faculty: document.getElementById('facultySelect').value,
-                academic_level: document.getElementById('academicLevel').value,
-                previous_school: document.getElementById('previousSchool').value,
-                percentage: parseInt(document.getElementById('percentage').value) || 0,
-                status: 'en_attente' // Fixe le statut en attente de traitement pour le Recteur
-            };
+        // NOUVELLE FONCTION : UPLOAD VERS SUPABASE STORAGE
+        async function uploadFileToSupabase(file, folderPath) {
+            if (!file) return null;
+
+            // NOM DU BUCKET : À ajuster si vous l'avez nommé autrement dans Supabase
+            const BUCKET_NAME = 'documents_candidats'; 
+            
+            // Génération d'un nom de fichier unique et sans espaces pour Supabase
+            const fileExt = file.name.split('.').pop();
+            const uniqueId = Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+            const fileName = `${folderPath}/${uniqueId}.${fileExt}`;
 
             try {
-                // Envoi des données vers la table candidatures de Supabase
+                // 1. Uploader le fichier dans le Bucket
+                const { data, error } = await _supabase.storage
+                    .from(BUCKET_NAME)
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false // Ne pas écraser s'il existe déjà
+                    });
+
+                if (error) {
+                    throw error;
+                }
+
+                // 2. Récupérer l'URL publique pour l'insérer dans la base de données
+                const { data: publicUrlData } = _supabase.storage
+                    .from(BUCKET_NAME)
+                    .getPublicUrl(fileName);
+
+                return publicUrlData.publicUrl;
+
+            } catch (error) {
+                console.error("Erreur lors de l'upload du fichier dans le Storage:", error.message);
+                throw new Error(`Le fichier ${file.name} n'a pas pu être enregistré.`);
+            }
+        }
+
+        // Validation primaire et affichage de la confirmation récapitulative
+        function prepareConfirmationSummary() {
+            const form = document.getElementById('registrationForm');
+            if (!form.reportValidity()) {
+                showCustomToast("Veuillez remplir tous les champs obligatoires restants.", "error");
+                return;
+            }
+
+            // Alimenter les valeurs du tableau récapitulatif
+            document.getElementById('summaryName').innerText = document.getElementById('fullName').value;
+            document.getElementById('summaryBirth').innerText = `${document.getElementById('birthPlace').value}, le ${document.getElementById('birthDate').value}`;
+            document.getElementById('summaryEmail').innerText = document.getElementById('email').value;
+            document.getElementById('summaryEmailSpan').innerText = document.getElementById('email').value;
+            document.getElementById('summaryPhone').innerText = document.getElementById('phone').value;
+            document.getElementById('summaryFaculty').innerText = document.getElementById('facultySelect').value;
+            document.getElementById('summaryLevel').innerText = document.getElementById('academicLevel').value;
+            document.getElementById('summarySchool').innerText = `${document.getElementById('previousSchool').value} (${document.getElementById('percentage').value}%)`;
+
+            const isPhysical = document.getElementById('physicalSubmissionCheckbox').checked;
+            document.getElementById('summaryDocs').innerText = isPhysical 
+                ? "Dépôt physique prévu ultérieurement au bureau" 
+                : "Documents prêts à être téléversés de manière sécurisée";
+
+            // Ouvrir la pop-up de confirmation
+            document.getElementById('confirmationSummaryModal').classList.remove('hidden');
+        }
+
+        function closeConfirmationSummary() {
+            document.getElementById('confirmationSummaryModal').classList.add('hidden');
+        }
+
+        // Soumission finale asynchrone vers Supabase
+        async function submitRegistration() {
+            const btn = document.getElementById('confirmSubmitBtn');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Téléversement et Traitement...';
+            btn.disabled = true;
+
+            const isPhysical = document.getElementById('physicalSubmissionCheckbox').checked;
+            const candidateName = document.getElementById('fullName').value.trim();
+
+            try {
+                let cvUrl = null;
+                let diplomaUrl = null;
+                let photoUrl = null;
+                let medicalUrl = null;
+
+                // Création d'un dossier formaté proprement pour l'étudiant dans le Bucket
+                const folderName = candidateName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').toLowerCase();
+
+                if (!isPhysical) {
+                    // Upload successif dans les sous-dossiers
+                    cvUrl = await uploadFileToSupabase(document.getElementById('cvFile').files[0], `${folderName}/cv`);
+                    diplomaUrl = await uploadFileToSupabase(document.getElementById('diplomaFile').files[0], `${folderName}/diplomes`);
+                    photoUrl = await uploadFileToSupabase(document.getElementById('photoFile').files[0], `${folderName}/photos`);
+                    medicalUrl = await uploadFileToSupabase(document.getElementById('medicalFile').files[0], `${folderName}/medical`);
+                }
+
+                const registrationData = {
+                    full_name: candidateName,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    birth_place: document.getElementById('birthPlace').value,
+                    birth_date: document.getElementById('birthDate').value,
+                    faculty: document.getElementById('facultySelect').value,
+                    academic_level: document.getElementById('academicLevel').value,
+                    previous_school: document.getElementById('previousSchool').value,
+                    percentage: parseInt(document.getElementById('percentage').value) || 0,
+                    status: 'en_attente', // Statut initial en attente de traitement rectorat
+                    depot_physique_prevu: isPhysical,
+                    cv_file: cvUrl,         // URLs sécurisées
+                    diplome_file: diplomaUrl,
+                    photo_file: photoUrl,
+                    certificat_medical_file: medicalUrl
+                };
+
+                // Enregistrement des données textuelles dans la base de données
                 const { data, error } = await _supabase
                     .from('candidatures')
                     .insert([registrationData]);
 
                 if (error) throw error;
 
-                // Toast de succès à la place d'une popup
-                showCustomToast("Candidature enregistrée avec succès ! Redirection en cours...", "success");
+                // Masquer le récapitulatif
+                closeConfirmationSummary();
 
-                setTimeout(() => {
-                    e.target.reset();
-                    btn.innerHTML = originalBtnHtml;
-                    btn.disabled = false;
-                    window.location.href = 'index.html';
-                }, 2500);
+                // Afficher le message d'acceptation et de vérification d'email
+                document.getElementById('successMessageOverlay').classList.remove('hidden');
 
             } catch (error) {
-                console.error("Erreur d'insertion Supabase:", error.message);
-                showCustomToast("Une erreur s'est produite : " + error.message, "error");
+                console.error("Erreur globale d'insertion:", error.message);
+                showCustomToast("Erreur lors de l'envoi : " + error.message, "error");
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
-        });
+        }
 
         // FAQ Accordion Logic
         document.querySelectorAll('.faq-toggle').forEach(button => {
