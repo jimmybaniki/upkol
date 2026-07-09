@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail de Connexion - UPKOL</title>
+    <link rel="icon" href="favicon.png?v=2" type="image/png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            gris: '#f4f7f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.15), transparent 40%),
+                radial-gradient(circle at 80% 90%, rgba(18, 18, 18, 0.1), transparent 50%);
+        }
+        .header-title {
+            font-family: 'Cinzel', serif;
+        }
+        .fade-in { 
+            animation: fadeIn 0.8s ease-out forwards; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+        
+        <div class="text-center mb-8">
+            <a href="index.html" class="inline-block mb-4">
+                <img src="logo.png" alt="Logo UPKOL" class="w-20 h-20 object-contain hover:scale-105 transition-transform" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-2xl bg-upkol-noir w-20 h-20 flex items-center justify-center rounded-2xl shadow-lg\'>UPKOL</span>';">
+            </a>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight header-title">PORTAIL UPKOL</h2>
+            <p class="text-xs text-slate-500 mt-2 font-black uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+            <div class="inline-flex items-center gap-2 mt-4 bg-blue-50 text-blue-700 text-[10px] font-black px-4 py-1.5 rounded-full uppercase border border-blue-200">
+                <i class="fas fa-shield-alt"></i>
+                Authentification Centralisée
+            </div>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)" class="w-full space-y-5">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Identifiant (Email)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-user-shield text-slate-400 text-xs"></i>
+                    </div>
+                    <input type="email" id="login-email" required placeholder="nom.prenom@upkol.cd" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Mot de passe</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-slate-400 text-xs"></i>
+                    </div>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
+                </div>
+            </div>
+            <button type="submit" id="login-button" class="w-full bg-upkol-noir text-upkol-jaune py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg flex items-center justify-center mt-2 group">
+                <i class="fas fa-sign-in-alt mr-2 group-hover:translate-x-1 transition-transform"></i> Connexion Sécurisée
+            </button>
+        </form>
+        
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                <i class="fas fa-server mr-1"></i> Accès restreint au personnel et étudiants habilités.
+            </p>
+            <a href="index.html" class="text-xs text-slate-500 hover:text-upkol-jaune font-bold mt-4 inline-block">Retour au site public</a>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- CONFIGURATION SUPABASE ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- MAPPING DES RÔLES VERS LES FICHIERS ---
+        const roleRedirects = {
+            'super_admin': 'dashboard_super_admin.html',
+            'recteur': 'espace_recteur_upkol.html',
+            'secretaire': 'secr_tariat_g_n_ral_upkol.html',
+            'doyen': 'doyens.html',
+            'chef_dept': 'doyens.html', // Les chefs de département utilisent le même portail que les doyens
+            'enseignant': 'enseignants.html',
+            'tresorier': 'budgetannuel.html',
+            'etudiant': 'e-learning.html' // Les étudiants sont redirigés vers la plateforme e-learning
+        };
+
+        // --- GESTION DE LA CONNEXION ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const submitBtn = document.getElementById('login-button');
+            const originalText = submitBtn.innerHTML;
+
+            if (!email || !password) {
+                showToast("Veuillez remplir tous les champs.", "error");
+                return;
+            }
+
+            // Indiquer le chargement
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
+            submitBtn.disabled = true;
+
+            try {
+                // Recherche de l'utilisateur dans la table 'users'
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .single(); // .single() car l'email doit être unique
+
+                if (error || !data) {
+                    showToast('Identifiants incorrects ou utilisateur non trouvé.', 'error');
+                    throw new Error('User not found or Supabase error');
+                }
+
+                // Vérification du mot de passe et du statut
+                if (data.password === password) {
+                    if (!data.active) {
+                        showToast("Accès refusé : Ce compte a été désactivé.", "warning");
+                    } else {
+                        const userRole = data.role;
+                        const redirectUrl = roleRedirects[userRole];
+
+                        if (redirectUrl) {
+                            showToast(`Connexion réussie. Bienvenue ${data.name}. Redirection...`, 'success');
+                            // Stocker les informations utilisateur pour les utiliser dans les autres pages
+                            localStorage.setItem('connectedUser', JSON.stringify(data));
+                            setTimeout(() => {
+                                window.location.href = redirectUrl;
+                            }, 1500);
+                        } else {
+                            showToast("Votre rôle n'a pas de page de destination définie.", "error");
+                        }
+                    }
+                } else {
+                    showToast('Mot de passe incorrect.', 'error');
+                }
+
+            } catch (err) {
+                console.error("Erreur de connexion:", err.message);
+                // Ne pas afficher d'erreur technique à l'utilisateur, le toast "identifiants incorrects" est suffisant.
+            } finally {
+                // Restaurer le bouton après un délai pour éviter le spam
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        // --- SYSTÈME DE NOTIFICATION (TOAST) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-600' : 
+                            type === 'warning' ? 'bg-amber-500' : 'bg-red-600';
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+
+            toast.className = `flex items-center space-x-3 text-white px-6 py-4 rounded-xl shadow-2xl pointer-events-auto ${bgColor} animate-pulse`;
+            toast.innerHTML = `<i class="fas ${icon} text-xl"></i><span class="text-sm font-bold">${message}</span>`;
+            
+            // Utiliser 'animate-pulse' pour l'effet d'entrée/sortie
+            toast.classList.add('fade-in');
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('animate-pulse');
+                toast.style.animation = 'fadeOut 0.5s ease-out forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 5000);
+        }
+
+        // Ajouter une keyframe pour le fadeOut
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = `@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }`;
+        document.head.appendChild(styleSheet);
+
+    </script>
+</body>
+</html>
