@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - Gestion UPKOL</title>
+    <link class="icon" href="favicon.png?v=2" type="image/png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            gris: '#f4f7f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        
+        /* Modal & Portal Animation */
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        .portal-enter { animation: portalFadeIn 0.5s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes portalFadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(10px); } }
+        
+        /* Toast Animation */
+        .toast-enter { animation: toastIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Fade-in pour les messages */
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+    <!-- PORTAIL DE CONNEXION SUPER ADMIN -->
+    <div id="login-portal" class="fixed inset-0 z-[900] bg-upkol-noir/95 backdrop-blur-md flex items-center justify-center portal-enter">
+        <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-md mx-4 relative overflow-hidden modal-enter">
+            <div class="absolute top-0 left-0 w-full h-2 bg-upkol-jaune"></div>
+            
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-upkol-noir text-upkol-jaune rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg border border-gray-800">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2 class="text-2xl font-black uppercase tracking-tight text-gray-900 leading-tight">Système Central</h2>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Authentification Super Admin</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Identifiant (Email) *</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-user-shield text-gray-400 text-xs"></i>
+                        </div>
+                        <input type="email" id="admin-email" required placeholder="   email@upkol.cd " value=" " class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Mot de passe *</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 text-xs"></i>
+                        </div>
+                        <input type="password" id="admin-password" required placeholder="••••••••" value="  " class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-upkol-jaune text-black py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-yellow-400 transition-colors shadow-lg flex items-center justify-center mt-2">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Connexion Sécurisée
+                </button>
+            </form>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-server mr-1"></i> Accès restreint au personnel habilité</p>
+            </div>
+        </div>
+    </div>
+    <!-- FIN PORTAIL DE CONNEXION -->
+
+
+    <!-- OVERLAY POUR MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity lg:hidden" onclick="toggleSidebar()"></div>
+    
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll shadow-2xl">
+        <div class="p-6 flex items-center justify-between border-b border-gray-800">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-shield-alt text-upkol-jaune text-2xl"></i>
+                <div>
+                    <span class="text-xl font-black tracking-tighter text-upkol-jaune block leading-none">SUPER ADMIN</span>
+                    <span class="text-[9px] uppercase tracking-widest text-gray-400">Système Central</span>
+                </div>
+            </div>
+            <button class="lg:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <nav class="flex-grow mt-6 px-4 space-y-2">
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3 mb-2">Gestion Globale</p>
+            
+            <button id="btn-tab-users" onclick="switchAdminTab('users')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm bg-upkol-jaune text-black transition-all">
+                <i class="fas fa-users-cog mr-3 w-5 text-center"></i> Utilisateurs & Accès
+            </button>
+            
+            <button id="btn-tab-candidatures" onclick="switchAdminTab('candidatures')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <i class="fas fa-file-signature mr-3 w-5 text-center"></i> Candidatures Reçues
+                <span id="badge-candidatures" class="ml-auto bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+            
+            <button id="btn-tab-inscrits" onclick="switchAdminTab('inscrits')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <i class="fas fa-graduation-cap mr-3 w-5 text-center"></i> Étudiants Inscrits
+                <span id="badge-inscrits" class="ml-auto bg-green-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+
+            <!-- BOUTON : MESSAGERIE -->
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3 mb-2 mt-6">Communication</p>
+            <button id="btn-tab-messaging" onclick="switchAdminTab('messaging')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <i class="fas fa-comments mr-3 w-5 text-center"></i> Messagerie Interne
+            </button>
+        </nav>
+        <div class="p-4 border-t border-gray-800 mt-auto">
+            <button onclick="logout()" class="w-full flex items-center p-3 text-red-500 font-bold text-sm hover:bg-red-500 hover:text-white rounded-lg transition-all">
+                <i class="fas fa-power-off mr-3"></i> Quitter l'Admin
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- HEADER -->
+        <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-8 z-10 shrink-0">
+            <div class="flex items-center">
+                <button class="lg:hidden text-gray-600 hover:text-upkol-noir focus:outline-none mr-4" onclick="toggleSidebar()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <h1 id="admin-page-title" class="text-sm lg:text-lg font-black uppercase text-gray-800 tracking-tight">Gestion des Comptes & Habilitations</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <!-- ID ajouté pour mettre à jour le nom dynamiquement -->
+                    <p id="admin-header-name" class="text-sm font-bold text-gray-900">Administrateur Système</p>
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Niveau d'accès : Maximum (Root)</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-upkol-noir text-upkol-jaune flex items-center justify-center font-bold shadow-md">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-grow overflow-y-auto p-4 lg:p-8">
+            
+            <!-- STATS RAPIDES -->
+            <div id="stats-dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-4 mb-8">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between transition-transform hover:-translate-y-1">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Utilisateurs</p>
+                        <h3 class="text-3xl font-black text-gray-800" id="stat-total">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-green-500 flex items-center justify-between transition-transform hover:-translate-y-1">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Comptes Actifs</p>
+                        <h3 class="text-3xl font-black text-gray-800" id="stat-total-active">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-user-check"></i></div>
+                </div>
+                
+                <!-- STAT ÉTUDIANTS INSCRITS -->
+                <div onclick="switchAdminTab('inscrits')" class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-green-600 flex items-center justify-between transition-transform hover:-translate-y-1 cursor-pointer">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Étudiants Inscrits</p>
+                        <h3 class="text-3xl font-black text-green-600" id="stat-inscrits">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-graduation-cap"></i></div>
+                </div>
+
+                <!-- STAT UNIQUE CANDIDATURES -->
+                <div onclick="switchAdminTab('candidatures')" class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-amber-500 flex items-center justify-between transition-transform hover:-translate-y-1 cursor-pointer">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Candidatures en attente</p>
+                        <h3 class="text-3xl font-black text-amber-600" id="stat-candidatures-pending">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-file-signature"></i></div>
+                </div>
+
+                <div class="bg-upkol-noir p-5 rounded-3xl shadow-lg border-l-4 border-upkol-jaune flex items-center justify-between cursor-pointer hover:bg-gray-900 transition-colors" onclick="openCreateUserModal()">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Action Rapide</p>
+                        <h3 class="text-sm font-black text-upkol-jaune mt-1 uppercase text-xs">Créer un compte</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-upkol-jaune text-black rounded-xl flex items-center justify-center text-xl shadow-md"><i class="fas fa-plus"></i></div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- SECTION 1 : TABLEAU DES UTILISATEURS       -->
+            <!-- ========================================== -->
+            <div id="users-section" class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-50/50">
+                    <h2 class="font-black uppercase text-sm text-gray-800 tracking-tight"><i class="fas fa-address-book mr-2 text-upkol-jaune"></i> Registre Central des Utilisateurs</h2>
+                    
+                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="searchInput" placeholder="Rechercher nom, email, matricule..." class="w-full pl-10 pr-4 py-2.5 text-xs font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all" onkeyup="filterTable()">
+                            <i class="fas fa-search absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        </div>
+                        <div class="relative w-full sm:w-48">
+                            <select id="statusFilter" class="w-full pl-4 pr-10 py-2.5 text-xs font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all appearance-none cursor-pointer" onchange="filterTable()">
+                                <option value="all">Tous les statuts</option>
+                                <option value="active">Comptes actifs</option>
+                                <option value="inactive">Comptes inactifs</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3.5 top-3 text-gray-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <button onclick="openCreateUserModal()" class="w-full sm:w-auto bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-xs font-black uppercase hover:bg-gray-800 transition-colors whitespace-nowrap shadow-md">
+                            <i class="fas fa-user-plus mr-2"></i> Ajouter
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[1000px]">
+                        <thead class="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                            <tr>
+                                <th class="px-6 py-4">Utilisateur / Profil</th>
+                                <th class="px-6 py-4">Matricule</th>
+                                <th class="px-6 py-4">Rôle Système</th>
+                                <th class="px-6 py-4">Identifiants</th>
+                                <th class="px-6 py-4 text-center">Statut Accès</th>
+                                <th class="px-6 py-4 text-right">Actions Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="text-sm divide-y divide-gray-50 bg-white">
+                            <!-- Rempli par javascript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+                    <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-4 text-4xl">
+                        <i class="fas fa-users-slash"></i>
+                    </div>
+                    <h3 class="text-base font-black text-gray-800 uppercase tracking-tight">Aucun utilisateur trouvé</h3>
+                    <p class="text-xs text-gray-500 mt-2 max-w-md">Si vous vous attendez à voir vos données réelles, vérifiez votre connexion à Supabase.</p>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- SECTION 2 : TABLEAU DES CANDIDATURES       -->
+            <!-- ========================================== -->
+            <div id="candidatures-section" class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100 hidden">
+                <div class="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-50/50">
+                    <div>
+                        <h2 class="font-black uppercase text-sm text-gray-800 tracking-tight"><i class="fas fa-file-signature mr-2 text-amber-500"></i> Dossiers de Candidature en Attente</h2>
+                        <p class="text-[10px] text-gray-400 font-semibold mt-1">Ces dossiers doivent être approuvés ou rejetés. Une fois approuvés, ils basculent automatiquement dans "Étudiants Inscrits" avec génération d'un compte étudiant (Email + MDP).</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[700px]">
+                        <thead class="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                            <tr>
+                                <th class="px-6 py-4">Candidat</th>
+                                <th class="px-6 py-4">Choix Académique</th>
+                                <th class="px-6 py-4">Provenance</th>
+                                <th class="px-6 py-4">Moyenne obtenue</th>
+                                <th class="px-6 py-4">Contact</th>
+                                <th class="px-6 py-4 text-center">Autorité de validation</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="candidaturesTableBody" class="text-sm divide-y divide-gray-50 bg-white">
+                            <!-- Rempli par javascript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="candidaturesEmptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+                    <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center text-green-300 mb-4 text-4xl">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <h3 class="text-base font-black text-gray-800 uppercase tracking-tight">Aucun dossier en attente</h3>
+                    <p class="text-xs text-gray-500 mt-2">Tous les dossiers ont été traités. Consultez la liste des étudiants inscrits.</p>
+                    <button onclick="switchAdminTab('inscrits')" class="mt-4 px-6 py-2.5 bg-green-500 text-white text-xs font-black uppercase rounded-xl hover:bg-green-600 transition-colors">
+                        <i class="fas fa-graduation-cap mr-2"></i> Voir les étudiants inscrits
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- SECTION 3 : ÉTUDIANTS INSCRITS (APPROUVÉS) -->
+            <!-- ========================================== -->
+            <div id="inscrits-section" class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100 hidden">
+                <div class="p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-50/50">
+                    <div>
+                        <h2 class="font-black uppercase text-sm text-gray-800 tracking-tight"><i class="fas fa-graduation-cap mr-2 text-green-600"></i> Liste Officielle des Étudiants Inscrits</h2>
+                        <p class="text-[10px] text-gray-400 font-semibold mt-1">Dossiers approuvés et étudiants officiellement enregistrés. Vous pouvez modifier, bloquer ou supprimer un étudiant.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="searchInscrits" placeholder="Rechercher étudiant, matricule..." class="w-full pl-10 pr-4 py-2.5 text-xs font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" onkeyup="filterInscrits()">
+                            <i class="fas fa-search absolute left-3.5 top-3 text-gray-400 text-xs"></i>
+                        </div>
+                        <div class="relative w-full sm:w-48">
+                            <select id="faculteFilter" class="w-full pl-4 pr-10 py-2.5 text-xs font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all appearance-none cursor-pointer" onchange="filterInscrits()">
+                                <option value="all">Toutes les facultés</option>
+                                <option value="Sciences Informatiques">Sciences Informatiques</option>
+                                <option value="Sciences de la Santé">Sciences de la Santé</option>
+                                <option value="Psychologie et Sciences de l'Éducation">Psychologie & Éducation</option>
+                                <option value="Sciences Économiques et Gestion">Sciences Économiques</option>
+                                <option value="Faculté de Droit">Droit</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3.5 top-3 text-gray-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Résumé statistique -->
+                <div class="px-6 py-3 bg-green-50 border-b border-green-100 flex flex-wrap gap-4">
+                    <span class="text-[10px] font-black uppercase text-green-700"><i class="fas fa-users mr-1"></i> Total inscrits : <span id="count-inscrits-total" class="text-green-800">0</span></span>
+                    <span class="text-[10px] font-black uppercase text-green-700"><i class="fas fa-calendar-alt mr-1"></i> <span id="count-inscrits-year" class="text-green-800">0</span> cette année</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[1200px]">
+                        <thead class="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                            <tr>
+                                <th class="px-6 py-4">Étudiant(e)</th>
+                                <th class="px-6 py-4">Matricule Officiel</th>
+                                <th class="px-6 py-4">Faculté / Niveau</th>
+                                <th class="px-6 py-4">Provenance / Moyenne</th>
+                                <th class="px-6 py-4">Documents Justificatifs</th>
+                                <th class="px-6 py-4">Contact</th>
+                                <th class="px-6 py-4 text-center">Approbation</th>
+                                <th class="px-6 py-4 text-center">Date d'inscription</th>
+                                <th class="px-6 py-4 text-right">Actions Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inscritsTableBody" class="text-sm divide-y divide-gray-50 bg-white">
+                            <!-- Rempli par javascript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="inscritsEmptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+                    <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-4 text-4xl">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="text-base font-black text-gray-800 uppercase tracking-tight">Aucun étudiant inscrit</h3>
+                    <p class="text-xs text-gray-500 mt-2">Les étudiants apparaîtront ici après approbation de leur dossier ou création manuelle.</p>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- SECTION 4 : MESSAGERIE INTERNE             -->
+            <!-- ========================================== -->
+            <div id="messaging-section" class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100 hidden h-[calc(100vh-12rem)] min-h-[500px]">
+                <div class="flex h-full">
+                    <!-- Contacts list -->
+                    <div class="w-80 border-r border-gray-100 flex flex-col bg-gray-50/50 flex-shrink-0">
+                        <div class="p-4 border-b border-gray-100">
+                            <h3 class="font-black text-xs text-gray-900 uppercase tracking-wider mb-2">Utilisateurs</h3>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
+                                <input type="text" id="contact-search" oninput="searchContacts()" class="w-full bg-white border border-gray-200 pl-9 pr-4 py-2 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-upkol-jaune" placeholder="Rechercher utilisateur...">
+                            </div>
+                        </div>
+                        <div class="flex-grow overflow-y-auto space-y-1 p-2" id="contacts-list">
+                            <!-- Liste des utilisateurs injectée par JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chat window -->
+                    <div class="flex-grow flex flex-col bg-white relative">
+                        <div id="chat-header" class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+                            <div class="flex items-center space-x-3">
+                                <div id="chat-active-avatar" class="w-10 h-10 rounded-xl bg-upkol-noir text-upkol-jaune flex items-center justify-center text-sm font-bold shadow-sm">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-xs text-gray-900 uppercase" id="chat-active-name">Sélectionnez un utilisateur</h4>
+                                    <p class="text-[9px] text-green-600 font-black uppercase tracking-wider" id="chat-active-role">Canal Sécurisé Super Admin</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages Box -->
+                        <div class="flex-grow p-6 overflow-y-auto space-y-4 bg-gray-50/30" id="chat-messages-container">
+                            <div class="flex flex-col items-center justify-center h-full text-gray-400 italic space-y-3">
+                                <i class="fas fa-comments text-5xl text-gray-300"></i>
+                                <p class="text-xs font-medium text-center">Sélectionnez un utilisateur à gauche pour lui envoyer un message officiel.</p>
+                            </div>
+                        </div>
+
+                        <!-- Input Zone -->
+                        <div class="p-4 border-t border-gray-100 bg-white shrink-0">
+                            <form onsubmit="sendMessage(event)" class="flex gap-2">
+                                <input type="text" id="chat-input" class="flex-grow bg-gray-50 border border-gray-200 px-4 py-3.5 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-upkol-jaune transition-all" placeholder="Rédiger une annonce ou un message..." disabled>
+                                <button type="submit" id="chat-send-btn" class="bg-upkol-noir text-upkol-jaune hover:bg-gray-800 px-5 py-3 rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center justify-center" disabled>
+                                    <i class="fas fa-paper-plane text-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL CRÉATION / ÉDITION UTILISATEUR -->
+    <div id="userModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeCreateUserModal()"></div>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl mx-4 z-10 modal-enter overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-upkol-noir p-6 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-upkol-jaune text-black rounded-xl flex items-center justify-center text-lg">
+                        <i class="fas fa-user-edit" id="modalIcon"></i>
+                    </div>
+                    <div>
+                        <h3 id="modalTitle" class="text-lg font-black uppercase tracking-tight text-white">Créer un Compte</h3>
+                        <p id="modalSubtitle" class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-widest">Génération du matricule automatique</p>
+                    </div>
+                </div>
+                <button onclick="closeCreateUserModal()" class="text-gray-400 hover:text-white transition-colors bg-gray-800 w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="createUserForm" onsubmit="handleUserSubmit(event)" class="p-6 md:p-8 space-y-5 overflow-y-auto">
+                <input type="hidden" id="editUserId" value="">
+                
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Rôle de l'utilisateur *</label>
+                    <select id="userRole" required class="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all cursor-pointer" onchange="toggleModalFieldsBasedOnRole()">
+                        <option value="" disabled selected>-- Sélectionner l'habilitation système --</option>
+                        <option value="etudiant">Étudiant(e) (Inscrit)</option>
+                        <option value="enseignant">Enseignant(e) / Professeur</option>
+                        <option value="chef_dept">Chef de Département</option>
+                        <option value="doyen">Doyen de Faculté</option>
+                        <option value="secretaire">Secrétaire Général(e) Académique</option>
+                        <option value="tresorier">Trésorier / Finances</option>
+                        <option value="recteur">Recteur</option>
+                        <option value="super_admin">Super Administrateur</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Nom Complet *</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400 text-xs"></i>
+                        </div>
+                        <input type="text" id="userName" required placeholder="Ex: Prof. Kalala Mbuyi" class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                    </div>
+                </div>
+
+                <!-- SECTION SUPPLÉMENTAIRE UNIQUEMENT POUR LA CRÉATION MANUELLE D'UN ÉTUDIANT -->
+                <div id="additionalStudentFields" class="hidden space-y-4 p-4 bg-yellow-50 rounded-2xl border border-yellow-200">
+                    <p class="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1"><i class="fas fa-graduation-cap"></i> Informations Académiques (Étudiant)</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-500 mb-1">Faculté *</label>
+                            <select id="userStudentFaculte" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none">
+                                <option value="Sciences Informatiques">Sciences Informatiques</option>
+                                <option value="Sciences de la Santé">Sciences de la Santé</option>
+                                <option value="Psychologie et Sciences de l'Éducation">Psychologie & Éducation</option>
+                                <option value="Sciences Économiques et Gestion">Sciences Économiques</option>
+                                <option value="Faculté de Droit">Droit</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-500 mb-1">Niveau Académique *</label>
+                            <input type="text" id="userStudentNiveau" placeholder="Ex: Licence 1 (LMD)" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-500 mb-1">École de provenance</label>
+                            <input type="text" id="userStudentEcole" placeholder="Ex: Collège Mwanga" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-500 mb-1">Moyenne ou Pourcentage (%)</label>
+                            <input type="text" id="userStudentMoyenne" placeholder="Ex: 72%" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black uppercase text-gray-500 mb-1">N° Téléphone</label>
+                        <input type="text" id="userStudentTelephone" placeholder="Ex: +243 812 345 678" class="w-full bg-white border border-gray-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Email Univ. (Identifiant) *</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400 text-xs"></i>
+                            </div>
+                            <input type="email" id="userEmail" required placeholder="nom@upkol.cd" class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Email Personnel (Contact)</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-inbox text-gray-400 text-xs"></i>
+                            </div>
+                            <input type="email" id="userEmailPersonnel" placeholder="nom@gmail.com" class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Mot de passe de connexion *</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400 text-xs"></i>
+                        </div>
+                        <input type="text" id="userPassword" required placeholder="Mot de passe" value=" yourcode " class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all">
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 pt-2 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                    <input type="checkbox" id="userActive" checked class="w-5 h-5 text-upkol-jaune border-gray-300 rounded focus:ring-upkol-jaune cursor-pointer accent-upkol-jaune">
+                    <label for="userActive" class="text-xs font-black uppercase text-gray-700 cursor-pointer">Activer et autoriser l'accès immédiatement</label>
+                </div>
+            </form>
+            
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+                <button type="button" onclick="closeCreateUserModal()" class="px-6 py-3 text-xs font-black uppercase tracking-wider text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-xl transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" form="createUserForm" class="px-8 py-3 bg-upkol-noir text-upkol-jaune text-xs font-black uppercase tracking-wider rounded-xl hover:bg-gray-800 transition-colors shadow-lg flex items-center">
+                    <i class="fas fa-save mr-2"></i> <span id="submitBtnText">Créer le compte</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ÉDITION ÉTUDIANT COMPLET AVEC DOCUMENTS & COTES -->
+    <div id="studentModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeEditStudentModal()"></div>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 z-10 modal-enter overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-green-700 p-6 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white text-green-700 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black uppercase tracking-tight text-white">Modifier Dossier Étudiant</h3>
+                        <p id="studentModalSubtitle" class="text-[10px] text-green-200 mt-0.5 uppercase tracking-widest">Matricule: ...</p>
+                    </div>
+                </div>
+                <button onclick="closeEditStudentModal()" class="text-green-200 hover:text-white transition-colors bg-green-800 w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="editStudentForm" onsubmit="handleStudentSubmit(event)" class="p-6 md:p-8 space-y-5 overflow-y-auto">
+                <input type="hidden" id="editStudentId" value="">
+                <input type="hidden" id="editStudentMatriculeOriginal" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Nom Complet *</label>
+                        <input type="text" id="studentNom" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Matricule Officiel *</label>
+                        <input type="text" id="studentMatricule" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Faculté *</label>
+                        <select id="studentFaculte" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                            <option value="Sciences Informatiques">Sciences Informatiques</option>
+                            <option value="Sciences de la Santé">Sciences de la Santé</option>
+                            <option value="Psychologie et Sciences de l'Éducation">Psychologie & Éducation</option>
+                            <option value="Sciences Économiques et Gestion">Sciences Économiques</option>
+                            <option value="Faculté de Droit">Droit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Niveau Académique *</label>
+                        <input type="text" id="studentNiveau" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="sm:col-span-2">
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">École de provenance</label>
+                        <input type="text" id="studentEcole" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Moyenne obtenus (%)</label>
+                        <input type="text" id="studentMoyenne" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="block text-[10px] font-black uppercase text-gray-500">Email Universitaire (Login) *</label>
+                            <button type="button" onclick="generateStudentEmail()" class="text-[9px] font-bold bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded transition-colors">
+                                <i class="fas fa-magic"></i> Générer
+                            </button>
+                        </div>
+                        <input type="email" id="studentEmail" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Email Personnel (Contact)</label>
+                        <input type="email" id="studentEmailPersonnel" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1.5">Numéro de Téléphone</label>
+                    <input type="text" id="studentTelephone" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                </div>
+
+                <!-- IMPORTATION DIRECTE DES DOCUMENTS JUSTIFICATIFS DEPUIS L'ESPACE DE MODIFICATION -->
+                <div class="border-t border-gray-200 pt-4 space-y-4">
+                    <p class="text-[11px] font-black uppercase text-green-800 tracking-wider"><i class="fas fa-folder-open"></i> Numérisation & Justificatifs Manquants</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-400 mb-1">Curriculum Vitae (PDF/Image)</label>
+                            <input type="file" id="edit-cv-file" onchange="convertStudentDocToBase64(event, 'cv')" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-400 mb-1">Diplôme d'État / Équivalent</label>
+                            <input type="file" id="edit-diplome-file" onchange="convertStudentDocToBase64(event, 'diplome')" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-400 mb-1">Photo d'identité (JPEG/PNG)</label>
+                            <input type="file" id="edit-photo-file" onchange="convertStudentDocToBase64(event, 'photo')" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black uppercase text-gray-400 mb-1">Certificat Médical</label>
+                            <input type="file" id="edit-medical-file" onchange="convertStudentDocToBase64(event, 'medical')" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+                <button type="button" onclick="closeEditStudentModal()" class="px-6 py-3 text-xs font-black uppercase tracking-wider text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-xl transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" form="editStudentForm" class="px-8 py-3 bg-green-600 text-white text-xs font-black uppercase tracking-wider rounded-xl hover:bg-green-700 transition-colors shadow-lg flex items-center">
+                    <i class="fas fa-save mr-2"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER (Z-Index élevé pour passer au-dessus du portail) -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- UTILISATEUR CONNECTÉ (SUPER ADMIN) ---
+        let currentAdminUser = null; // <= AJOUT : Sauvegarde de la session de l'admin
+        
+        // --- LOGIQUE DE CONNEXION SUPER ADMIN ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Indiquer le chargement
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
+            submitBtn.disabled = true;
+
+            try {
+                // Recherche dans Supabase de l'utilisateur correspondant (Doit être super_admin)
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .eq('role', 'super_admin');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const user = data[0];
+                    if (!user.active) {
+                        showToast("Accès refusé : Ce compte a été désactivé.", "warning");
+                    } else {
+                        // <= AJOUT : Attribution des données à la session globale
+                        currentAdminUser = user;
+                        document.getElementById('admin-header-name').innerText = user.name || 'Administrateur Système';
+                        
+                        document.getElementById('login-portal').classList.add('hidden');
+                        showToast(`Connexion réussie. Bienvenue ${user.name}.`, 'success');
+                    }
+                } else {
+                    // Accès de secours "Admin par défaut" au cas où la base de données est vide
+                    if (email === '   email@upkol.cd ' && password === '') {
+                        // <= AJOUT : Attribution d'une fausse session de démo
+                        currentAdminUser = { id: 'demo_admin_id', name: 'Admin Démo', role: 'super_admin' };
+                        document.getElementById('admin-header-name').innerText = currentAdminUser.name;
+                        
+                        document.getElementById('login-portal').classList.add('hidden');
+                        showToast('Connexion de secours réussie (Admin démo).', 'success');
+                    } else {
+                        showToast('Identifiants incorrects ou rôle non autorisé.', 'error');
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur de connexion:", err);
+                showToast("Erreur réseau ou Supabase. Vérifiez votre connexion.", "error");
+            } finally {
+                // Restaurer le bouton
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // --- CONFIGURATION ROLES ---
+        const roleConfig = {
+            'etudiant': { label: 'Étudiant(e)', color: 'bg-blue-50 text-blue-600 border-blue-100', prefix: 'ETU' },
+            'enseignant': { label: 'Enseignant', color: 'bg-purple-50 text-purple-600 border-purple-100', prefix: 'ENS' },
+            'chef_dept': { label: 'Chef Dépt.', color: 'bg-indigo-50 text-indigo-600 border-indigo-100', prefix: 'CHD' },
+            'doyen': { label: 'Doyen Fac.', color: 'bg-orange-50 text-orange-600 border-orange-100', prefix: 'DOY' },
+            'secretaire': { label: 'SG Académique', color: 'bg-teal-50 text-teal-600 border-teal-100', prefix: 'SGA' },
+            'tresorier': { label: 'Trésorerie', color: 'bg-emerald-50 text-emerald-600 border-emerald-100', prefix: 'FIN' },
+            'recteur': { label: 'Rectorat', color: 'bg-red-50 text-red-600 border-red-100', prefix: 'REC' },
+            'super_admin': { label: 'Super Admin', color: 'bg-slate-900 text-yellow-400 border-yellow-400', prefix: 'ADM' }
+        };
+
+        // --- CONFIGURATION SUPABASE ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- MEMOIRE LOCALE ---
+        let users = [];
+        let candidatures = [];
+        let etudiantsInscrits = [];
+
+        // --- ENCODAGES DES DOCUMENTS DE L'ETUDIANT EN BASE64 ---
+        let base64EditCV = "";
+        let base64EditDiplome = "";
+        let base64EditPhoto = "";
+        let base64EditMedical = "";
+
+        // --- MESSAGERIE SUPER ADMIN ---
+        let activeContactId = null;
+        let messagesData = [];
+
+        // --- CHARGEMENT INITIAL DEPUIS SUPABASE ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDataFromSupabase();
+            updateDashboard();
+        });
+
+        async function loadDataFromSupabase() {
+            try {
+                // Charger Utilisateurs
+                let { data: dbUsers, error: errUsers } = await _supabase.from('users').select('*');
+                if (errUsers) throw errUsers;
+                users = dbUsers ? dbUsers.map(u => ({ ...u, email_personnel: u.personal_email })) : [];
+
+                // Charger Candidatures
+                let { data: dbCand, error: errCand } = await _supabase.from('candidatures').select('*');
+                if (errCand) throw errCand;
+                candidatures = dbCand || [];
+
+                // Charger Inscrits
+                let { data: dbInscr, error: errInscr } = await _supabase.from('etudiants_inscrits').select('*');
+                if (errInscr) throw errInscr;
+                etudiantsInscrits = dbInscr || [];
+
+            } catch (error) {
+                console.error("Erreur critique de connexion à Supabase :", error);
+                users = [];
+                candidatures = [];
+                etudiantsInscrits = [];
+            }
+        }
+
+        function updateDashboard() {
+            renderUsers();
+            renderCandidatures();
+            renderInscrits();
+            updateStats();
+        }
+
+        // --- GESTION DES ONGLETS ---
+        function switchAdminTab(tabId) {
+            document.getElementById('users-section').classList.add('hidden');
+            document.getElementById('candidatures-section').classList.add('hidden');
+            document.getElementById('inscrits-section').classList.add('hidden');
+            document.getElementById('messaging-section').classList.add('hidden');
+            document.getElementById('stats-dashboard').classList.remove('hidden');
+            
+            const btnClassesDefault = 'w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors';
+            document.getElementById('btn-tab-users').className = btnClassesDefault;
+            document.getElementById('btn-tab-candidatures').className = btnClassesDefault;
+            document.getElementById('btn-tab-inscrits').className = btnClassesDefault;
+            document.getElementById('btn-tab-messaging').className = btnClassesDefault;
+
+            document.getElementById(tabId + '-section').classList.remove('hidden');
+            document.getElementById('btn-tab-' + tabId).className = 'w-full flex items-center p-3 rounded-lg font-bold text-sm bg-upkol-jaune text-black transition-all';
+
+            const titleEl = document.getElementById('admin-page-title');
+            if (tabId === 'users') titleEl.innerHTML = 'Gestion des Comptes & Habilitations';
+            if (tabId === 'candidatures') titleEl.innerHTML = 'Dossiers de Candidatures';
+            if (tabId === 'inscrits') titleEl.innerHTML = 'Registre des Étudiants Inscrits';
+            if (tabId === 'messaging') {
+                titleEl.innerHTML = 'Messagerie Sécurisée Super Admin';
+                document.getElementById('stats-dashboard').classList.add('hidden');
+                renderContacts();
+            }
+
+            if(window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        // --- AFFICHAGE DE LA SECTION ÉTUDIANT DANS LE MODAL DE CRÉATION ---
+        function toggleModalFieldsBasedOnRole() {
+            const role = document.getElementById('userRole').value;
+            const additionalFields = document.getElementById('additionalStudentFields');
+            if (role === 'etudiant') {
+                additionalFields.classList.remove('hidden');
+            } else {
+                additionalFields.classList.add('hidden');
+            }
+        }
+
+        // --- APPROBATION ET IMPORT DE DOSSIER ÉTUDIANT ---
+        async function approuverCandidature(id) {
+            const index = candidatures.findIndex(c => c.id == id);
+            if (index > -1) {
+                const candidat = candidatures[index];
+                const year = new Date().getFullYear();
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                const nouveauMatricule = `UPK-${year}-${randomNum}`;
+
+                const authSelect = document.getElementById(`auth-${id}`);
+                const approuvePar = authSelect ? authSelect.value : 'Cabinet Recteur';
+
+                const emailPersonnel = candidat.email || '';
+
+                const cleanName = (candidat.full_name || 'etudiant')
+                    .toLowerCase()
+                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[^a-z0-9 ]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '.');
+                const emailAttribue = `${cleanName}@upkol.cd`;
+
+                const nouvelEtudiant = {
+                    nom: candidat.full_name || 'Inconnu',
+                    matricule: nouveauMatricule,
+                    faculte: candidat.faculty || 'Non spécifié',
+                    niveau: candidat.academic_level || 'Non spécifié',
+                    ecole: candidat.previous_school || 'Non spécifié',
+                    moyenne: candidat.percentage ? (candidat.percentage + '%') : 'N/A',
+                    telephone: candidat.phone || 'N/A',
+                    email: emailAttribue,
+                    email_personnel: emailPersonnel,
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    approuve_par: approuvePar,
+                    cv_file: candidat.cv_file || '',
+                    diplome_file: candidat.diplome_file || '',
+                    photo_file: candidat.photo_file || '',
+                    certificat_medical_file: candidat.certificat_medical_file || ''
+                };
+
+                const nouvelUtilisateur = {
+                    name: candidat.full_name || 'Inconnu',
+                    email: emailAttribue,
+                    personal_email: emailPersonnel, 
+                    role: 'etudiant',
+                    matricule: nouveauMatricule,
+                    active: true,
+                    password: nouveauMatricule
+                };
+
+                try {
+                    const { data: insertedStudent, error: insertStudentErr } = await _supabase.from('etudiants_inscrits').insert([nouvelEtudiant]).select();
+                    if (insertStudentErr) throw insertStudentErr;
+
+                    const { data: insertedUser, error: insertUserErr } = await _supabase.from('users').insert([nouvelUtilisateur]).select();
+                    if (insertUserErr) throw insertUserErr;
+
+                    const { error: updateErr } = await _supabase.from('candidatures').update({
+                        status: 'approuve',
+                        approved_at: new Date().toISOString(),
+                        matricule_attribue: nouveauMatricule
+                    }).eq('id', id);
+                    if (updateErr) throw updateErr;
+
+                    const savedStudent = insertedStudent[0];
+                    const savedUser = insertedUser[0];
+                    savedUser.email_personnel = savedUser.personal_email;
+
+                    etudiantsInscrits.push(savedStudent);
+                    users.push(savedUser);
+                    candidatures[index].status = 'approuve';
+
+                    updateDashboard();
+                    showToast(`Dossier de ${candidat.full_name} signé et compte actif ! Email : ${emailAttribue}`, 'success');
+                    switchAdminTab('inscrits');
+
+                } catch (err) {
+                    console.error(err);
+                    showToast("Erreur d'approbation et synchronisation Supabase.", "error");
+                }
+            }
+        }
+
+        async function rejeterCandidature(id) {
+            if(confirm("Êtes-vous sûr de vouloir rejeter ce dossier ?")) {
+                const index = candidatures.findIndex(c => c.id == id);
+                if (index > -1) {
+                    try {
+                        const { error } = await _supabase.from('candidatures').update({ status: 'rejete' }).eq('id', id);
+                        if (error) throw error;
+                        
+                        candidatures[index].status = 'rejete';
+                        updateDashboard();
+                        showToast(`Dossier rejeté.`, 'error');
+                    } catch (err) {
+                        showToast("Erreur Supabase lors du rejet", "error");
+                    }
+                }
+            }
+        }
+
+        // --- ENCODAGES DES DOCUMENTS DE L'ETUDIANT (BASE64) ---
+        window.convertStudentDocToBase64 = function(event, targetVar) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (targetVar === 'cv') base64EditCV = e.target.result;
+                else if (targetVar === 'diplome') base64EditDiplome = e.target.result;
+                else if (targetVar === 'photo') base64EditPhoto = e.target.result;
+                else if (targetVar === 'medical') base64EditMedical = e.target.result;
+                
+                showToast(`Justificatif ${targetVar.toUpperCase()} encodé.`, "success");
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // --- GESTION DES ACCÈS ---
+        async function toggleUserStatus(userId, currentStatus) {
+            const nextStatus = !currentStatus;
+            try {
+                const { error } = await _supabase.from('users').update({ active: nextStatus }).eq('id', userId);
+                if (error) throw error;
+
+                const uIndex = users.findIndex(u => u.id == userId);
+                if (uIndex > -1) {
+                    users[uIndex].active = nextStatus;
+                    const userName = users[uIndex].name;
+                    showToast(`Accès ${nextStatus ? 'autorisé' : 'suspendu'} pour ${userName}`, nextStatus ? 'success' : 'warning');
+                }
+                updateDashboard();
+            } catch (err) {
+                showToast("Erreur lors de la modification d'accès.", "error");
+            }
+        }
+
+        async function deleteUser(userId, role, matricule) {
+            const user = users.find(u => u.id == userId);
+            if (!user) return;
+            
+            if (confirm(`Supprimer définitivement le compte de ${user.name} ?`)) {
+                try {
+                    const { error: userErr } = await _supabase.from('users').delete().eq('id', userId);
+                    if (userErr) throw userErr;
+
+                    if (role === 'etudiant' && matricule) {
+                        await _supabase.from('etudiants_inscrits').delete().eq('matricule', matricule);
+                        etudiantsInscrits = etudiantsInscrits.filter(e => e.matricule !== matricule);
+                    }
+
+                    users = users.filter(u => u.id != userId);
+                    showToast(`Compte supprimé avec succès.`, 'success');
+                    updateDashboard();
+                } catch (err) {
+                    showToast("Erreur de suppression Supabase.", "error");
+                }
+            }
+        }
+
+        async function deleteInscrit(matricule, userId) {
+            const etu = etudiantsInscrits.find(e => e.matricule === matricule);
+            if (!etu) return;
+
+            if (confirm(`Voulez-vous radier définitivement l'étudiant(e) ${etu.nom} ?`)) {
+                try {
+                    await _supabase.from('etudiants_inscrits').delete().eq('matricule', matricule);
+                    
+                    const userByMat = users.find(u => u.matricule === matricule);
+                    if (userByMat) {
+                        await _supabase.from('users').delete().eq('id', userByMat.id);
+                        users = users.filter(u => u.id != userByMat.id);
+                    }
+
+                    etudiantsInscrits = etudiantsInscrits.filter(e => e.matricule !== matricule);
+                    showToast(`Étudiant radié et compte associé supprimé.`, 'success');
+                    updateDashboard();
+                } catch (err) {
+                    showToast("Erreur lors de la radiation.", "error");
+                }
+            }
+        }
+
+        // --- GESTION DU MODAL CRÉATION COMPTE ---
+        function openCreateUserModal() {
+            document.getElementById('modalTitle').innerText = "Créer un Compte";
+            document.getElementById('modalSubtitle').innerText = "Génération du matricule automatique";
+            document.getElementById('submitBtnText').innerText = "Créer le compte";
+            document.getElementById('editUserId').value = "";
+            document.getElementById('createUserForm').reset();
+            document.getElementById('additionalStudentFields').classList.add('hidden');
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function openEditUserModal(userId) {
+            const user = users.find(u => u.id == userId);
+            if (!user) return;
+
+            document.getElementById('modalTitle').innerText = "Modifier l'Utilisateur";
+            document.getElementById('modalSubtitle').innerText = `Matricule : ${user.matricule}`;
+            document.getElementById('submitBtnText').innerText = "Enregistrer";
+            document.getElementById('editUserId').value = user.id;
+
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userName').value = user.name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userEmailPersonnel').value = user.email_personnel || "";
+            document.getElementById('userPassword').value = user.password || "  ";
+            document.getElementById('userActive').checked = user.active;
+
+            toggleModalFieldsBasedOnRole();
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        // --- CRÉATION / MODIFICATION COMPTE ---
+        async function handleUserSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editUserId').value;
+            const role = document.getElementById('userRole').value;
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const personalEmail = document.getElementById('userEmailPersonnel').value.trim();
+            const password = document.getElementById('userPassword').value;
+            const active = document.getElementById('userActive').checked;
+
+            if (editId) {
+                // Modification d'un utilisateur existant
+                try {
+                    const dbPayload = { name, email, personal_email: personalEmail, role, active, password };
+                    const { error } = await _supabase.from('users').update(dbPayload).eq('id', editId);
+                    if (error) throw error;
+
+                    const index = users.findIndex(u => u.id == editId);
+                    if (index > -1) {
+                        users[index] = { ...users[index], name, email, email_personnel: personalEmail, role, active, password };
+                    }
+                    showToast("Compte modifié.", "success");
+                } catch (err) {
+                    showToast("Erreur Supabase lors de la modification", "error");
+                }
+            } else {
+                // Création d'un nouvel utilisateur
+                const prefix = roleConfig[role]?.prefix || 'USR';
+                const matricule = `${prefix}-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+                const newUserDbPayload = { name, email, personal_email: personalEmail, role, matricule, active, password };
+
+                try {
+                    const { data, error } = await _supabase.from('users').insert([newUserDbPayload]).select();
+                    if (error) throw error;
+                    
+                    const savedUser = data[0];
+                    savedUser.email_personnel = savedUser.personal_email;
+                    users.push(savedUser);
+
+                    // Si c'est un étudiant, on lui crée automatiquement une fiche d'étudiant inscrit !
+                    if (role === 'etudiant') {
+                        const studentFaculte = document.getElementById('userStudentFaculte').value;
+                        const studentNiveau = document.getElementById('userStudentNiveau').value || 'Licence 1 (LMD)';
+                        const studentEcole = document.getElementById('userStudentEcole').value || 'N/A';
+                        const studentMoyenne = document.getElementById('userStudentMoyenne').value || 'N/A';
+                        const studentTelephone = document.getElementById('userStudentTelephone').value || 'N/A';
+
+                        const nouvelEtudiant = {
+                            nom: name,
+                            matricule: matricule,
+                            faculte: studentFaculte,
+                            niveau: studentNiveau,
+                            ecole: studentEcole,
+                            moyenne: studentMoyenne,
+                            telephone: studentTelephone,
+                            email: email,
+                            email_personnel: personalEmail,
+                            date: new Date().toLocaleDateString('fr-FR'),
+                            approuve_par: 'Super Admin'
+                        };
+
+                        const { data: insertedStudent, error: sErr } = await _supabase.from('etudiants_inscrits').insert([nouvelEtudiant]).select();
+                        if (!sErr && insertedStudent) {
+                            etudiantsInscrits.push(insertedStudent[0]);
+                        }
+                    }
+
+                    showToast(`Compte créé avec succès ! Matricule : ${matricule}`, 'success');
+                } catch (err) {
+                    showToast("Erreur Supabase lors du traitement.", "error");
+                }
+            }
+            closeCreateUserModal();
+            updateDashboard();
+        }
+
+        // --- GESTION DU MODAL ET ÉDITION ÉTUDIANT (AVEC DOCUMENTS) ---
+        function openEditStudentModal(matricule) {
+            const etu = etudiantsInscrits.find(e => e.matricule === matricule);
+            if (!etu) return;
+
+            document.getElementById('studentModalSubtitle').innerText = `Matricule : ${etu.matricule}`;
+            document.getElementById('editStudentId').value = etu.id || '';
+            document.getElementById('editStudentMatriculeOriginal').value = etu.matricule;
+
+            document.getElementById('studentNom').value = etu.nom || '';
+            document.getElementById('studentMatricule').value = etu.matricule || '';
+            document.getElementById('studentFaculte').value = etu.faculte || 'Sciences Informatiques';
+            document.getElementById('studentNiveau').value = etu.niveau || '';
+            document.getElementById('studentEcole').value = etu.ecole || '';
+            document.getElementById('studentMoyenne').value = etu.moyenne || '';
+            document.getElementById('studentTelephone').value = etu.telephone || '';
+            document.getElementById('studentEmail').value = etu.email || '';
+            document.getElementById('studentEmailPersonnel').value = etu.email_personnel || '';
+
+            // Réinitialisation des documents Base64 chargés pour cette modification
+            base64EditCV = etu.cv_file || "";
+            base64EditDiplome = etu.diplome_file || "";
+            base64EditPhoto = etu.photo_file || "";
+            base64EditMedical = etu.certificat_medical_file || "";
+
+            document.getElementById('studentModal').classList.remove('hidden');
+        }
+
+        function closeEditStudentModal() {
+            document.getElementById('studentModal').classList.add('hidden');
+            document.getElementById('editStudentForm').reset();
+        }
+
+        function generateStudentEmail() {
+            const nomInput = document.getElementById('studentNom').value;
+            if (!nomInput || nomInput.trim() === '') {
+                showToast("Veuillez saisir d'abord le nom.", "warning");
+                return;
+            }
+            const cleanName = nomInput
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9 ]/g, '')
+                .trim()
+                .replace(/\s+/g, '.');
+                
+            document.getElementById('studentEmail').value = `${cleanName}@upkol.cd`;
+            showToast("E-mail universitaire généré.", "success");
+        }
+
+        async function handleStudentSubmit(e) {
+            e.preventDefault();
+            const originalMatricule = document.getElementById('editStudentMatriculeOriginal').value;
+            
+            const updatedData = {
+                nom: document.getElementById('studentNom').value,
+                matricule: document.getElementById('studentMatricule').value,
+                faculte: document.getElementById('studentFaculte').value,
+                niveau: document.getElementById('studentNiveau').value,
+                ecole: document.getElementById('studentEcole').value,
+                moyenne: document.getElementById('studentMoyenne').value,
+                telephone: document.getElementById('studentTelephone').value,
+                email: document.getElementById('studentEmail').value,
+                email_personnel: document.getElementById('studentEmailPersonnel').value,
+                cv_file: base64EditCV,
+                diplome_file: base64EditDiplome,
+                photo_file: base64EditPhoto,
+                certificat_medical_file: base64EditMedical
+            };
+
+            try {
+                // Mise à jour de la fiche de scolarité
+                const { error: err1 } = await _supabase.from('etudiants_inscrits').update(updatedData).eq('matricule', originalMatricule);
+                if (err1) throw err1;
+
+                // Synchronisation des identifiants d'accès de l'utilisateur
+                const userIndex = users.findIndex(u => u.matricule === originalMatricule);
+                if (userIndex > -1) {
+                    const userUpdatedData = {
+                        name: updatedData.nom,
+                        matricule: updatedData.matricule,
+                        email: updatedData.email,
+                        personal_email: updatedData.email_personnel
+                    };
+                    await _supabase.from('users').update(userUpdatedData).eq('matricule', originalMatricule);
+                    users[userIndex] = { ...users[userIndex], name: updatedData.nom, matricule: updatedData.matricule, email: updatedData.email, email_personnel: updatedData.email_personnel };
+                }
+
+                const index = etudiantsInscrits.findIndex(e => e.matricule === originalMatricule);
+                if (index > -1) {
+                    etudiantsInscrits[index] = { ...etudiantsInscrits[index], ...updatedData };
+                }
+
+                showToast(`Le dossier académique de ${updatedData.nom} a été mis à jour !`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast("Erreur lors de la modification des données sur Supabase.", "error");
+            }
+
+            closeEditStudentModal();
+            updateDashboard();
+        }
+
+        // --- RENDUS DES TABLEAUX ---
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const emptyState = document.getElementById('emptyState');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if(users.length === 0) {
+                tbody.parentElement.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                tbody.parentElement.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                users.forEach(user => {
+                    const roleInfo = roleConfig[user.role] || { label: 'Inconnu', color: 'bg-gray-100 text-gray-600' };
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-full bg-upkol-noir text-upkol-jaune flex items-center justify-center text-xs font-black">
+                                        ${user.name ? user.name.charAt(0) : 'U'}
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-gray-900">${user.name || 'Utilisateur'}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-bold text-xs text-gray-600">${user.matricule || 'N/A'}</td>
+                            <td class="px-6 py-4">
+                                <span class="${roleInfo.color} text-[10px] font-black px-2.5 py-1 rounded-md border uppercase tracking-wider">${roleInfo.label}</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs">
+                                <span class="font-semibold text-gray-700 block"><i class="fas fa-envelope mr-1 text-gray-400"></i>${user.email || 'N/A'}</span>
+                                ${user.email_personnel ? `<span class="text-[10px] text-gray-500 block mt-0.5"><i class="fas fa-inbox mr-1 text-gray-300"></i>${user.email_personnel}</span>` : ''}
+                                <span class="text-[9px] text-gray-400 font-bold uppercase mt-1 block">Code : ${user.password || 'Non défini'}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                ${user.active ? 
+                                    '<span class="bg-green-100 text-green-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider"><i class="fas fa-check-circle mr-1"></i>Actif</span>' : 
+                                    '<span class="bg-red-100 text-red-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider"><i class="fas fa-ban mr-1"></i>Bloqué</span>'}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end space-x-2">
+                                    <button onclick="toggleUserStatus('${user.id}', ${user.active})" class="${user.active ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-green-600 bg-green-50 hover:bg-green-100'} transition-colors p-2 text-xs font-bold rounded-lg">
+                                        <i class="fas ${user.active ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                                    </button>
+                                    <button onclick="openEditUserModal('${user.id}')" class="text-blue-500 hover:text-blue-800 transition-colors p-2 text-xs font-bold bg-blue-50 hover:bg-blue-100 rounded-lg">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteUser('${user.id}', '${user.role}', '${user.matricule || ''}')" class="text-red-600 hover:text-red-800 transition-colors p-2 text-xs font-bold bg-red-50 hover:bg-red-100 rounded-lg">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function filterTable() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const statusVal = document.getElementById('statusFilter').value;
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const nameCol = rows[i].getElementsByTagName('td')[0];
+                const matriculeCol = rows[i].getElementsByTagName('td')[1];
+                const emailCol = rows[i].getElementsByTagName('td')[3];
+                const statusSpan = rows[i].getElementsByTagName('td')[4]?.querySelector('span');
+
+                if (nameCol && emailCol && statusSpan) {
+                    const nameText = nameCol.textContent || nameCol.innerText;
+                    const matriculeText = matriculeCol.textContent || matriculeCol.innerText;
+                    const emailText = emailCol.textContent || emailCol.innerText;
+                    const isBlocked = statusSpan.classList.contains('bg-red-100');
+
+                    const matchSearch = nameText.toLowerCase().indexOf(searchVal) > -1 || 
+                                        matriculeText.toLowerCase().indexOf(searchVal) > -1 || 
+                                        emailText.toLowerCase().indexOf(searchVal) > -1;
+                    const matchStatus = statusVal === 'all' || 
+                                        (statusVal === 'active' && !isBlocked) || 
+                                        (statusVal === 'inactive' && isBlocked);
+
+                    if (matchSearch && matchStatus) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function renderCandidatures() {
+            const tbody = document.getElementById('candidaturesTableBody');
+            const emptyState = document.getElementById('candidaturesEmptyState');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            const activeCandidatures = candidatures.filter(cand => cand && (cand.status === 'en_attente' || !cand.status));
+            
+            if (activeCandidatures.length === 0) {
+                tbody.parentElement.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                tbody.parentElement.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                activeCandidatures.forEach(cand => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <p class="font-black text-gray-900">${cand.full_name || 'Inconnu'}</p>
+                                <p class="text-[10px] text-gray-500">${cand.email || 'N/A'}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-blue-50 text-blue-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${cand.faculty || 'N/A'}</span>
+                                <p class="text-[10px] text-gray-500 mt-1">${cand.academic_level || 'N/A'}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs font-bold text-gray-700"><i class="fas fa-school mr-1 text-gray-400"></i> ${cand.previous_school || 'N/A'}</span>
+                            </td>
+                            <td class="px-6 py-4 font-black text-amber-600">${cand.percentage ? (cand.percentage + '%') : 'N/A'}</td>
+                            <td class="px-6 py-4 text-xs text-gray-600"><i class="fas fa-phone-alt mr-1"></i> ${cand.phone || 'N/A'}</td>
+                            
+                            <td class="px-6 py-4 text-center">
+                                <select id="auth-${cand.id}" class="text-[10px] font-bold border border-gray-200 rounded-md px-2 py-1.5 bg-gray-50 focus:outline-none focus:border-green-500 w-full max-w-[150px] cursor-pointer">
+                                    <option value="Cabinet Recteur">Cabinet Recteur</option>
+                                    <option value="SG Académique">SG Académique</option>
+                                    <option value="Doyen de Faculté">Doyen</option>
+                                    <option value="Super Admin">Super Admin</option>
+                                </select>
+                            </td>
+                            
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end space-x-2">
+                                    <button onclick="rejeterCandidature('${cand.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button onclick="approuverCandidature('${cand.id}')" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-500 hover:text-white transition-colors flex items-center justify-center shadow-sm">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function renderInscrits() {
+            const tbody = document.getElementById('inscritsTableBody');
+            const emptyState = document.getElementById('inscritsEmptyState');
+            if (!tbody) return;
+            const searchVal = document.getElementById('searchInscrits')?.value.toLowerCase() || '';
+            const faculteVal = document.getElementById('faculteFilter')?.value || 'all';
+            tbody.innerHTML = '';
+            
+            let filtered = etudiantsInscrits.filter(etu => {
+                if (!etu) return false;
+                const matchSearch = (etu.nom || '').toLowerCase().includes(searchVal) || (etu.matricule || '').toLowerCase().includes(searchVal);
+                const matchFaculte = faculteVal === 'all' || etu.faculte === faculteVal;
+                return matchSearch && matchFaculte;
+            });
+
+            if (filtered.length === 0) {
+                tbody.parentElement.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                tbody.parentElement.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                filtered.forEach(etu => {
+                    const associatedUser = users.find(u => u.matricule === etu.matricule);
+                    const isBlocked = associatedUser ? !associatedUser.active : false;
+                    const userId = associatedUser ? associatedUser.id : null;
+                    const userIdStr = userId ? `'${userId}'` : 'null';
+
+                    // Détection des documents pour affichage de pastilles de statut
+                    const hasCV = etu.cv_file && etu.cv_file.trim() !== "" ? 'text-green-600' : 'text-gray-300';
+                    const hasDiplome = etu.diplome_file && etu.diplome_file.trim() !== "" ? 'text-green-600' : 'text-gray-300';
+                    const hasPhoto = etu.photo_file && etu.photo_file.trim() !== "" ? 'text-green-600' : 'text-gray-300';
+                    const hasMedical = etu.certificat_medical_file && etu.certificat_medical_file.trim() !== "" ? 'text-green-600' : 'text-gray-300';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <p class="font-black text-gray-900">${etu.nom || 'Inconnu'}</p>
+                                <p class="text-[10px] text-blue-600 font-bold"><i class="fas fa-envelope mr-1"></i>${etu.email || 'N/A'}</p>
+                                ${etu.email_personnel ? `<p class="text-[9px] text-gray-500 mt-0.5"><i class="fas fa-inbox mr-1"></i>${etu.email_personnel}</p>` : ''}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-gray-900 text-upkol-jaune text-[10px] font-black px-2.5 py-1 rounded-md tracking-wider border border-gray-800 shadow-sm"><i class="fas fa-id-badge mr-1"></i> ${etu.matricule || 'N/A'}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-green-50 text-green-700 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${etu.faculte || 'N/A'}</span>
+                                <p class="text-[10px] text-gray-500 mt-1 font-bold">${etu.niveau || 'N/A'}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs font-semibold text-gray-600 block">${etu.ecole || 'N/A'}</span>
+                                <span class="text-xs font-black text-amber-600 block mt-0.5">Moyenne : ${etu.moyenne || 'N/A'}</span>
+                            </td>
+                            
+                            <!-- ÉTAT ET ACCÈS AUX JUSTIFICATIFS DIRECTS -->
+                            <td class="px-6 py-4 text-xs font-bold">
+                                <div class="flex items-center space-x-2 text-lg">
+                                    <i class="fas fa-file-pdf ${hasCV}" title="CV"></i>
+                                    <i class="fas fa-file-invoice ${hasDiplome}" title="Diplôme d'État"></i>
+                                    <i class="fas fa-file-image ${hasPhoto}" title="Photo Identité"></i>
+                                    <i class="fas fa-file-medical ${hasMedical}" title="Certificat Médical"></i>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-xs font-bold text-gray-600">${etu.telephone || 'N/A'}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="bg-green-100 text-green-800 text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider">${etu.approuve_par || 'Cabinet Recteur'}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center text-xs text-gray-500 font-medium">${etu.date || 'N/A'}</td>
+                            
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end space-x-1">
+                                    ${userId ? `
+                                    <button onclick="toggleUserStatus('${userId}', ${!isBlocked})" class="${!isBlocked ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-green-600 bg-green-50 hover:bg-green-100'} transition-colors p-2 text-xs font-bold rounded-lg" title="${!isBlocked ? 'Bloquer l\'accès' : 'Débloquer l\'accès'}">
+                                        <i class="fas ${!isBlocked ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                                    </button>
+                                    ` : ''}
+                                    <button onclick="openEditStudentModal('${etu.matricule}')" class="text-blue-500 hover:text-blue-800 transition-colors p-2 text-xs font-bold bg-blue-50 hover:bg-blue-100 rounded-lg" title="Modifier le dossier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteInscrit('${etu.matricule}', ${userIdStr})" class="text-red-600 hover:text-red-800 transition-colors p-2 text-xs font-bold bg-red-50 hover:bg-red-100 rounded-lg" title="Radier">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function filterInscrits() {
+            renderInscrits();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').innerText = users.length;
+            document.getElementById('stat-total-active').innerText = users.filter(u => u && u.active).length;
+            
+            const candCount = candidatures.filter(cand => cand && (cand.status === 'en_attente' || !cand.status)).length;
+            document.getElementById('stat-candidatures-pending').innerText = candCount;
+            const candBadge = document.getElementById('badge-candidatures');
+            if (candBadge) {
+                candBadge.innerText = candCount;
+                candCount > 0 ? candBadge.classList.remove('hidden') : candBadge.classList.add('hidden');
+            }
+
+            const inscritsCount = etudiantsInscrits.length;
+            document.getElementById('stat-inscrits').innerText = inscritsCount;
+            document.getElementById('count-inscrits-total').innerText = inscritsCount;
+            document.getElementById('count-inscrits-year').innerText = inscritsCount;
+            const inscritsBadge = document.getElementById('badge-inscrits');
+            if (inscritsBadge) {
+                inscritsBadge.innerText = inscritsCount;
+                inscritsCount > 0 ? inscritsBadge.classList.remove('hidden') : inscritsBadge.classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        //  MESSAGERIE INTERNE (LOGIQUE JAVASCRIPT)
+        // ==========================================
+
+        function renderContacts() {
+            const listContainer = document.getElementById('contacts-list');
+            if (!listContainer) return;
+
+            listContainer.innerHTML = '';
+            const searchVal = document.getElementById('contact-search')?.value.toLowerCase() || '';
+
+            // <= AJOUT / MODIFICATION : On retire l'admin actuellement connecté de sa propre liste de contacts
+            const currentId = currentAdminUser ? currentAdminUser.id : null;
+
+            const filteredUsers = users.filter(u => 
+                u.id !== currentId && // On ne s'affiche pas soi-même !
+                ((u.name || '').toLowerCase().includes(searchVal) || (u.role || '').toLowerCase().includes(searchVal))
+            );
+
+            if (filteredUsers.length === 0) {
+                listContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">Aucun utilisateur trouvé</p>';
+                return;
+            }
+
+            filteredUsers.forEach(user => {
+                const isActive = activeContactId === user.id;
+                const activeClasses = isActive ? 'bg-gray-100 border-l-4 border-upkol-jaune' : 'hover:bg-gray-50 border-l-4 border-transparent';
+                const roleInfo = roleConfig[user.role] || { label: 'Utilisateur', prefix: 'USR' };
+                const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+
+                listContainer.insertAdjacentHTML('beforeend', `
+                    <button onclick="selectContact('${user.id}')" class="w-full flex items-center space-x-3 p-3 transition-all ${activeClasses} text-left rounded-lg text-xs">
+                        <div class="w-10 h-10 rounded-xl bg-gray-200 text-gray-700 flex items-center justify-center font-black text-sm shadow-sm flex-shrink-0">
+                            ${initial}
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h5 class="text-xs font-black text-gray-900 uppercase truncate">${user.name || 'Utilisateur'}</h5>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider truncate mt-0.5">${roleInfo.label}</p>
+                        </div>
+                    </button>
+                `);
+            });
+        }
+
+        function searchContacts() {
+            renderContacts();
+        }
+
+        window.selectContact = function(id) {
+            activeContactId = id;
+            renderContacts();
+
+            const contact = users.find(u => u.id === id);
+            if (!contact) return;
+
+            const roleInfo = roleConfig[contact.role] || { label: 'Inconnu' };
+            const initial = contact.name ? contact.name.charAt(0).toUpperCase() : 'U';
+
+            document.getElementById('chat-active-name').innerText = contact.name || 'Utilisateur';
+            document.getElementById('chat-active-role').innerText = roleInfo.label;
+            document.getElementById('chat-active-avatar').innerHTML = initial;
+            
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('chat-send-btn').disabled = false;
+
+            loadChatMessages();
+        };
+
+        async function loadChatMessages() {
+            const container = document.getElementById('chat-messages-container');
+            if (!container || !currentAdminUser) return;
+
+            container.innerHTML = '<div class="text-center py-8 text-gray-400 italic"><i class="fas fa-spinner fa-spin mr-2"></i>Chargement de l\'historique sécurisé...</div>';
+
+            const myId = currentAdminUser.id;
+
+            try {
+                // <= MODIFICATION : Fetch des messages selon SON identifiant unique
+                const { data, error } = await _supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`sender_id.eq.${myId},recipient_id.eq.${myId}`)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                
+                messagesData = data.filter(m => 
+                    (m.sender_id === myId && m.recipient_id === activeContactId) || 
+                    (m.sender_id === activeContactId && m.recipient_id === myId)
+                );
+            } catch (err) {
+                console.warn("Erreur de messagerie Supabase, bascule locale");
+                messagesData = JSON.parse(localStorage.getItem(`sa_chat_${activeContactId}`) || '[]');
+            }
+
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages-container');
+            if (!container || !currentAdminUser) return;
+
+            container.innerHTML = '';
+            if (messagesData.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-400 italic">Aucun message échangé.</div>';
+                return;
+            }
+
+            const myId = currentAdminUser.id;
+
+            messagesData.forEach(msg => {
+                const isMe = msg.sender_id === myId; // <= MODIFICATION
+                const bubbleBg = isMe ? 'bg-upkol-noir text-white rounded-tr-none' : 'bg-gray-100 text-gray-900 rounded-tl-none border border-gray-200';
+                const align = isMe ? 'justify-end' : 'justify-start';
+                
+                let timeStr = '12:00';
+                if(msg.created_at) {
+                    const d = new Date(msg.created_at);
+                    timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                } else if (msg.time) {
+                    timeStr = msg.time;
+                }
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex ${align} fade-in">
+                        <div class="max-w-[75%] ${bubbleBg} p-3.5 rounded-2xl shadow-sm">
+                            <p class="text-xs font-semibold leading-relaxed">${msg.content}</p>
+                            <span class="block text-[8px] ${isMe ? 'text-gray-400' : 'text-gray-500'} text-right mt-1 font-bold">${timeStr}</span>
+                        </div>
+                    </div>
+                `);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendMessage = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            
+            if (!content || !activeContactId || !currentAdminUser) return;
+
+            const myId = currentAdminUser.id; // <= MODIFICATION
+            const timeNow = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            const newMsg = {
+                sender_id: myId,
+                recipient_id: activeContactId,
+                content: content,
+                created_at: new Date().toISOString(),
+                time: timeNow
+            };
+
+            messagesData.push(newMsg);
+            renderChatMessages();
+            input.value = '';
+
+            try {
+                // <= MODIFICATION : Insérer dans Supabase avec SON propre ID
+                const { error } = await _supabase.from('messages').insert([{
+                    sender_id: myId,
+                    recipient_id: activeContactId,
+                    content: content
+                }]);
+                if(error) throw error;
+            } catch (err) {
+                localStorage.setItem(`sa_chat_${activeContactId}`, JSON.stringify(messagesData));
+            }
+        };
+
+        // --- SYSTEM TOAST NOTIFICATIONS ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-600' : 
+                            type === 'warning' ? 'bg-amber-500' : 'bg-red-600';
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+
+            toast.className = `flex items-center space-x-3 text-white px-6 py-4 rounded-xl shadow-2xl toast-enter pointer-events-auto ${bgColor}`;
+            toast.innerHTML = `<i class="fas ${icon} text-xl"></i><span class="text-sm font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'toastIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 6000);
+        }
+
+        // --- DÉCONNEXION SUPER ADMIN ---
+        function logout() {
+            if(confirm("Êtes-vous sûr de vouloir quitter la session Super Admin ?")) {
+                // <= AJOUT : Réinitialisation de la session globale
+                currentAdminUser = null;
+                document.getElementById('admin-header-name').innerText = 'Administrateur Système';
+                document.getElementById('admin-password').value = '';
+                
+                document.getElementById('login-portal').classList.remove('hidden');
+                switchAdminTab('users'); // Reset à l'onglet principal au cas où
+                showToast("Déconnexion réussie.", "success");
+            }
+        }
+    </script>
+</body>
+</html>
