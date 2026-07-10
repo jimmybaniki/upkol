@@ -3,595 +3,1366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Learning - UPKOL</title>
+    <title>Espace Étudiant - UPKOL</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="E-Learning - UPKOL">
-    <meta property="og:description" content="Accédez à vos cours et ressources numériques en un clic sur notre plateforme d'apprentissage moderne.">
-    <meta property="og:image" content="logo.png">
-
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --primary: #FFD700;
-            --secondary: #121212;
-            --accent: #ffffff;
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        /* 3D Student Card CSS */
+        .card-container { perspective: 1000px; }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
         }
-
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
-
-        .bg-upkol-jaune { background-color: var(--primary); }
-        .text-upkol-jaune { color: var(--primary); }
-        .bg-upkol-noir { background-color: var(--secondary); }
-
-        .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-                        url('https://images.unsplash.com/photo-1501504905252-473c47e087f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
+        .card-container:hover .card-inner, .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
         }
-
-        @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
-        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
-        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
-
-        .platform-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
-        .platform-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
+        .card-back { transform: rotateY(180deg); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-white text-gray-900">
+<body class="flex h-screen overflow-hidden text-slate-800">
 
-    <!-- TOP BAR -->
-    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex space-x-6">
-                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
-                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (STUDENT LOGIN)   -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-user-graduate text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Portail Étudiant</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Accès Authentifié Supabase</span>
             </div>
-            <div class="hidden md:flex space-x-4">
-                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+
+            <form id="login-form" onsubmit="handleStudentLogin(event)" class="w-full space-y-4 mb-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Institutionnel</label>
+                    <input type="email" id="login-email" required class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-black focus:outline-upkol-jaune shadow-inner" placeholder="ex: jean.mukendi@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mot de passe ou Matricule</label>
+                    <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-black focus:outline-upkol-jaune shadow-inner" placeholder="Saisir votre matricule ou mot de passe...">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Connectez-vous avec votre e-mail académique et votre matricule en guise de mot de passe.</span>
+                </div>
+                <button type="submit" id="btn-login-student" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                    Ouvrir mon espace
+                    <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR ÉTUDIANT                          -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-university text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL ETUDIANT</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Espace Personnel</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Menu de Navigation -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Mon Année Académique</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-pie mr-3 w-5 text-lg"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-courses" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('courses')">
+                <i class="fas fa-book-open mr-3 w-5 text-lg"></i> TPs & Supports
+            </a>
+
+            <a href="#" id="menu-grades" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('grades')">
+                <i class="fas fa-graduation-cap mr-3 w-5 text-lg"></i> Résultats & Relevés
+            </a>
+
+            <a href="#" id="menu-payments" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('payments')">
+                <i class="fas fa-wallet mr-3 w-5 text-lg"></i> Frais & Trésorerie
+                <span id="badge-payment" class="ml-auto bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full hidden">Dû</span>
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Université & Communauté</div>
+
+            <a href="#" id="menu-idcard" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('idcard')">
+                <i class="fas fa-id-card mr-3 w-5 text-lg"></i> Carte Étudiant
+            </a>
+
+            <a href="#" id="menu-inter-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('inter-messaging')">
+                <i class="fas fa-comments mr-3 w-5 text-lg"></i> Messagerie Académique
+            </a>
+
+            <a href="#" id="menu-profile" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('profile')">
+                <i class="fas fa-user-circle mr-3 w-5 text-lg"></i> Mon Profil
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN EXECUTIF -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- HEADER ACADÉMIQUE -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Mon Portail <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Étudiant</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Identité de l'Étudiant -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="student-header-name" class="text-xs font-black text-slate-900 uppercase">Chargement...</p>
+                    <p id="student-header-matricule" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">UPK-...</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-graduate text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENU SCROLLABLE DU DASHBOARD -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- ONGLET 1 : VUE D'ENSEMBLE (OVERVIEW)       -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- GRID STATS ÉTUDIANT -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Moyenne Générale</p>
+                                <h3 id="stat-avg-gpa" class="text-3xl font-black text-slate-900">-.- <span class="text-xs text-slate-400">/20</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-trophy text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold" id="stat-avg-mention">
+                            <i class="fas fa-circle-check mr-2 text-xs"></i> Calculé sur base des cotes
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Cours Enregistrés</p>
+                                <h3 id="stat-courses-count" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-book text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-blue-600 font-bold">
+                            <i class="fas fa-info-circle mr-2 text-xs"></i> Session Académique Actuelle
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Supports Didactiques</p>
+                                <h3 id="stat-materials-count" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-file-pdf text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold">
+                            <i class="fas fa-download text-purple-500 mr-2 text-xs"></i> Disponibles au téléchargement
+                        </div>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Solde Financier</p>
+                                <h3 id="stat-fees-due" class="text-3xl font-black text-slate-900">...</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-coins text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-rose-500 font-bold" id="solde-desc">
+                            Vérification en cours...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICATIONS & INFOS -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+                    <div class="mb-6">
+                        <h4 class="font-black text-xs uppercase text-slate-400">Bulletin Officiel</h4>
+                        <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Actes & Décisions du Rectorat</h3>
+                    </div>
+                    <div class="space-y-4 flex-grow overflow-y-auto max-h-80 pr-1" id="news-feed-container">
+                        <p class="text-xs text-slate-400 italic text-center py-4">Chargement des circulaires...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 2 : COURS & DÉPÔT DE TPS            -->
+            <!-- ========================================== -->
+            <div id="tab-courses" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Liste des chapitres de cours -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight mb-6">Supports de cours récents</h3>
+                            
+                            <div class="space-y-4" id="materials-list">
+                                <p class="text-xs text-slate-400 italic text-center py-4">Aucun support disponible pour l'instant.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Devoir Submission -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Submission Center</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Rendre un TP / Devoir</h3>
+                        </div>
+
+                        <form id="assignment-form" class="space-y-4" onsubmit="submitAssignment(event)">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Matière / Cours cible</label>
+                                <select id="assignment-course" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                    <option value="">Chargement de vos cours...</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[9px] font-black uppercase text-slate-400 mb-1">Fichier de TP (PDF uniquement)</label>
+                                <input type="file" id="assignment-file" required accept=".pdf" class="w-full text-[10px] file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-upkol-jaune file:text-black cursor-pointer bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+                            </div>
+
+                            <div id="upload-progress-container" class="hidden space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase">
+                                    <span>Envoi en base de données...</span>
+                                    <span id="upload-percent">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                    <div id="upload-progress-bar" class="bg-upkol-jaune h-full w-0 transition-all duration-300"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md mt-4">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Soumettre le TP
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 3 : RÉSULTATS & RELEVÉS             -->
+            <!-- ========================================== -->
+            <div id="tab-grades" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Tableau des notes -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Mes Bulletins & Cotes</h3>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Session Académique en cours</p>
+                                </div>
+                                <button onclick="showCustomToast('Génération du relevé numérique en PDF...', 'info')" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-sm">
+                                    <i class="fas fa-download mr-2"></i> Exporter PDF
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left min-w-[500px]">
+                                    <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-4">Matières & Unités d'Enseignement</th>
+                                            <th class="px-6 py-4">Crédits</th>
+                                            <th class="px-6 py-4 text-center">Note /20</th>
+                                            <th class="px-6 py-4 text-right">Mention</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="student-grades-table" class="text-sm divide-y divide-slate-100 font-medium">
+                                        <!-- Injecté dynamiquement par JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulateur de mention -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Projection prévisionnelle</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Estimer ma moyenne</h3>
+                            </div>
+                            <div class="space-y-5" id="simulator-container">
+                                <p class="text-xs text-slate-400 italic">Simulateur inactif.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-3xl text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Moyenne simulée</p>
+                            <h3 id="simulator-avg-gpa" class="text-4xl font-black text-slate-950 mt-1">--.- /20</h3>
+                            <span id="simulator-gpa-mention" class="inline-block mt-2 bg-slate-200 text-slate-600 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-slate-300">En attente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 4 : FRAIS & TRÉSORERIE              -->
+            <!-- ========================================== -->
+            <div id="tab-payments" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Statut des paiements -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                            <div>
+                                <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Mes Versements Académiques</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Suivi du recouvrement annuel</p>
+                            </div>
+
+                            <div class="space-y-4" id="payments-list">
+                                <p class="text-xs text-slate-400 italic text-center py-4">Chargement des transactions financières...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel d'information sur les frais -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <h4 class="font-black text-xs uppercase text-slate-400">Renseignements comptables</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Droits d'Inscriptions</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed font-semibold">Les frais d'inscription doivent être payés via les passerelles agrées par le secrétariat administratif. Conservez précieusement vos reçus virtuels générés par UPKOL.</p>
+                        </div>
+
+                        <div class="bg-amber-50 border border-yellow-200 p-4 rounded-2xl flex items-start space-x-3 mt-6">
+                            <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
+                            <div>
+                                <h5 class="font-black text-[10px] uppercase text-slate-950 mb-0.5">Exigence rectorale</h5>
+                                <p class="text-[10px] text-slate-600 font-semibold">L'accès à la session d'évaluation est conditionnée par l'apurement complet de vos tranches.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 5 : CARTE ÉTUDIANT 3D              -->
+            <!-- ========================================== -->
+            <div id="tab-idcard" class="tab-pane space-y-8 hidden">
+                <div class="flex flex-col items-center justify-center space-y-6 py-6">
+                    <div class="text-center">
+                        <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Carte Digitale d'Identité Étudiant</h3>
+                        <p class="text-xs text-slate-400 font-bold uppercase mt-1">Appuyez sur la carte pour la retourner</p>
+                    </div>
+
+                    <!-- Carte 3D Interactive Container -->
+                    <div class="card-container w-80 h-[480px] cursor-pointer" onclick="toggleCardFlip()">
+                        <div class="card-inner w-full h-full relative" id="student-card-inner">
+                            
+                            <!-- Recto de la carte -->
+                            <div class="card-front bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -right-16 -top-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-upkol-jaune rounded flex items-center justify-center text-slate-950">
+                                            <i class="fas fa-university text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md">
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                            <i class="fas fa-user-graduate text-5xl"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h3 class="font-black text-lg tracking-tight uppercase" id="idcard-name">Chargement...</h3>
+                                        <p class="text-[9px] text-upkol-jaune font-bold tracking-widest uppercase mt-0.5" id="idcard-class">...</p>
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-800 pt-4 flex justify-between items-end text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <div>
+                                        <span>Matricule</span>
+                                        <p class="text-white font-black text-xs mt-0.5" id="idcard-matricule-display">UPK-...</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span>Statut</span>
+                                        <p class="text-emerald-500 font-black text-xs mt-0.5">Inscrit Actif</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verso de la carte -->
+                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="text-center border-b border-slate-800 pb-4">
+                                    <h4 class="font-black text-xs text-upkol-jaune uppercase tracking-wider">Charte Campus & QR-Code</h4>
+                                    <p class="text-[8px] text-slate-400 uppercase mt-0.5">Scannez pour valider la présence aux examens</p>
+                                </div>
+
+                                <div class="bg-white p-4 rounded-2xl w-40 h-40 mx-auto flex items-center justify-center shadow-inner">
+                                    <svg class="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
+                                        <path d="M10,10 h30 v30 h-30 z M15,15 h20 v20 h-20 z M22,22 h6 v6 h-6 z" />
+                                        <path d="M60,10 h30 v30 h-30 z M65,15 h20 v20 h-20 z M72,22 h6 v6 h-6 z" />
+                                        <path d="M10,60 h30 v30 h-30 z M15,65 h20 v20 h-20 z M22,72 h6 v6 h-6 z" />
+                                        <path d="M50,50 h10 v10 h-10 z M60,60 h10 v10 h-10 z M50,70 h15 v15 h-15 z" />
+                                        <path d="M75,50 h15 v10 h-15 z M80,75 h10 v15 h-10 z M65,55 h8 v8 h-8 z" />
+                                    </svg>
+                                </div>
+
+                                <div class="text-[8px] text-slate-400 font-bold leading-relaxed text-center uppercase tracking-wide">
+                                    <p>Cette carte est personnelle et incessible.</p>
+                                    <p class="mt-1 text-slate-500">Secrétariat Général d'UPKOL • Kolwezi, RD Congo</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 6 : MESSAGERIE ACADÉMIQUE           -->
+            <!-- ========================================== -->
+            <div id="tab-inter-messaging" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-[600px] flex">
+                    <!-- Contacts List -->
+                    <div class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/30">
+                        <div class="p-6 border-b border-slate-100 bg-white">
+                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight">Communauté UPKOL</h3>
+                        </div>
+                        <div class="flex-grow overflow-y-auto" id="inter-messaging-contacts">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                    <!-- Chat Window -->
+                    <div class="flex-grow flex flex-col bg-slate-50/50">
+                        <div id="chat-header" class="p-6 border-b border-slate-100 bg-white flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="inter-chat-avatar" class="w-10 h-10 rounded-2xl bg-upkol-jaune flex items-center justify-center font-black text-upkol-noir shadow-sm border border-upkol-noir/10 text-lg">?</div>
+                                <h4 id="inter-chat-target-name" class="font-black text-xs uppercase text-slate-900 tracking-tight">Sélectionnez un correspondant</h4>
+                            </div>
+                        </div>
+                        <div id="inter-chat-messages" class="flex-grow p-6 overflow-y-auto space-y-4 flex flex-col">
+                            <div class="h-full flex items-center justify-center text-slate-400 text-xs italic">
+                                Historique des échanges protégés par Supabase.
+                            </div>
+                        </div>
+                        <div class="p-6 bg-white border-t border-slate-100">
+                            <form id="inter-msg-form" onsubmit="sendInterMessage(event)" class="flex gap-2">
+                                <input type="text" id="inter-msg-input" class="flex-grow bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-upkol-jaune" placeholder="Rédigez votre message académique...">
+                                <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md hover:bg-slate-800">
+                                    <i class="fas fa-paper-plane mr-2"></i> Envoyer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- ONGLET 7 : MON PROFIL                      -->
+            <!-- ========================================== -->
+            <div id="tab-profile" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 max-w-2xl mx-auto">
+                    <h3 class="font-black text-xl text-slate-900 uppercase tracking-tight mb-6">Paramètres de mon Compte</h3>
+                    <form onsubmit="saveStudentProfile(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nom Complet</label>
+                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Institutionnel</label>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" readonly>
+                        </div>
+                        <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md hover:bg-slate-800 w-full">
+                            Mettre à jour mon profil
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- INTERACTIVE PAYMENT MODAL -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="payment-card">
+            <h3 id="payment-modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Solder ma Tranche</h3>
+            <p class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Veuillez choisir votre passerelle de facturation mobile money ou bancaire.</p>
+            <input type="hidden" id="current-payment-id">
+            
+            <div class="space-y-3 mt-4">
+                <button onclick="executePayment('M-Pesa')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-red-500 hover:bg-red-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">M-Pesa (Vodacom)</span>
+                    <i class="fas fa-mobile-screen-button text-red-500 text-lg"></i>
+                </button>
+                <button onclick="executePayment('Orange Money')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-orange-500 hover:bg-orange-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">Orange Money</span>
+                    <i class="fas fa-wallet text-orange-500 text-lg"></i>
+                </button>
+                <button onclick="executePayment('Carte Visa')" class="w-full flex items-center justify-between p-3.5 border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 rounded-xl transition-all">
+                    <span class="font-bold text-xs">Carte Bancaire Visa / MasterCard</span>
+                    <i class="fas fa-credit-card text-blue-500 text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex space-x-2 mt-6 justify-end border-t border-slate-100 pt-4">
+                <button onclick="closePaymentModal()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-700">Annuler</button>
             </div>
         </div>
     </div>
 
-    <!-- MAIN NAVIGATION -->
-    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
-                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
-                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
-                </div>
-                <div>
-                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
-                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
-                </div>
-            </div>
-
-            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
-                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
-                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
-                <a href="index.html#actualites" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</a>
-                
-                <!-- Lien de connexion (affiché si non connecté) -->
-                <a href="index.html" id="e-learning-login-link" class="border-2 border-gray-900 text-gray-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-900 hover:text-upkol-jaune transition transform hover:scale-105">
-                    SE CONNECTER
-                </a>
-
-                <!-- Informations utilisateur et bouton de déconnexion (initialement cachés) -->
-                <div id="e-learning-auth-info" class="hidden items-center space-x-4">
-                    <img id="e-learning-display-user-picture" class="w-8 h-8 rounded-full" alt="Photo de profil">
-                    <div class="flex flex-col text-sm font-bold text-gray-700">
-                        <span>Bienvenue</span>
-                        <span id="e-learning-display-user-name" class="text-upkol-jaune"></span>
-                    </div>
-                    <a href="dashboard.html" class="text-gray-900 hover:text-upkol-jaune transition-colors" title="Accès Administration">
-                        <i class="fas fa-user-shield text-xl"></i>
-                    </a>
-                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
-                        Déconnexion
-                    </button>
-                </div>
-
-                <a href="index.html#inscription" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
-                    S'INSCRIRE
-                </a>
-            </div>
-
-            <div class="lg:hidden flex items-center space-x-5">
-                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
-            </div>
-        </div>
-
-        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
-            <a href="index.html" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
-            <a href="index.html#facultes" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-            <a href="index.html#actualites" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
-            
-            <!-- Mobile Login Link -->
-            <a href="index.html" id="mobile-e-learning-login-link" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Se connecter</a>
-
-            <!-- Mobile Auth Info -->
-            <div id="mobile-e-learning-auth-info" class="hidden px-6 py-4 border-b border-gray-50 flex-col space-y-2">
-                <div class="flex items-center">
-                    <img id="mobile-e-learning-display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
-                    <div class="flex flex-col text-sm font-bold text-gray-700">
-                        <span>Bienvenue</span>
-                        <span id="mobile-e-learning-display-user-name" class="text-upkol-jaune"></span>
-                    </div>
-                </div>
-                <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm w-fit">Déconnexion</button>
-            </div>
-
-            <a href="index.html#inscription" onclick="toggleMobileMenu()" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
-        </div>
-    </nav>
-
-    <!-- HERO SECTION -->
-    <section class="hero-section h-[60vh] flex items-center px-6 overflow-hidden">
-        <div class="max-w-7xl mx-auto w-full">
-            <div class="text-white max-w-4xl">
-                <div class="w-20 h-1 bg-upkol-jaune mb-8 reveal-left"></div>
-                <h1 class="text-6xl md:text-8xl font-black mb-6 uppercase leading-tight reveal-left" style="animation-delay: 0.2s">
-                    E-<span class="text-upkol-jaune">Learning</span>
-                </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl reveal-left" style="animation-delay: 0.4s">
-                    Accédez à vos cours et ressources numériques en un clic
-                </p>
-                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 reveal-left" style="animation-delay: 0.6s">
-                    <button onclick="document.getElementById('plateforme').scrollIntoView({behavior: 'smooth'})" class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl text-center">
-                        ACCÉDER À LA PLATEFORME
-                    </button>
-                    <button onclick="document.getElementById('ressources').scrollIntoView({behavior: 'smooth'})" class="border-2 border-white px-8 py-4 font-bold rounded-lg hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-all text-center">
-                        DÉCOUVRIR LES RESSOURCES
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- INTRODUCTION -->
-    <section class="py-20 px-6 max-w-7xl mx-auto">
-        <div class="text-center mb-16 reveal-down">
-            <h2 class="text-4xl font-black uppercase mb-4">Apprentissage <span class="text-upkol-jaune">Numérique</span></h2>
-            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">La révolution pédagogique à l'UPKOL</p>
-            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
-            <div class="reveal-left">
-                <h3 class="text-3xl font-black mb-6 uppercase">Pourquoi l'E-Learning ?</h3>
-                <p class="text-lg text-gray-600 leading-relaxed mb-6">
-                    L'enseignement numérique transforme l'expérience d'apprentissage à l'UPKOL. Grâce à notre plateforme moderne, vous accédez à des cours interactifs, des ressources multimédias et des outils pédagogiques avancés.
-                </p>
-                <p class="text-lg text-gray-600 leading-relaxed">
-                    Apprenez à votre rythme, où que vous soyez, avec un suivi personnalisé et des évaluations continues pour garantir votre progression.
-                </p>
-            </div>
-            <div class="reveal-right">
-                <img src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=800&q=80" alt="E-Learning UPKOL" class="rounded-2xl shadow-2xl">
-            </div>
-        </div>
-    </section>
-
-    <!-- PLATEFORME -->
-    <section id="plateforme" class="py-20 px-6 bg-gray-50">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16 reveal-down">
-                <h2 class="text-4xl font-black uppercase mb-4">Notre <span class="text-upkol-jaune">Plateforme</span></h2>
-                <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Outils et fonctionnalités</p>
-                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Cours en Ligne -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
-                    <i class="fas fa-play-circle text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Cours Vidéo</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Accédez à des cours enregistrés par nos meilleurs enseignants. Visionnez, mettez en pause, reprenez quand vous voulez.
-                    </p>
-                </div>
-
-                <!-- Exercices Interactifs -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
-                    <i class="fas fa-tasks text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Exercices Interactifs</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Testez vos connaissances avec des quiz, QCM et exercices pratiques. Obtenez un feedback immédiat sur vos réponses.
-                    </p>
-                </div>
-
-                <!-- Bibliothèque Numérique -->
-                <a href="bibliotheque.html" class="platform-card block bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
-                    <i class="fas fa-book text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Bibliothèque Numérique</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Consultez des milliers d'ouvrages, articles scientifiques et ressources pédagogiques en ligne 24/7.
-                    </p>
-                </a>
-
-                <!-- Forums de Discussion -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
-                    <i class="fas fa-comments text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Forums Étudiants</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Échangez avec vos camarades et enseignants. Posez vos questions et partagez vos connaissances.
-                    </p>
-                </div>
-
-                <!-- Suivi de Progression -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
-                    <i class="fas fa-chart-line text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Tableau de Bord</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Suivez votre progression, consultez vos notes et identifiez vos points d'amélioration en temps réel.
-                    </p>
-                </div>
-
-                <!-- Certification -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
-                    <i class="fas fa-certificate text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Certifications</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Obtenez des attestations de compétences validées par l'université pour valoriser votre parcours.
-                    </p>
-                </div>
-
-                <!-- Travaux de Fin de Cycle -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
-                    <i class="fas fa-file-alt text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Travaux de Fin de Cycle</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Consultez les mémoires et thèses des anciens étudiants pour vous inspirer et approfondir vos recherches.
-                    </p>
-                    <!-- Pas de bouton cliquable pour l'instant, comme demandé -->
-                </div>
-
-                <!-- Autres Documents Intéressants -->
-                <div class="platform-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
-                    <i class="fas fa-folder-open text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Autres Documents</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Accédez à une collection variée de documents complémentaires, rapports et études de cas.
-                    </p>
-                    <!-- Pas de bouton cliquable pour l'instant, comme demandé -->
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- RESSOURCES -->
-    <section id="ressources" class="py-20 px-6 max-w-7xl mx-auto">
-        <div class="text-center mb-16 reveal-down">
-            <h2 class="text-4xl font-black uppercase mb-4">Ressources <span class="text-upkol-jaune">Numériques</span></h2>
-            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Contenus par discipline</p>
-            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-left">
-                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
-                    <i class="fas fa-stethoscope"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">Sciences de la Santé</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Anatomie 3D, cas cliniques virtuels, simulations médicales et protocoles thérapeutiques interactifs.
-                </p>
-                <div class="flex justify-between items-center">
-                    <span class="text-upkol-jaune font-black text-sm">150+ ressources</span>
-                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                        Explorer <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-down">
-                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">Sciences Techniques</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Modélisation CAO, simulations industrielles, tutoriels de programmation et bases de données techniques.
-                </p>
-                <div class="flex justify-between items-center">
-                    <span class="text-upkol-jaune font-black text-sm">200+ ressources</span>
-                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                        Explorer <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all reveal-right">
-                <div class="w-16 h-16 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-2xl mb-6">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">Sciences Humaines</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Archives historiques, analyses sociologiques, études de cas juridiques et ressources linguistiques.
-                </p>
-                <div class="flex justify-between items-center">
-                    <span class="text-upkol-jaune font-black text-sm">120+ ressources</span>
-                    <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                        Explorer <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ACCÈS RAPIDE -->
-    <section class="py-20 px-6 bg-upkol-noir text-white">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16 reveal-down">
-                <h2 class="text-4xl font-black uppercase mb-4">Accès <span class="text-upkol-jaune">Rapide</span></h2>
-                <p class="text-gray-400 font-bold text-lg tracking-widest uppercase mb-4">Connectez-vous en quelques clics</p>
-                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="reveal-left">
-                    <h3 class="text-3xl font-black mb-6 uppercase">Comment accéder ?</h3>
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">1</div>
-                            <div>
-                                <h4 class="font-black text-lg mb-2">Inscription</h4>
-                                <p class="text-gray-300">Créez votre compte étudiant avec votre matricule UPKOL</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">2</div>
-                            <div>
-                                <h4 class="font-black text-lg mb-2">Connexion</h4>
-                                <p class="text-gray-300">Utilisez vos identifiants pour accéder à la plateforme</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-sm mr-4 flex-shrink-0">3</div>
-                            <div>
-                                <h4 class="font-black text-lg mb-2">Apprentissage</h4>
-                                <p class="text-gray-300">Explorez les cours et ressources de votre filière</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-800 p-8 rounded-2xl border-l-4 border-upkol-jaune reveal-right">
-                    <h3 class="font-black text-2xl mb-6 uppercase">Connexion à la plateforme</h3>
-                    <form class="space-y-6">
-                        <div>
-                            <label class="block text-gray-300 font-bold text-sm mb-2 uppercase tracking-widest">Matricule Étudiant</label>
-                            <input type="text" class="w-full bg-gray-700 border border-gray-600 px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:border-upkol-jaune focus:outline-none" placeholder="Ex: UPKOL2024001">
-                        </div>
-                        <div>
-                            <label class="block text-gray-300 font-bold text-sm mb-2 uppercase tracking-widest">Mot de Passe</label>
-                            <input type="password" class="w-full bg-gray-700 border border-gray-600 px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:border-upkol-jaune focus:outline-none" placeholder="Votre mot de passe">
-                        </div>
-                        <button type="submit" class="w-full bg-upkol-jaune text-black font-black py-4 rounded-lg hover:bg-white transition-all uppercase tracking-widest">
-                            Se Connecter <i class="fas fa-sign-in-alt ml-2"></i>
-                        </button>
-                    </form>
-                    <div class="mt-6 text-center">
-                        <a href="#" class="text-upkol-jaune hover:underline text-sm">Mot de passe oublié ?</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SUPPORT -->
-    <section class="py-20 px-6 max-w-7xl mx-auto">
-        <div class="text-center mb-16 reveal-down">
-            <h2 class="text-4xl font-black uppercase mb-4">Support <span class="text-upkol-jaune">Technique</span></h2>
-            <p class="text-gray-500 font-bold text-lg tracking-widest uppercase mb-4">Aide et assistance</p>
-            <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="text-center reveal-left">
-                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">FAQ</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Trouvez rapidement des réponses à vos questions les plus fréquentes sur l'utilisation de la plateforme.
-                </p>
-                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                    Consulter <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
-
-            <div class="text-center reveal-down">
-                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">Support 24/7</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Notre équipe technique est disponible en permanence pour vous assister dans vos démarches.
-                </p>
-                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                    Contacter <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
-
-            <div class="text-center reveal-right">
-                <div class="w-20 h-20 bg-upkol-jaune text-black rounded-full flex items-center justify-center font-black text-3xl mx-auto mb-6">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <h3 class="font-black text-xl mb-4 uppercase">Tutoriels</h3>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Guides vidéo et tutoriels détaillés pour maîtriser toutes les fonctionnalités de la plateforme.
-                </p>
-                <button class="text-upkol-jaune font-black text-sm uppercase tracking-widest hover:translate-x-2 transition-transform">
-                    Découvrir <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
-        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
-            <div class="reveal-left">
-                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
-                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation.</p>
-            </div>
-            <div class="reveal-down" style="animation-delay: 0.2s">
-                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
-                <ul class="space-y-4 text-xs font-bold text-gray-400">
-                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
-                    <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés</a></li>
-                    <li><a href="index.html#actualites" class="hover:text-white transition-colors uppercase">Actualités</a></li>
-                </ul>
-            </div>
-            <div class="reveal-down" style="animation-delay: 0.4s">
-                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
-                <div class="flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="reveal-right">
-                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Localisation</h5>
-                <p class="text-xs text-gray-400 font-bold">Kolwezi, Lualaba<br>République Démocratique du Congo</p>
-            </div>
-        </div>
-        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
-            <span>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
-            <div class="flex space-x-6">
-                <span>Formation.</span>
-                <span>Recherche.</span>
-                <span>Excellence.</span>
-            </div>
-        </div>
-    </footer>
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
-        // Fonction pour décoder le JWT (copiée de index.html, non utilisée directement ici pour le décodage mais pour la cohérence)
-        function decodeJwtResponse(token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
+        // --- CONSTANTES & SYNCHRONIZATION ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Fonction pour gérer la déconnexion
-        function signOut() {
-            // Supprimer les informations de l'utilisateur du localStorage
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userName'); // Supprimer aussi le nom complet
-            localStorage.removeItem('userPicture'); // Supprimer l'URL de la photo
-            // Rediriger vers la page d'accueil
-            window.location.href = 'index.html';
-        }
+        let studentLoggedUser = null;
+        let studentEnrolledCourseIds = [];
+        
+        // --- MESSAGING STATE ---
+        let currentInterChatTarget = null;
+        let academicContacts = [];
 
-        // Fonction pour mettre à jour l'interface utilisateur d'authentification
-        function updateAuthUI() {
-            const userName = localStorage.getItem('userName');
-            const userPicture = localStorage.getItem('userPicture');
-            const authInfoContainer = document.getElementById('e-learning-auth-info');
-            const loginLink = document.getElementById('e-learning-login-link');
-            const mobileAuthInfo = document.getElementById('mobile-e-learning-auth-info');
-            const mobileLoginLink = document.getElementById('mobile-e-learning-login-link');
+        // --- AUTHENTICATION ---
+        async function handleStudentLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login-student');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Connexion...';
+            btn.disabled = true;
 
-            if (userName) {
-                // Desktop UI
-                if (authInfoContainer) authInfoContainer.style.display = 'flex';
-                if (loginLink) loginLink.style.display = 'none';
-                if (document.getElementById('e-learning-display-user-name')) document.getElementById('e-learning-display-user-name').innerText = userName;
-                if (document.getElementById('e-learning-display-user-picture')) {
-                    document.getElementById('e-learning-display-user-picture').src = userPicture || '';
-                    document.getElementById('e-learning-display-user-picture').style.display = userPicture ? 'block' : 'none';
+            try {
+                // Check if user exists and is 'etudiant'
+                const { data: user, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('role', 'etudiant')
+                    .single();
+
+                if (error || !user) {
+                    showCustomToast("Identifiants incorrects ou vous n'êtes pas un étudiant.", "error");
+                    throw new Error("Student not found.");
                 }
+
+                // Student can login with standard password OR their matricule
+                if (user.password === pass || user.matricule === pass) {
+                    if (!user.active) {
+                        showCustomToast("Ce compte étudiant a été désactivé.", "warning");
+                    } else {
+                        studentLoggedUser = user;
+                        localStorage.setItem('connectedStudent', JSON.stringify(studentLoggedUser));
+                        const gateway = document.getElementById('login-gateway');
+                        gateway.style.opacity = '0';
+                        setTimeout(() => {
+                            gateway.classList.add('hidden');
+                            showCustomToast(`Bienvenue, ${studentLoggedUser.name} !`, 'success');
+                            initializeDashboard();
+                        }, 400);
+                    }
+                } else {
+                    showCustomToast("Mot de passe ou Matricule incorrect.", "error");
+                }
+            } catch (err) {
+                console.error("Login Error:", err);
+            } finally {
+                btn.innerHTML = `Ouvrir mon espace <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>`;
+                btn.disabled = false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('connectedStudent');
+            studentLoggedUser = null;
+            const gateway = document.getElementById('login-gateway');
+            gateway.classList.remove('hidden');
+            setTimeout(() => {
+                gateway.style.opacity = '1';
+                showCustomToast("Session fermée.", "info");
+            }, 10);
+        }
+
+        // --- INITIAL DASHBOARD SETUP ---
+        async function initializeDashboard() {
+            if (!studentLoggedUser) return;
+
+            // Fill header and profile UI
+            document.getElementById('student-header-name').innerText = studentLoggedUser.name || 'Étudiant';
+            document.getElementById('student-header-matricule').innerText = studentLoggedUser.matricule || 'UPK-...';
+            document.getElementById('idcard-name').innerText = studentLoggedUser.name || '';
+            document.getElementById('idcard-matricule-display').innerText = studentLoggedUser.matricule || '';
+            document.getElementById('idcard-class').innerText = (studentLoggedUser.faculte || 'Faculté') + ' • ' + (studentLoggedUser.departement || 'Département');
+            document.getElementById('profile-name').value = studentLoggedUser.name || '';
+            document.getElementById('profile-email').value = studentLoggedUser.email || '';
+
+            showTab('overview');
+            
+            // Lancer les requêtes en parallèle pour la performance
+            await Promise.all([
+                fetchStudentDataAndCourses(),
+                fetchStudentPayments(),
+                fetchAcademicContacts(),
+                fetchRectoratNews()
+            ]);
+        }
+
+        // --- FETCH DYNAMIC DATA: COURSES, GRADES, MATERIALS ---
+        async function fetchStudentDataAndCourses() {
+            try {
+                // 1. Fetch grades (notes) for this student
+                const { data: notes, error: nError } = await _supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('student_id', studentLoggedUser.id);
                 
-                // Mobile UI
-                if (mobileAuthInfo) mobileAuthInfo.style.display = 'flex';
-                if (mobileLoginLink) mobileLoginLink.style.display = 'none';
-                if (document.getElementById('mobile-e-learning-display-user-name')) document.getElementById('mobile-e-learning-display-user-name').innerText = userName;
-                if (document.getElementById('mobile-e-learning-display-user-picture')) {
-                    document.getElementById('mobile-e-learning-display-user-picture').src = userPicture || '';
-                    document.getElementById('mobile-e-learning-display-user-picture').style.display = userPicture ? 'block' : 'none';
+                if (nError) throw nError;
+
+                let enrolledCourses = [];
+                studentEnrolledCourseIds = [];
+                
+                // Extract course IDs the student is enrolled in (has notes for)
+                if (notes && notes.length > 0) {
+                    studentEnrolledCourseIds = notes.map(n => n.course_id);
+                    const { data: cours, error: cError } = await _supabase
+                        .from('cours')
+                        .select('*')
+                        .in('id', studentEnrolledCourseIds);
+                    
+                    if (cError) throw cError;
+                    enrolledCourses = cours;
+                } else {
+                    // Fallback: Si aucune note, récupérer tous les cours de sa faculté
+                    const { data: coursFac, error: cError2 } = await _supabase
+                        .from('cours')
+                        .select('*')
+                        .eq('faculty', studentLoggedUser.faculte || 'Sciences & Technologies');
+                    if (!cError2 && coursFac) {
+                        enrolledCourses = coursFac;
+                        studentEnrolledCourseIds = coursFac.map(c => c.id);
+                    }
                 }
-            } else {
-                if (authInfoContainer) authInfoContainer.style.display = 'none';
-                if (loginLink) loginLink.style.display = 'block';
-                if (mobileAuthInfo) mobileAuthInfo.style.display = 'none';
-                if (mobileLoginLink) mobileLoginLink.style.display = 'block';
+
+                // Update Stats Widget
+                document.getElementById('stat-courses-count').innerText = enrolledCourses.length;
+
+                // --- Render Grades Table & Simulator ---
+                const tbody = document.getElementById('student-grades-table');
+                const simulatorContainer = document.getElementById('simulator-container');
+                tbody.innerHTML = '';
+                simulatorContainer.innerHTML = '';
+
+                let totalGPA = 0;
+                let validGradesCount = 0;
+
+                if (notes && notes.length > 0 && enrolledCourses.length > 0) {
+                    enrolledCourses.forEach((courseObj, index) => {
+                        const note = notes.find(n => n.course_id === courseObj.id);
+                        if (note) {
+                            const avg = ((parseFloat(note.tp_grade || 0) + parseFloat(note.exam_grade || 0)) / 2);
+                            totalGPA += avg;
+                            validGradesCount++;
+
+                            let colorClass = 'text-slate-600 bg-slate-100';
+                            let mention = 'Satis.';
+                            if (avg >= 16) { colorClass = 'text-green-700 bg-green-50 border border-green-100'; mention = 'Distinction'; } 
+                            else if (avg >= 14) { colorClass = 'text-blue-700 bg-blue-50 border border-blue-100'; mention = 'Bien'; }
+
+                            // Line in Grades Table
+                            tbody.insertAdjacentHTML('beforeend', `
+                                <tr class="hover:bg-slate-50 transition-all duration-200">
+                                    <td class="px-6 py-4 font-black text-slate-900">${courseObj.name}</td>
+                                    <td class="px-6 py-4 text-xs font-bold text-slate-500">${courseObj.credits || 3} Crédits</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${avg.toFixed(1)}/20</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="text-[10px] font-black uppercase tracking-wider ${avg >= 16 ? 'text-green-700' : 'text-slate-600'}">${mention}</span>
+                                    </td>
+                                </tr>
+                            `);
+
+                            // Line in Simulator
+                            simulatorContainer.insertAdjacentHTML('beforeend', `
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span class="truncate pr-2">${courseObj.name}</span>
+                                        <span id="range-val-${index}">${avg.toFixed(1)}/20</span>
+                                    </div>
+                                    <input type="range" id="grade-slider-${index}" min="0" max="20" value="${avg}" class="w-full accent-upkol-jaune cursor-pointer" oninput="calculateSimulatorGPA()">
+                                </div>
+                            `);
+                        }
+                    });
+
+                    // Update Overview GPA
+                    if (validGradesCount > 0) {
+                        const finalGPA = (totalGPA / validGradesCount).toFixed(1);
+                        document.getElementById('stat-avg-gpa').innerHTML = `${finalGPA} <span class="text-xs text-slate-400">/20</span>`;
+                    }
+                    calculateSimulatorGPA(); // Init simulator visual
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">Aucune note enregistrée.</td></tr>`;
+                    simulatorContainer.innerHTML = '<p class="text-xs text-slate-400 italic">Aucun cours évalué pour la simulation.</p>';
+                }
+
+                // --- Render Course Selector for Assignments & Fetch Materials ---
+                const selectAssignment = document.getElementById('assignment-course');
+                selectAssignment.innerHTML = '<option value="">Sélectionnez un cours...</option>';
+                
+                enrolledCourses.forEach(c => {
+                    selectAssignment.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
+                });
+
+                if (studentEnrolledCourseIds.length > 0) {
+                    const { data: materials, error: mError } = await _supabase
+                        .from('supports_cours')
+                        .select('*')
+                        .in('course_id', studentEnrolledCourseIds)
+                        .neq('type', 'TP_REMIS'); // We hide what students submit
+
+                    if (mError) throw mError;
+                    
+                    document.getElementById('stat-materials-count').innerText = materials ? materials.length : 0;
+                    
+                    const matList = document.getElementById('materials-list');
+                    matList.innerHTML = '';
+                    if (!materials || materials.length === 0) {
+                        matList.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-4">Aucun support disponible pour l\'instant.</p>';
+                    } else {
+                        materials.forEach(m => {
+                            const courseName = enrolledCourses.find(c => c.id === m.course_id)?.name || 'Cours inconnu';
+                            matList.insertAdjacentHTML('beforeend', `
+                                <div class="p-4 bg-slate-50 border border-slate-200 hover:border-upkol-jaune rounded-2xl flex items-center justify-between transition-all">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-file-pdf text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">${m.title}</h4>
+                                            <p class="text-[10px] text-slate-500">${courseName} • ${m.file_size || 'Document'}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="showCustomToast('Téléchargement du support...', 'info')" class="text-xs bg-white hover:bg-upkol-jaune border border-slate-200 rounded-xl px-4 py-2 font-black uppercase transition-all shadow-sm">
+                                        Télécharger
+                                    </button>
+                                </div>
+                            `);
+                        });
+                    }
+                }
+
+            } catch (err) {
+                console.error("Error fetching data and courses:", err);
             }
         }
 
-        // Fonction pour enregistrer des actions spécifiques (ex: téléchargements, clics)
-        function logAction(action, details) { // Modifié pour prendre action et details seulement
-            const email = localStorage.getItem('userEmail');
-            const userId = localStorage.getItem('userId');
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXbaCR8RsggbigBj5ImwFXd6mXChVFz-sIwNJ8iIzcK7Ru7P_xqMiC0zWh4vYZOaQr/exec";
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: userId,
-                    email: email,
-                    action: action,
-                    details: details
-                })
+        // --- SUBMIT ASSIGNMENT ---
+        async function submitAssignment(event) {
+            event.preventDefault();
+            const courseId = document.getElementById('assignment-course').value;
+            const fileInput = document.getElementById('assignment-file');
+            
+            if (!courseId || fileInput.files.length === 0) {
+                showCustomToast("Veuillez sélectionner un cours et un fichier.", "warning");
+                return;
+            }
+
+            const fileName = fileInput.files[0].name;
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressPercent = document.getElementById('upload-percent');
+
+            progressContainer.classList.remove('hidden');
+            let percentage = 0;
+
+            const interval = setInterval(() => {
+                percentage += 20;
+                progressBar.style.width = `${percentage}%`;
+                progressPercent.innerText = `${percentage}%`;
+
+                if (percentage >= 100) {
+                    clearInterval(interval);
+                    setTimeout(async () => {
+                        try {
+                            // On insère le TP dans supports_cours (le teacher_id prend le UUID de l'étudiant pour tracker qui l'a déposé)
+                            const { error } = await _supabase
+                                .from('supports_cours')
+                                .insert([{
+                                    course_id: courseId,
+                                    teacher_id: studentLoggedUser.id,
+                                    title: fileName,
+                                    type: 'TP_REMIS',
+                                    file_size: '1.5 MB',
+                                    target_class: 'Soumission Étudiant'
+                                }]);
+
+                            if (error) throw error;
+
+                            showCustomToast(`Le fichier "${fileName}" a été déposé avec succès !`, 'success');
+                            document.getElementById('assignment-form').reset();
+                        } catch (err) {
+                            console.error(err);
+                            showCustomToast("Erreur lors de la communication avec la base de données.", "error");
+                        } finally {
+                            progressContainer.classList.add('hidden');
+                            progressBar.style.width = `0%`;
+                        }
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        // --- GRADE SIMULATOR ---
+        function calculateSimulatorGPA() {
+            const container = document.getElementById('simulator-container');
+            const sliders = container.querySelectorAll('input[type=range]');
+            if (sliders.length === 0) return;
+
+            let total = 0;
+            sliders.forEach((slider, index) => {
+                const val = parseFloat(slider.value);
+                total += val;
+                document.getElementById(`range-val-${index}`).innerText = `${val.toFixed(1)}/20`;
             });
 
-            if (!email || !userId) {
-                console.warn("Impossible d'enregistrer l'action : Utilisateur non connecté ou session expirée.");
-                return; // Ne pas envoyer si les informations utilisateur sont manquantes
-            }
-        }
+            const average = (total / sliders.length).toFixed(1);
+            document.getElementById('simulator-avg-gpa').innerText = `${average} /20`;
 
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                menu.classList.add('flex');
+            const label = document.getElementById('simulator-gpa-mention');
+            if (average >= 16) {
+                label.innerText = 'Distinction d\'excellence';
+                label.className = 'inline-block mt-2 bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-emerald-200';
+            } else if (average >= 14) {
+                label.innerText = 'Satisfaction distinguée';
+                label.className = 'inline-block mt-2 bg-blue-50 text-blue-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-blue-200';
             } else {
-                menu.classList.add('hidden');
-                menu.classList.remove('flex');
+                label.innerText = 'Admis Simple';
+                label.className = 'inline-block mt-2 bg-slate-50 text-slate-600 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-slate-200';
             }
         }
 
-        const observerOptions = { threshold: 0.1 };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = "1";
-                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+        // --- FETCH DYNAMIC PAYMENTS ---
+        async function fetchStudentPayments() {
+            try {
+                const { data, error } = await _supabase
+                    .from('paiements_etudiants')
+                    .select('*')
+                    .eq('student_id', studentLoggedUser.id)
+                    .order('paid_at', { ascending: false });
+
+                if (error) throw error;
+                
+                const list = document.getElementById('payments-list');
+                list.innerHTML = '';
+                
+                let totalDue = 0;
+                let totalPaid = 0;
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-4">Aucune transaction financière trouvée.</p>';
+                } else {
+                    data.forEach(p => {
+                        const isValide = p.status === 'valide' || p.status === 'payé';
+                        if (isValide) totalPaid += parseFloat(p.amount);
+                        else totalDue += parseFloat(p.amount);
+
+                        const iconClass = isValide ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-600';
+                        const icon = isValide ? '<i class="fas fa-check-double text-lg"></i>' : '<i class="fas fa-hourglass-half text-lg animate-pulse"></i>';
+                        const badgeClass = isValide ? 'bg-green-50 text-green-700 border-green-200' : 'bg-rose-50 text-rose-600 border-rose-200';
+                        
+                        let actionsHTML = '';
+                        if (isValide) {
+                            const d = new Date(p.paid_at).toLocaleDateString('fr-FR');
+                            actionsHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-black ${badgeClass} border px-3 py-1.5 rounded-xl uppercase">${p.amount}$ Acquis</span>
+                                    <button onclick="downloadPaymentReceipt('${p.tranche_name}', '${p.amount}$')" class="text-slate-400 hover:text-slate-800 p-2"><i class="fas fa-download"></i></button>
+                                </div>
+                            `;
+                            list.insertAdjacentHTML('beforeend', `
+                                <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconClass}">${icon}</div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">${p.tranche_name}</h4>
+                                            <p class="text-[10px] text-slate-500">Payé le ${d} via ${p.payment_method || 'Guichet'}</p>
+                                        </div>
+                                    </div>
+                                    ${actionsHTML}
+                                </div>
+                            `);
+                        } else {
+                            actionsHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-black ${badgeClass} border px-3 py-1.5 rounded-xl uppercase">${p.amount}$ Dû</span>
+                                    <button onclick="openPaymentModal('${p.id}', '${p.tranche_name}')" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[9px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shadow-sm transition-all shrink-0">Solder</button>
+                                </div>
+                            `;
+                            list.insertAdjacentHTML('afterbegin', `
+                                <div class="p-4 bg-rose-50/30 border border-rose-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconClass}">${icon}</div>
+                                        <div>
+                                            <h4 class="font-black text-xs uppercase text-slate-900">${p.tranche_name}</h4>
+                                            <p class="text-[10px] text-rose-500 font-bold">À solder d'urgence</p>
+                                        </div>
+                                    </div>
+                                    ${actionsHTML}
+                                </div>
+                            `);
+                        }
+                    });
                 }
+
+                // Overview widgets
+                const costDue = document.getElementById('stat-fees-due');
+                const soldeDesc = document.getElementById('solde-desc');
+                const badge = document.getElementById('badge-payment');
+
+                if (totalDue > 0) {
+                    if (costDue) costDue.innerHTML = `${totalDue}$ <span class="text-xs text-rose-500 font-black">Dû</span>`;
+                    if (soldeDesc) soldeDesc.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-xs"></i> Recouvrement en cours`;
+                    if (badge) badge.classList.remove('hidden');
+                } else {
+                    if (costDue) costDue.innerHTML = `0$ <span class="text-xs text-green-500">Apûré</span>`;
+                    if (soldeDesc) soldeDesc.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i> Solde entièrement apûré`;
+                    if (badge) badge.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error("Error loading payments:", err);
+            }
+        }
+
+        // --- PAYMENT DIALOGS ---
+        function openPaymentModal(paymentId, trancheName) {
+            document.getElementById('current-payment-id').value = paymentId;
+            document.getElementById('payment-modal-title').innerText = `Solder : ${trancheName}`;
+            
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function executePayment(method) {
+            const paymentId = document.getElementById('current-payment-id').value;
+            closePaymentModal();
+            showCustomToast(`Initialisation de la passerelle ${method}...`, 'info');
+
+            setTimeout(async () => {
+                try {
+                    const { error } = await _supabase
+                        .from('paiements_etudiants')
+                        .update({
+                            payment_method: method,
+                            status: 'valide',
+                            paid_at: new Date().toISOString()
+                        })
+                        .eq('id', paymentId);
+
+                    if (error) throw error;
+
+                    await fetchStudentPayments();
+                    showCustomToast("Paiement validé et synchronisé avec le Rectorat !", "success");
+                } catch (err) {
+                    console.error("Payment registration error:", err);
+                    showCustomToast("Erreur lors de la validation du paiement.", "error");
+                }
+            }, 1500);
+        }
+
+        function downloadPaymentReceipt(tranche, montant) {
+            showCustomToast(`Génération du reçu pour la ${tranche} (${montant})...`, 'info');
+        }
+
+        // --- MESSAGERIE ACADÉMIQUE AVEC REAL CONTACTS ---
+        async function fetchAcademicContacts() {
+            try {
+                // Fetch classmates (role: etudiant), teachers, secretaries
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('id, name, role, email, matricule');
+
+                if (error) throw error;
+
+                // Filter out current logged student
+                academicContacts = data.filter(u => u.id !== studentLoggedUser.id && ['etudiant', 'enseignant', 'secretaire', 'doyen'].includes(u.role));
+                renderInterMessagingContacts();
+            } catch (err) {
+                console.error("Error loading contacts:", err);
+            }
+        }
+
+        function renderInterMessagingContacts() {
+            const contactsList = document.getElementById('inter-messaging-contacts');
+            if (!contactsList) return;
+            contactsList.innerHTML = '';
+
+            // Trier pour mettre les enseignants et l'administration en premier, puis les camarades
+            const sortedContacts = academicContacts.sort((a, b) => {
+                const roleOrder = { 'doyen': 1, 'secretaire': 2, 'enseignant': 3, 'etudiant': 4 };
+                return (roleOrder[a.role] || 5) - (roleOrder[b.role] || 5);
             });
-        }, observerOptions);
 
-        document.querySelectorAll('.platform-card, .group').forEach(card => {
-            card.style.opacity = "0";
-            observer.observe(card);
-        });
+            sortedContacts.forEach(contact => {
+                let badgeColor = 'bg-slate-100 text-slate-700';
+                let displayRole = contact.role;
+                
+                if (contact.role === 'etudiant') {
+                    badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
+                    displayRole = 'Camarade';
+                } else if (contact.role === 'enseignant') {
+                    badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                    displayRole = 'Enseignant';
+                } else if (contact.role === 'secretaire') {
+                    badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                    displayRole = 'Secrétariat';
+                } else if (contact.role === 'doyen') {
+                    badgeColor = 'bg-purple-50 text-purple-700 border border-purple-200';
+                    displayRole = 'Doyen';
+                }
 
-        // Appeler la fonction pour mettre à jour l'UI d'authentification au chargement de la page
+                contactsList.insertAdjacentHTML('beforeend', `
+                    <button onclick="selectInterChatTarget('${contact.id}')" class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors border-b border-slate-100 text-left ${currentInterChatTarget === contact.id ? 'bg-white shadow-inner' : ''}">
+                        <div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-slate-500 shadow-sm border border-slate-300/50">${contact.name.charAt(0)}</div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-900 uppercase tracking-tight">${contact.name}</p>
+                            <span class="inline-block text-[8px] font-black uppercase tracking-widest px-2 py-0.5 mt-1 rounded ${badgeColor}">${displayRole}</span>
+                        </div>
+                    </button>
+                `);
+            });
+        }
+
+        window.selectInterChatTarget = async function(id) {
+            currentInterChatTarget = id;
+            const contact = academicContacts.find(c => c.id === id);
+            if (!contact) return;
+            
+            document.getElementById('inter-chat-target-name').innerText = contact.name;
+            document.getElementById('inter-chat-avatar').innerText = contact.name.charAt(0);
+            renderInterMessagingContacts();
+            await renderInterChatMessages();
+        };
+
+        async function renderInterChatMessages() {
+            const container = document.getElementById('inter-chat-messages');
+            if (!container || !currentInterChatTarget) return;
+            container.innerHTML = '';
+
+            try {
+                const { data: messages, error } = await _supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`and(sender_id.eq.${studentLoggedUser.id},recipient_id.eq.${currentInterChatTarget}),and(sender_id.eq.${currentInterChatTarget},recipient_id.eq.${studentLoggedUser.id})`)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                if(messages.length === 0) {
+                     container.innerHTML = `
+                        <div class="h-full flex items-center justify-center text-slate-400 text-xs italic">
+                            Aucun message. Dites bonjour !
+                        </div>
+                    `;
+                    return;
+                }
+
+                messages.forEach(m => {
+                    const isMine = m.sender_id === studentLoggedUser.id;
+                    const dateObj = new Date(m.created_at);
+                    const formattedTime = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
+                                <p class="text-xs font-semibold leading-relaxed">${m.content}</p>
+                                <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest ${isMine ? 'text-slate-400' : 'text-slate-400'}">${formattedTime}</span>
+                            </div> 
+                        </div>
+                    `);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (err) {
+                console.error("Error loading chat messages:", err);
+            }
+        }
+
+        window.sendInterMessage = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('inter-msg-input');
+            const text = input.value.trim();
+            if (!text || !currentInterChatTarget) return;
+
+            try {
+                const { error } = await _supabase
+                    .from('messages')
+                    .insert([{
+                        sender_id: studentLoggedUser.id,
+                        recipient_id: currentInterChatTarget,
+                        content: text
+                    }]);
+
+                if (error) throw error;
+
+                input.value = '';
+                await renderInterChatMessages();
+            } catch (err) {
+                console.error("Error sending message:", err);
+                showCustomToast("Erreur lors de l'envoi du message.", "error");
+            }
+        };
+
+        // --- FETCH NEWS / CIRCULAIRES ---
+        async function fetchRectoratNews() {
+            try {
+                const { data, error } = await _supabase
+                    .from('documents_officiels')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) throw error;
+
+                const feed = document.getElementById('news-feed-container');
+                feed.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                     feed.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-4">Aucune nouvelle circulaire.</p>';
+                     return;
+                }
+
+                data.forEach(doc => {
+                    const date = new Date(doc.created_at).toLocaleDateString('fr-FR');
+                    feed.insertAdjacentHTML('beforeend', `
+                        <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                            <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">${date}</span>
+                            <h4 class="font-black text-xs text-slate-900 mt-1 uppercase">${doc.title}</h4>
+                            <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">${doc.content}</p>
+                        </div>
+                    `);
+                });
+
+            } catch (err) {
+                console.error("Error loading news:", err);
+            }
+        }
+
+        // --- PROFILE CONTROL ---
+        window.saveStudentProfile = async function(e) {
+            e.preventDefault();
+            const newName = document.getElementById('profile-name').value.trim();
+
+            try {
+                const { error } = await _supabase
+                    .from('users')
+                    .update({ name: newName })
+                    .eq('id', studentLoggedUser.id);
+
+                if (error) throw error;
+
+                studentLoggedUser.name = newName;
+                localStorage.setItem('connectedStudent', JSON.stringify(studentLoggedUser));
+
+                document.getElementById('student-header-name').innerText = newName;
+                document.getElementById('idcard-name').innerText = newName;
+                showCustomToast("Informations personnelles mises à jour", "success");
+            } catch (err) {
+                console.error("Error updating profile:", err);
+                showCustomToast("Une erreur est survenue lors de la mise à jour.", "error");
+            }
+        };
+
+        // --- TAB NAVIGATION ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+        }
+
+        // --- UTILS ---
+        function toggleCardFlip() {
+            const cardInner = document.getElementById('student-card-inner');
+            if (cardInner) {
+                cardInner.parentNode.classList.toggle('flipped');
+            }
+        }
+
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[250px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- MOBILE MENU SIDEBAR ---
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        openSidebarBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // --- EXECUTION INITIALE ---
         document.addEventListener('DOMContentLoaded', () => {
-            updateAuthUI();
-            // Optionnel : Rediriger vers la page d'accueil si l'utilisateur n'est pas connecté
-            // if (!localStorage.getItem('userId')) {
-            //     window.location.href = 'index.html'; 
-            // }
+            const saved = localStorage.getItem('connectedStudent');
+            if (saved) {
+                studentLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+                initializeDashboard();
+            }
         });
     </script>
 </body>
