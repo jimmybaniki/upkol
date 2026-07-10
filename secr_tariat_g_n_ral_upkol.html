@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secrétariat Général Académique - UPKOL</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        upkol: {
+                            jaune: '#FFD700',
+                            noir: '#121212',
+                            anthracite: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Chart.js for Administrative Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .nav-link-active { background-color: rgba(255, 215, 0, 0.15); color: #FFD700; border-left: 4px solid #FFD700; }
+        .nav-link:hover { background-color: rgba(255, 215, 0, 0.08); color: #FFD700; }
+        
+        /* Interactive Card Hover effects */
+        .card-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-animate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.08); }
+
+        /* Custom Scrollbar for list panels */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Printable transcript layout preview */
+        .academic-seal { background-image: radial-gradient(circle, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0) 70%); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- PASSERELLE DE CONNEXION (SG LOGIN)         -->
+    <!-- ========================================== -->
+    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
+                    <i class="fas fa-file-signature text-upkol-jaune text-4xl"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Secrétariat Général</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
+                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Affaires Académiques & Enseignement</span>
+            </div>
+
+            <form id="login-form" class="w-full space-y-4 mb-6" onsubmit="handleLogin(event)">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Institutionnel</label>
+                    <input type="email" id="login-email" required class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune shadow-inner" placeholder="ex: nom@upkol.cd">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mot de passe</label>
+                    <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune shadow-inner" placeholder="••••••••">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
+                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
+                    <span>Connectez-vous avec un compte ayant l'habilitation <strong>Secrétaire Général(e)</strong> enregistré par le Super Admin.</span>
+                </div>
+
+                <button type="submit" id="btn-login-sg" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
+                    Ouvrir le cabinet académique
+                    <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
+
+    <!-- ========================================== -->
+    <!-- SIDEBAR SECRÉTAIRE GÉNÉRAL                 -->
+    <!-- ========================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-upkol-noir text-white transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:flex-col transition-transform duration-300 ease-in-out h-full overflow-y-auto sidebar-scroll border-r border-slate-800">
+        <div class="p-6 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
+                    <i class="fas fa-file-contract text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL SG</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Secrétaire Général</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="flex-grow mt-6 px-4 space-y-1">
+            <div class="text-[9px] uppercase tracking-widest text-slate-500 font-black px-3 mb-2">Gestion Académique</div>
+            
+            <a href="#" id="menu-overview" class="nav-link nav-link-active flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all" onclick="showTab('overview')">
+                <i class="fas fa-chart-line mr-3 w-5 text-center"></i> Vue d'ensemble
+            </a>
+            
+            <a href="#" id="menu-enrollments" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('enrollments')">
+                <i class="fas fa-id-card mr-3 w-5 text-center"></i> Immatriculations
+                <span id="badge-pending-enrollments" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </a>
+
+            <a href="#" id="menu-deliberations" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('deliberations')">
+                <i class="fas fa-gavel mr-3 w-5 text-center"></i> Arbitrage & PVs
+            </a>
+
+            <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Bureautique & Arrêtés</div>
+
+            <a href="#" id="menu-transcripts" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('transcripts')">
+                <i class="fas fa-file-export mr-3 w-5 text-center"></i> Délivrance de relevés
+            </a>
+
+            <a href="#" id="menu-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400 relative" onclick="showTab('messaging')">
+                <i class="fas fa-comments mr-3 w-5 text-center"></i> Messagerie Globale
+                <span id="badge-messaging" class="ml-auto bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full hidden shadow-md">0</span>
+            </a>
+
+            <a href="#" id="menu-profile" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('profile')">
+                <i class="fas fa-user-circle mr-3 w-5 text-center"></i> Mon Profil
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-power-off mr-2"></i> Clore la session
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden w-full relative">
+        <!-- ACADEMIC HEADER -->
+        <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-6 lg:px-10 z-10 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="open-sidebar" class="lg:hidden text-slate-600 hover:text-upkol-noir focus:outline-none mr-4">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-sm lg:text-lg font-black uppercase text-slate-900 tracking-tight">Secrétariat Général <span class="bg-upkol-jaune text-slate-950 px-2.5 py-1 rounded-lg">Académique</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Université Pédagogique de Kolwezi</p>
+                </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p id="sg-header-name" class="text-xs font-black text-slate-900 uppercase">Utilisateur</p>
+                    <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Secrétaire Général Académique</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
+                    <i class="fas fa-user-shield text-upkol-noir text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE BODY CONTENT -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10 bg-slate-50">
+            
+            <!-- ========================================== -->
+            <!-- TAB 1: VUE D'ENSEMBLE (OVERVIEW)           -->
+            <!-- ========================================== -->
+            <div id="tab-overview" class="tab-pane space-y-8">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Étudiants</p>
+                                <h3 id="stat-total-students" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-user-graduate text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
+                            <span>Effectif Actif Total</span>
+                            <span class="text-blue-500 font-black">Base de données</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate cursor-pointer" onclick="showTab('enrollments')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Immatriculations en attente</p>
+                                <h3 id="stat-pending-matric" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-stamp text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-amber-600 font-bold">
+                            <i class="fas fa-circle-exclamation mr-2 text-xs"></i> Dossiers Soumis
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate cursor-pointer" onclick="showTab('deliberations')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">PVs de Délibération</p>
+                                <h3 id="stat-pending-pvs" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-gavel text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
+                            <i class="fas fa-clock mr-2 text-xs"></i> À traiter & signer
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Corps Enseignant</p>
+                                <h3 id="stat-total-staff" class="text-3xl font-black text-slate-900">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-users-gear text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
+                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> Professeurs actifs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Graph -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Évolution Globale</h4>
+                                <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Admissions Récents</h3>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="sgOverviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Distribution -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Répartition Rapide</h4>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Indicateurs système</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Dossiers Complétés</span><span id="dist-1-pct">--%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div id="dist-1-bar" class="bg-upkol-jaune h-full w-[0%] transition-all"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                        <span>Dossiers En Attente</span><span id="dist-2-pct">--%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div id="dist-2-bar" class="bg-amber-500 h-full w-[0%] transition-all"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 mt-4">
+                            <i class="fas fa-university text-amber-500 mr-2"></i> Focus sur la validation rapide des dossiers d'admission.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: IMMATRICULATIONS (ENROLLMENTS)      -->
+            <!-- ========================================== -->
+            <div id="tab-enrollments" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex flex-col justify-between">
+                        <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Candidatures Soumises</h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Dossiers en attente d'immatriculation / Validation finale</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Nom du Candidat</th>
+                                    <th class="px-6 py-4">Faculté</th>
+                                    <th class="px-6 py-4">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrollment-table-body" class="text-sm divide-y divide-slate-100 font-medium bg-white">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: ARBITRAGE & PVS (DELIBERATIONS)     -->
+            <!-- ========================================== -->
+            <div id="tab-deliberations" class="tab-pane space-y-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-100">
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Procès-verbaux de notes</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Relevés soumis par les enseignants</p>
+                        </div>
+                        <div class="divide-y divide-slate-100 flex-grow" id="pending-pvs-list">
+                            <!-- JS Injected -->
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-400">Visualiseur de PV</h4>
+                            <h3 id="preview-pv-title" class="text-sm font-black text-slate-950 uppercase tracking-tight">Sélectionnez un relevé</h3>
+                            <div id="preview-pv-empty" class="py-12 text-center text-slate-400 italic text-xs">
+                                <i class="fas fa-file-invoice text-3xl mb-3 block text-slate-200"></i> Cliquez sur "Examiner"
+                            </div>
+                            <div id="preview-pv-details" class="hidden mt-6 space-y-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-[10px] font-black uppercase text-slate-400">
+                                    <div class="flex justify-between"><span>Promotion</span><span id="preview-pv-class" class="text-slate-800"></span></div>
+                                    <div class="flex justify-between"><span>Enseignant</span><span id="preview-pv-teacher" class="text-slate-800"></span></div>
+                                </div>
+                                <div class="space-y-2 max-h-56 overflow-y-auto" id="preview-pv-student-list"></div>
+                            </div>
+                        </div>
+                        <div id="preview-pv-actions" class="hidden border-t border-slate-100 pt-6 flex space-x-2">
+                            <button onclick="rejectPV()" class="w-1/2 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white text-[10px] font-black uppercase py-4 rounded-xl transition-all">Rejeter</button>
+                            <button onclick="approvePV()" class="w-1/2 bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">Signer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 4: RELEVES (TRANSCRIPTS)               -->
+            <!-- ========================================== -->
+            <div id="tab-transcripts" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Génération de Relevés de Notes</h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Recherchez un étudiant pour générer son relevé</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 border-b border-slate-100">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="transcript-search" oninput="renderTranscriptsStudentsList(this.value)" placeholder="Nom ou matricule..." class="w-full bg-white border border-slate-200 p-3 pl-10 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-upkol-jaune">
+                        </div>
+                    </div>
+                    <div class="divide-y divide-slate-100" id="transcript-students-list">
+                        <!-- JS Injected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 5: MESSAGERIE GLOBALE (INTER-MESSAGING)-->
+            <!-- ========================================== -->
+            <div id="tab-messaging" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-[600px] flex">
+                    <!-- Contacts List -->
+                    <div class="w-80 border-r border-slate-100 flex flex-col bg-slate-50/50 flex-shrink-0">
+                        <div class="p-4 border-b border-slate-100 bg-white">
+                            <h3 class="font-black text-xs text-slate-900 uppercase tracking-tight mb-2">Utilisateurs</h3>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                                <input type="text" id="msg-search" oninput="renderMessagingContacts()" class="w-full bg-slate-50 border border-slate-200 pl-9 pr-4 py-2 rounded-xl text-xs font-bold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune" placeholder="Rechercher...">
+                            </div>
+                        </div>
+                        <div class="flex-grow overflow-y-auto p-2 space-y-1" id="messaging-contacts">
+                            <!-- JS Injected -->
+                        </div>
+                    </div>
+                    <!-- Chat Window -->
+                    <div class="flex-grow flex flex-col bg-white">
+                        <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center space-x-3 shrink-0">
+                            <div id="chat-avatar" class="w-10 h-10 rounded-xl bg-upkol-noir text-upkol-jaune flex items-center justify-center font-black shadow-sm">?</div>
+                            <div>
+                                <h4 id="chat-target-name" class="font-black text-xs uppercase text-slate-900">Sélectionnez un contact</h4>
+                                <p id="chat-target-role" class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">---</p>
+                            </div>
+                        </div>
+                        <div id="chat-messages-container" class="flex-grow p-6 overflow-y-auto space-y-4 bg-slate-50/30">
+                            <div class="flex flex-col items-center justify-center h-full text-slate-400 italic space-y-3">
+                                <i class="fas fa-comments text-4xl text-slate-300"></i>
+                                <p class="text-xs font-medium text-center">Sélectionnez un utilisateur pour commencer à discuter.</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-white border-t border-slate-100 shrink-0">
+                            <form onsubmit="sendMessage(event)" class="flex gap-2">
+                                <input type="text" id="chat-input" class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-upkol-jaune" placeholder="Votre message..." disabled>
+                                <button type="submit" id="chat-send-btn" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 px-6 py-3 rounded-xl font-black text-xs uppercase shadow-md disabled:opacity-50" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 6: MON PROFIL                          -->
+            <!-- ========================================== -->
+            <div id="tab-profile" class="tab-pane space-y-8 hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 max-w-xl mx-auto">
+                    <h3 class="font-black text-lg text-slate-900 uppercase tracking-tight mb-6">Mon Profil SG</h3>
+                    <form onsubmit="saveProfile(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nom Complet</label>
+                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail</label>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" readonly>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL RELEVE DE NOTES -->
+    <div id="transcript-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl transform scale-95 transition-all duration-300" id="transcript-card">
+            <div class="border-2 border-slate-200 rounded-3xl p-6 relative overflow-hidden bg-slate-50">
+                <div class="text-center border-b-2 border-slate-950 pb-4 mb-6">
+                    <h2 class="text-sm font-black tracking-widest uppercase text-slate-900">République Démocratique du Congo</h2>
+                    <h1 class="text-base font-black tracking-tighter text-slate-900 uppercase mt-2">Université Pédagogique de Kolwezi</h1>
+                    <span class="inline-block mt-1 bg-upkol-jaune text-slate-950 text-[9px] font-black px-3 py-0.5 rounded-full uppercase">Secrétariat Général Académique</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-xs font-bold text-slate-600 mb-6 uppercase tracking-wider">
+                    <div><span class="text-[9px] text-slate-400 block font-black">Nom</span><span id="trans-stu-name" class="text-slate-900 font-black">...</span></div>
+                    <div><span class="text-[9px] text-slate-400 block font-black">Matricule</span><span id="trans-stu-matric" class="text-slate-900 font-mono font-black">...</span></div>
+                </div>
+                <div class="overflow-hidden border border-slate-200 rounded-2xl bg-white mb-6">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 font-black uppercase text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-2">Cours</th>
+                                <th class="px-4 py-2 text-center">Note /20</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-medium" id="trans-grades-body">
+                            <!-- JS Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="flex space-x-2 mt-6 justify-end">
+                <button onclick="closeTranscriptModal()" class="px-4 py-2 text-[10px] font-black uppercase text-slate-500">Fermer</button>
+                <button onclick="window.print()" class="bg-upkol-noir text-upkol-jaune px-5 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-md"><i class="fas fa-print mr-2"></i>Imprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST MESSAGES FOR DYNAMIC APP FEEDBACK -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- MAIN JAVASCRIPT LOGIC                      -->
+    <!-- ========================================== -->
+    <script>
+        // --- CONSTANTS & SUPABASE INIT ---
+        const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const roleConfig = {
+            'etudiant': 'Étudiant(e)',
+            'enseignant': 'Enseignant(e)',
+            'chef_dept': 'Chef de Département',
+            'doyen': 'Doyen',
+            'secretaire': 'Secrétaire Général',
+            'tresorier': 'Trésorier',
+            'recteur': 'Recteur',
+            'super_admin': 'Super Admin'
+        };
+
+        // --- GLOBAL STATE ---
+        let sgLoggedUser = null;
+        let allUsers = [];
+        let coursList = [];
+        let candidaturesList = [];
+        let inscritsList = [];
+        let pvsList = [];
+        
+        let activeChatTargetId = null;
+        let messagesData = [];
+        let sgOverviewChartInstance = null;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('connectedSG');
+            if (saved) {
+                sgLoggedUser = JSON.parse(saved);
+                document.getElementById('login-gateway').classList.add('hidden');
+                initializeDashboard();
+            }
+        });
+
+        // --- TOAST NOTIFICATIONS ---
+        function showCustomToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl flex items-center space-x-3 pointer-events-auto fade-in min-w-[250px]`;
+            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- LOGIN LOGIC ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login-sg');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                // On vérifie directement dans la table users (gérée par le super admin)
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', pass)
+                    .eq('role', 'secretaire');
+
+                if (error || !data || data.length === 0) {
+                    showCustomToast("Identifiants incorrects ou rôle non autorisé.", 'error');
+                } else {
+                    const user = data[0];
+                    if (!user.active) {
+                        showCustomToast("Votre compte est désactivé.", 'error');
+                    } else {
+                        sgLoggedUser = user;
+                        localStorage.setItem('connectedSG', JSON.stringify(sgLoggedUser));
+                        document.getElementById('login-gateway').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('login-gateway').classList.add('hidden');
+                            showCustomToast(`Bienvenue, ${user.name}`, 'success');
+                            initializeDashboard();
+                        }, 400);
+                    }
+                }
+            } catch (err) {
+                console.error("Login Error:", err);
+                showCustomToast("Erreur de connexion au serveur.", 'error');
+            }
+            btn.innerHTML = 'Ouvrir le cabinet académique <i class="fas fa-fingerprint ml-3"></i>';
+        }
+
+        function logout() {
+            localStorage.removeItem('connectedSG');
+            document.getElementById('login-gateway').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('login-gateway').style.opacity = '1';
+                showCustomToast("Session fermée.", "info");
+                // Réinitialiser le formulaire
+                document.getElementById('login-form').reset();
+            }, 50);
+        }
+
+        // --- DASHBOARD INIT & DATA FETCHING ---
+        async function initializeDashboard() {
+            if (sgLoggedUser) {
+                document.getElementById('sg-header-name').innerText = sgLoggedUser.name;
+                document.getElementById('profile-name').value = sgLoggedUser.name;
+                document.getElementById('profile-email').value = sgLoggedUser.email;
+            }
+            
+            // Load DB data
+            try {
+                // 1. Fetch Users
+                const { data: usersData } = await _supabase.from('users').select('*');
+                allUsers = usersData || [];
+
+                // 2. Fetch Cours
+                const { data: cData } = await _supabase.from('cours').select('*');
+                coursList = cData || [];
+                
+                // 3. Fetch Candidatures (En attente)
+                const { data: candData } = await _supabase.from('candidatures').select('*');
+                candidaturesList = candData || [];
+                
+                // 4. Fetch Inscrits
+                const { data: inscrData } = await _supabase.from('etudiants_inscrits').select('*');
+                inscritsList = inscrData || [];
+
+                // 5. Fetch PVs de délibération
+                const { data: pvData, error: pvErr } = await _supabase.from('pvs_deliberation').select('*').order('created_at', { ascending: false });
+                if(!pvErr) {
+                    pvsList = pvData || [];
+                }
+                
+                updateStats();
+            } catch (e) {
+                console.warn("Erreur lors du chargement des données. Assurez-vous que la table 'pvs_deliberation' existe.");
+            }
+            
+            showTab('overview');
+        }
+
+        function updateStats() {
+            const nbEtudiants = inscritsList.length;
+            const nbCand = candidaturesList.filter(c => c.status === 'en_attente').length;
+            const nbProfs = allUsers.filter(u => u.role === 'enseignant' || u.role === 'chef_dept').length;
+            const nbPVs = pvsList.filter(p => p.status === 'en_attente').length;
+
+            document.getElementById('stat-total-students').innerText = nbEtudiants;
+            document.getElementById('stat-pending-matric').innerText = nbCand;
+            document.getElementById('stat-total-staff').innerText = nbProfs;
+            document.getElementById('stat-pending-pvs').innerText = nbPVs;
+
+            // Distribution bars logic
+            const totalCand = candidaturesList.length || 1;
+            const pendingPct = ((nbCand / totalCand) * 100).toFixed(0);
+            const approvedPct = (((totalCand - nbCand) / totalCand) * 100).toFixed(0);
+
+            document.getElementById('dist-1-pct').innerText = `${approvedPct}%`;
+            document.getElementById('dist-1-bar').style.width = `${approvedPct}%`;
+            document.getElementById('dist-2-pct').innerText = `${pendingPct}%`;
+            document.getElementById('dist-2-bar').style.width = `${pendingPct}%`;
+            
+            const badgeEnroll = document.getElementById('badge-pending-enrollments');
+            if(nbCand > 0) {
+                badgeEnroll.innerText = nbCand;
+                badgeEnroll.classList.remove('hidden');
+            } else {
+                badgeEnroll.classList.add('hidden');
+            }
+        }
+
+        // --- NAVIGATION TABS ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('fade-in');
+            }
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                link.classList.add('text-slate-400');
+            });
+            const menuLink = document.getElementById(`menu-${tabId}`);
+            if (menuLink) {
+                menuLink.classList.remove('text-slate-400');
+                menuLink.classList.add('nav-link-active');
+            }
+
+            if(window.innerWidth < 1024) toggleSidebar();
+
+            // Load specifics
+            if (tabId === 'overview') renderSGOverviewChart();
+            if (tabId === 'enrollments') renderEnrollments();
+            if (tabId === 'deliberations') renderPVsList();
+            if (tabId === 'transcripts') renderTranscriptsStudentsList();
+            if (tabId === 'messaging') renderMessagingContacts();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+        
+        document.getElementById('open-sidebar').addEventListener('click', toggleSidebar);
+        document.getElementById('close-sidebar').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebar-backdrop').addEventListener('click', toggleSidebar);
+
+        // --- TAB 1: CHART ---
+        function renderSGOverviewChart() {
+            const ctx = document.getElementById('sgOverviewChart');
+            if (!ctx) return;
+            if (sgOverviewChartInstance) sgOverviewChartInstance.destroy();
+
+            // Remplacer par de vraies données (ici on simule une répartition des inscriptions)
+            sgOverviewChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Janv', 'Fév', 'Mars', 'Avr', 'Auj'],
+                    datasets: [{
+                        label: 'Inscriptions Validées',
+                        data: [2, 5, 8, 12, inscritsList.length],
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- TAB 2: ENROLLMENTS ---
+        function renderEnrollments() {
+            const tbody = document.getElementById('enrollment-table-body');
+            tbody.innerHTML = '';
+            
+            const pending = candidaturesList.filter(c => c.status === 'en_attente');
+            if (pending.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">Aucun dossier en attente d'immatriculation.</td></tr>`;
+                return;
+            }
+
+            pending.forEach(c => {
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 font-bold text-slate-900">${c.full_name}</td>
+                        <td class="px-6 py-4 text-xs font-semibold text-slate-600">${c.faculty}</td>
+                        <td class="px-6 py-4"><span class="bg-amber-50 text-amber-600 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-amber-200">En attente approbation</span></td>
+                    </tr>
+                `);
+            });
+        }
+
+        // --- TAB 3: DELIBERATIONS (PVs) ---
+        let selectedPVId = null;
+        function renderPVsList() {
+            const container = document.getElementById('pending-pvs-list');
+            container.innerHTML = '';
+            
+            if (pvsList.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-slate-400 italic text-xs">Aucun PV n'a encore été soumis par les enseignants.</div>`;
+                return;
+            }
+
+            pvsList.forEach(pv => {
+                const isPending = pv.status === 'en_attente';
+                const statusBadge = isPending 
+                    ? `<span class="bg-amber-50 text-amber-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-amber-200">En attente</span>`
+                    : (pv.status === 'rejete' ? `<span class="bg-red-50 text-red-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-red-200">Rejeté</span>` : `<span class="bg-green-50 text-green-700 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Signé</span>`);
+
+                const course = coursList.find(c => c.id === pv.course_id);
+                const teacher = allUsers.find(u => u.id === pv.teacher_id);
+                const dateStr = new Date(pv.created_at).toLocaleDateString('fr-FR');
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition-all border-b border-slate-50">
+                        <div>
+                            <h4 class="font-black text-xs uppercase text-slate-900">${course ? course.name : 'Cours Inconnu'}</h4>
+                            <p class="text-[10px] text-slate-500 mt-1">${teacher ? teacher.name : 'Enseignant Inconnu'} • ${dateStr} • ${statusBadge}</p>
+                        </div>
+                        <button onclick="previewPVDetails('${pv.id}')" class="text-[10px] bg-slate-100 hover:bg-upkol-jaune border border-slate-200 hover:border-transparent font-black uppercase px-3 py-2 rounded-lg transition-all shadow-sm">
+                            Examiner
+                        </button>
+                    </div>
+                `);
+            });
+        }
+
+        async function previewPVDetails(pvId) {
+            selectedPVId = pvId;
+            const pv = pvsList.find(p => p.id === pvId);
+            if(!pv) return;
+
+            document.getElementById('preview-pv-empty').classList.add('hidden');
+            document.getElementById('preview-pv-details').classList.remove('hidden');
+            
+            const course = coursList.find(c => c.id === pv.course_id);
+            const teacher = allUsers.find(u => u.id === pv.teacher_id);
+
+            document.getElementById('preview-pv-title').innerText = course ? course.name : 'Inconnu';
+            document.getElementById('preview-pv-class').innerText = course ? course.target_class : 'Promotion';
+            document.getElementById('preview-pv-teacher').innerText = teacher ? teacher.name : 'Inconnu';
+            
+            const actions = document.getElementById('preview-pv-actions');
+            if(pv.status === 'en_attente') actions.classList.remove('hidden');
+            else actions.classList.add('hidden');
+
+            const stuList = document.getElementById('preview-pv-student-list');
+            stuList.innerHTML = '<div class="p-4 text-center text-xs text-slate-400"><i class="fas fa-spinner fa-spin mr-2"></i>Chargement des notes...</div>';
+
+            try {
+                // Fetch notes directly associated with this course
+                const { data: notesData, error } = await _supabase.from('notes').select('*').eq('course_id', pv.course_id);
+                if(error) throw error;
+
+                stuList.innerHTML = '';
+                if(!notesData || notesData.length === 0) {
+                     stuList.innerHTML = '<div class="p-4 text-center text-xs text-slate-400 italic">L\'enseignant n\'a enregistré aucune note pour ce cours.</div>';
+                } else {
+                     notesData.forEach(n => {
+                         const student = allUsers.find(u => u.id === n.student_id);
+                         const stName = student ? student.name : 'Étudiant Inconnu';
+                         const avg = ((parseFloat(n.tp_grade || 0) + parseFloat(n.exam_grade || 0)) / 2).toFixed(1);
+                         
+                         stuList.insertAdjacentHTML('beforeend', `
+                             <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center text-[10px]">
+                                 <span class="font-black text-slate-700 uppercase">${stName}</span>
+                                 <div class="flex space-x-2 font-bold text-slate-500">
+                                     <span>TP:${n.tp_grade || 0}</span><span>Ex:${n.exam_grade || 0}</span><span class="text-slate-900 bg-upkol-jaune/20 px-1 rounded">Moy:${avg}</span>
+                                 </div>
+                             </div>
+                         `);
+                     });
+                }
+            } catch(e) {
+                stuList.innerHTML = '<div class="p-4 text-center text-xs text-red-500">Erreur lors de la récupération des notes.</div>';
+            }
+        }
+
+        async function approvePV() {
+            if(!selectedPVId) return;
+            try {
+                await _supabase.from('pvs_deliberation').update({ status: 'signe' }).eq('id', selectedPVId);
+                const pv = pvsList.find(p => p.id === selectedPVId);
+                if(pv) pv.status = 'signe';
+                showCustomToast("PV Approuvé et Signé.", "success");
+                renderPVsList();
+                previewPVDetails(selectedPVId);
+                updateStats();
+            } catch(e) {
+                showCustomToast("Erreur lors de la signature", "error");
+            }
+        }
+
+        async function rejectPV() {
+            if(!selectedPVId) return;
+            try {
+                await _supabase.from('pvs_deliberation').update({ status: 'rejete' }).eq('id', selectedPVId);
+                const pv = pvsList.find(p => p.id === selectedPVId);
+                if(pv) pv.status = 'rejete';
+                showCustomToast("PV Rejeté.", "error");
+                renderPVsList();
+                document.getElementById('preview-pv-details').classList.add('hidden');
+                document.getElementById('preview-pv-actions').classList.add('hidden');
+                document.getElementById('preview-pv-empty').classList.remove('hidden');
+                updateStats();
+            } catch(e) {
+                showCustomToast("Erreur lors du rejet", "error");
+            }
+        }
+
+        // --- TAB 4: TRANSCRIPTS ---
+        function renderTranscriptsStudentsList(filter = '') {
+            const container = document.getElementById('transcript-students-list');
+            container.innerHTML = '';
+            
+            // on base les relevés sur les inscrits. Mais on a besoin de leur ID user pour fetcher les notes
+            // L'étudiant_inscrit doit idéalement correspondre à la table users
+            let students = inscritsList;
+            if(filter) {
+                students = students.filter(s => s.nom.toLowerCase().includes(filter.toLowerCase()) || (s.matricule && s.matricule.toLowerCase().includes(filter.toLowerCase())));
+            }
+
+            if(students.length === 0) {
+                container.innerHTML = `<p class="p-6 text-center text-slate-400 italic text-xs">Aucun étudiant trouvé.</p>`;
+                return;
+            }
+
+            students.forEach(st => {
+                // Find matching user ID by email or matricule if possible, else just match by name (fallback for simplicity)
+                const matchedUser = allUsers.find(u => u.role === 'etudiant' && (u.matricule === st.matricule || u.email === st.email || u.name === st.nom));
+                const studentId = matchedUser ? matchedUser.id : null;
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition-all">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500 font-black text-xs">${st.nom.charAt(0)}</div>
+                            <div>
+                                <h4 class="font-black text-xs uppercase text-slate-900">${st.nom}</h4>
+                                <p class="text-[9px] text-slate-500 mt-0.5">Matricule: ${st.matricule || 'N/A'} • ${st.faculte || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <button onclick="openTranscriptModal('${studentId}', '${st.nom}', '${st.matricule}')" class="text-[9px] bg-upkol-noir hover:bg-slate-800 text-upkol-jaune font-black uppercase px-3 py-2 rounded-lg transition-all shadow-sm">
+                            Générer
+                        </button>
+                    </div>
+                `);
+            });
+        }
+
+        async function openTranscriptModal(studentId, name, matricule) {
+            document.getElementById('trans-stu-name').innerText = name;
+            document.getElementById('trans-stu-matric').innerText = matricule !== 'undefined' ? matricule : 'N/A';
+            
+            const tbody = document.getElementById('trans-grades-body');
+            tbody.innerHTML = `<tr><td colspan="2" class="px-4 py-4 text-center text-slate-400 italic text-xs"><i class="fas fa-spinner fa-spin mr-2"></i>Récupération des cotes...</td></tr>`;
+
+            const modal = document.getElementById('transcript-modal');
+            const card = document.getElementById('transcript-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); }, 10);
+
+            if(!studentId || studentId === 'null') {
+                tbody.innerHTML = `<tr><td colspan="2" class="px-4 py-4 text-center text-red-500 font-bold text-xs">Profil étudiant non lié.</td></tr>`;
+                return;
+            }
+
+            try {
+                const { data: notes, error } = await _supabase.from('notes').select('*').eq('student_id', studentId).eq('is_published', true);
+                if(error) throw error;
+
+                if(!notes || notes.length === 0) {
+                     tbody.innerHTML = `<tr><td colspan="2" class="px-4 py-4 text-center text-slate-400 italic text-xs">Aucune note publiée pour cet étudiant.</td></tr>`;
+                } else {
+                     tbody.innerHTML = '';
+                     notes.forEach(note => {
+                         const course = coursList.find(c => c.id === note.course_id);
+                         const courseName = course ? course.name : 'Cours non répertorié';
+                         const avg = ((parseFloat(note.tp_grade || 0) + parseFloat(note.exam_grade || 0)) / 2).toFixed(1);
+                         
+                         tbody.insertAdjacentHTML('beforeend', `
+                             <tr>
+                                 <td class="px-4 py-2 border-b border-slate-100">${courseName}</td>
+                                 <td class="px-4 py-2 text-center font-black border-b border-slate-100">${avg}/20</td>
+                             </tr>
+                         `);
+                     });
+                }
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="2" class="px-4 py-4 text-center text-red-500 font-bold text-xs">Erreur lors de la récupération.</td></tr>`;
+            }
+        }
+
+        function closeTranscriptModal() {
+            const modal = document.getElementById('transcript-modal');
+            const card = document.getElementById('transcript-card');
+            modal.classList.add('opacity-0'); card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // --- TAB 5: MESSAGERIE GLOBALE ---
+        function renderMessagingContacts() {
+            const container = document.getElementById('messaging-contacts');
+            const search = document.getElementById('msg-search').value.toLowerCase();
+            container.innerHTML = '';
+            
+            // Ne pas s'afficher soi-même
+            const contacts = allUsers.filter(u => u.id !== (sgLoggedUser ? sgLoggedUser.id : null));
+            
+            const filtered = contacts.filter(u => u.name && u.name.toLowerCase().includes(search));
+            
+            if(filtered.length === 0) {
+                container.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4">Aucun utilisateur trouvé.</p>';
+                return;
+            }
+
+            filtered.forEach(u => {
+                const isActive = activeChatTargetId === u.id;
+                const roleLabel = roleConfig[u.role] || 'Inconnu';
+                
+                container.insertAdjacentHTML('beforeend', `
+                    <div onclick="selectChatContact('${u.id}')" class="p-3 rounded-xl cursor-pointer transition-colors flex items-center space-x-3 ${isActive ? 'bg-upkol-jaune/20 border border-upkol-jaune' : 'hover:bg-slate-100 border border-transparent'}">
+                        <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black bg-slate-200 text-slate-600">
+                            ${u.name ? u.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div class="flex-grow overflow-hidden">
+                            <h5 class="text-xs font-black text-slate-900 truncate uppercase">${u.name}</h5>
+                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-500 truncate">${roleLabel}</p>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        async function selectChatContact(id) {
+            activeChatTargetId = id;
+            const user = allUsers.find(u => u.id === id);
+            if(!user) return;
+
+            renderMessagingContacts(); // refresh highlight
+
+            document.getElementById('chat-target-name').innerText = user.name;
+            document.getElementById('chat-target-role').innerText = roleConfig[user.role] || 'Inconnu';
+            document.getElementById('chat-avatar').innerText = user.name ? user.name.charAt(0).toUpperCase() : '?';
+            
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('chat-send-btn').disabled = false;
+
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            const container = document.getElementById('chat-messages-container');
+            container.innerHTML = '<div class="text-center py-8 text-slate-400 italic"><i class="fas fa-spinner fa-spin mr-2"></i>Chargement...</div>';
+
+            try {
+                const { data, error } = await _supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`sender_id.eq.${sgLoggedUser.id},recipient_id.eq.${sgLoggedUser.id}`)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                
+                messagesData = data.filter(m => 
+                    (m.sender_id === sgLoggedUser.id && m.recipient_id === activeChatTargetId) || 
+                    (m.sender_id === activeChatTargetId && m.recipient_id === sgLoggedUser.id)
+                );
+            } catch (err) {
+                // Fallback local
+                messagesData = JSON.parse(localStorage.getItem(`sg_chat_${activeChatTargetId}`)) || [];
+            }
+
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chat-messages-container');
+            container.innerHTML = '';
+            
+            if(messagesData.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-slate-400 italic space-y-3">
+                        <i class="fas fa-comments text-4xl text-slate-200"></i>
+                        <p class="text-xs font-medium text-center">Aucun message. Démarrez la conversation.</p>
+                    </div>`;
+                return;
+            }
+
+            messagesData.forEach(msg => {
+                const isMine = msg.sender_id === sgLoggedUser.id;
+                
+                let timeStr = 'Maintenant';
+                if(msg.created_at) {
+                    timeStr = new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                } else if(msg.time) {
+                    timeStr = msg.time;
+                }
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} fade-in">
+                        <div class="px-4 py-3 rounded-2xl max-w-[80%] text-xs font-semibold shadow-sm ${isMine ? 'bg-upkol-noir text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'}">
+                            ${msg.content}
+                        </div>
+                        <span class="text-[8px] text-slate-400 mt-1 font-bold">${timeStr}</span>
+                    </div>
+                `);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if(!content || !activeChatTargetId) return;
+
+            const timeNow = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            const newMsg = {
+                sender_id: sgLoggedUser.id,
+                recipient_id: activeChatTargetId,
+                content: content,
+                created_at: new Date().toISOString(),
+                time: timeNow
+            };
+
+            messagesData.push(newMsg);
+            renderMessages();
+            input.value = '';
+
+            try {
+                const { error } = await _supabase.from('messages').insert([{
+                    sender_id: sgLoggedUser.id,
+                    recipient_id: activeChatTargetId,
+                    content: content
+                }]);
+                if(error) throw error;
+            } catch (err) {
+                // Save locally if DB fails
+                localStorage.setItem(`sg_chat_${activeChatTargetId}`, JSON.stringify(messagesData));
+            }
+        }
+
+    </script>
+</body>
+</html>
