@@ -55,45 +55,60 @@
 <body class="flex h-screen overflow-hidden text-slate-800">
 
     <!-- ========================================== -->
-    <!-- PASSERELLE DE CONNEXION (DOYEN LOGIN)      -->
+    <!-- PASSERELLE DE VÉRIFICATION D'ACCÈS (DOYEN/CHEF DEPT) -->
     <!-- ========================================== -->
-    <div id="login-gateway" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500">
-        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
-            
+    <div id="access-gateway" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] overflow-y-auto p-4 flex flex-col transition-opacity duration-500">
+        <div class="m-auto my-8 bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center border border-slate-100 fade-in">
             <div class="text-center mb-6">
                 <div class="w-20 h-20 bg-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl border-2 border-upkol-jaune">
-                    <i class="fas fa-award text-upkol-jaune text-4xl"></i>
+                    <i class="fas fa-shield-alt text-upkol-jaune text-4xl animate-pulse"></i>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Cabinet du Doyen</h2>
-                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Université Pédagogique de Kolwezi</p>
-                <span class="inline-block mt-3 bg-yellow-50 text-amber-700 text-[10px] font-black px-3 py-1 rounded-full uppercase border border-yellow-200">Faculté des Sciences & Technologies</span>
-            </div>
-
-            <div class="w-full space-y-4 mb-6">
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Académique</label>
-                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: kakudji.doyen@upkol.cd" value="kakudji.doyen@upkol.cd">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Clef Décanale (Mot de passe)</label>
-                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
-                </div>
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
-                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
-                    <span>Connectez-vous avec les identifiants pré-remplis du Prof. Dr. Kakudji, Enseignant-Doyen.</span>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">PORTAIL DÉCANAT</h2>
+                <p class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest">Décanat & Chaire Académique</p>
+                <div class="inline-flex items-center gap-2 mt-4 bg-amber-50 text-amber-700 text-[10px] font-black px-4 py-1.5 rounded-full uppercase border border-amber-200">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    Accès sécurisé Décanat & Chaire Académique
                 </div>
             </div>
 
-            <button id="btn-login-doyen" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 p-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center group border border-upkol-jaune/20">
-                Ouvrir le Décanat
-                <i class="fas fa-fingerprint ml-3 group-hover:scale-110 transition-transform text-upkol-jaune"></i>
-            </button>
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)" class="w-full space-y-5">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Identifiant (Email)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-slate-400 text-xs"></i>
+                        </div>
+                        <input type="email" id="login-email" required placeholder="nom.prenom@upkol.cd" value="kakudji.doyen@upkol.cd" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Mot de passe</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-slate-400 text-xs"></i>
+                        </div>
+                        <input type="password" id="login-password" required placeholder="••••••••" value="Pass1234" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
+                    </div>
+                </div>
+                <div id="login-error-message" class="text-xs text-red-500 font-bold text-center hidden"></div>
+                <button type="submit" id="login-button" class="w-full bg-upkol-noir text-upkol-jaune py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg flex items-center justify-center mt-2 group">
+                    <i class="fas fa-sign-in-alt mr-2 group-hover:translate-x-1 transition-transform"></i> Connexion Sécurisée
+                </button>
+            </form>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                    <i class="fas fa-server mr-1"></i> Accès restreint au personnel habilité.
+                </p>
+                <a href="#" onclick="showCustomToast('Retour au portail principal...', 'info')" class="text-xs text-slate-500 hover:text-upkol-jaune font-bold mt-4 inline-block">Retour au portail principal</a>
+            </div>
         </div>
     </div>
 
     <!-- OVERLAY MOBILE -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-40 hidden transition-opacity lg:hidden"></div>
-
+    
     <!-- ========================================== -->
     <!-- SIDEBAR DECANAT & ENSEIGNEMENT             -->
     <!-- ========================================== -->
@@ -103,8 +118,8 @@
                 <div class="w-10 h-10 bg-upkol-jaune text-black rounded-lg flex items-center justify-center shadow-md">
                     <i class="fas fa-graduation-cap text-xl"></i>
                 </div>
-                <div>
-                    <span class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL DOYEN</span>
+                <div id="sidebar-header-content">
+                    <span id="sidebar-title" class="text-lg font-black tracking-tighter text-upkol-jaune block">UPKOL FACULTÉ</span>
                     <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Enseignant & Doyen</span>
                 </div>
             </div>
@@ -123,32 +138,32 @@
             
             <a href="#" id="menu-oversight" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('oversight')">
                 <i class="fas fa-chalkboard-teacher mr-3 w-5 text-lg"></i> Corps Enseignant
-                <span id="badge-pending-syllabus" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full">1</span>
+                <span id="badge-pending-syllabus" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
             </a>
 
             <a href="#" id="menu-petitions" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('petitions')">
                 <i class="fas fa-gavel mr-3 w-5 text-lg"></i> Recours & Plaintes
-                <span id="badge-pending-petitions" class="ml-auto bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">1</span>
+                <span id="badge-pending-petitions" class="ml-auto bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
             </a>
 
             <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Ma Chaire d'Enseignement</div>
 
             <a href="#" id="menu-myteaching" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('myteaching')">
-                <i class="fas fa-book-reader mr-3 w-5 text-lg"></i> Cours de Cryptographie
+                <i class="fas fa-book-reader mr-3 w-5 text-lg"></i> Mes Cours Assignés
             </a>
 
             <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Décisions Facultaires</div>
 
             <a href="#" id="menu-resolutions" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('resolutions')">
-                <i class="fas fa-scroll mr-3 w-5 text-lg"></i> Résolutions & Avis
+                <i class="fas fa-scroll mr-3 w-5 text-lg"></i> Circulaires & Avis
+            </a>
+
+            <a href="#" id="menu-inter-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('inter-messaging')">
+                <i class="fas fa-comments mr-3 w-5 text-lg"></i> Messagerie Académique
             </a>
 
             <a href="#" id="menu-profile" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('profile')">
                 <i class="fas fa-user-cog mr-3 w-5 text-lg"></i> Mon Profil
-            </a>
-
-            <a href="#" id="menu-inter-messaging" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('inter-messaging')">
-                <i class="fas fa-comments mr-3 w-5 text-lg"></i> Messagerie Inter-Académique
             </a>
         </nav>
 
@@ -176,8 +191,8 @@
             <!-- Profile Info -->
             <div class="flex items-center space-x-4">
                 <div class="text-right hidden sm:block">
-                    <p id="doyen-header-name" class="text-xs font-black text-slate-900 uppercase">Prof. Dr. Kakudji</p>
-                    <p id="doyen-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Doyen des Sciences & Technologies</p>
+                    <p id="user-header-name" class="text-xs font-black text-slate-900 uppercase">Chargement...</p>
+                    <p id="user-header-role" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Rôle non défini</p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
                     <i class="fas fa-user-graduate text-upkol-noir text-xl"></i>
@@ -198,7 +213,7 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Départements</p>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Filières / Départements</p>
                                 <h3 class="text-3xl font-black text-slate-900">4 Filières</h3>
                             </div>
                             <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
@@ -206,7 +221,7 @@
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
-                            <span>Info, Telecom, Chimie, Phys</span>
+                            <span id="faculty-dept-list-text">Info, Telecom, Chimie, Phys</span>
                             <span class="text-blue-500 font-black">2026</span>
                         </div>
                     </div>
@@ -216,14 +231,14 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Étudiants Inscrits</p>
-                                <h3 class="text-3xl font-black text-slate-900">425</h3>
+                                <h3 id="stat-students-count" class="text-3xl font-black text-slate-900">...</h3>
                             </div>
                             <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-user-graduate text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
-                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> 94% d'assiduité moyenne
+                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> 100% d'effectif certifié
                         </div>
                     </div>
 
@@ -232,14 +247,14 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Enseignants Actifs</p>
-                                <h3 class="text-3xl font-black text-slate-900">18 Profs</h3>
+                                <h3 id="stat-teachers-count" class="text-3xl font-black text-slate-900">... Profs</h3>
                             </div>
                             <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-chalkboard-teacher text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
-                            <i class="fas fa-certificate mr-2 text-xs"></i> 100% habilités par le Rectorat
+                            <i class="fas fa-certificate mr-2 text-xs"></i> Habilités par le Rectorat
                         </div>
                     </div>
 
@@ -247,15 +262,15 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Moyenne Faculté</p>
-                                <h3 class="text-3xl font-black text-slate-900">13.8 <span class="text-xs text-slate-400">/20</span></h3>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Cours programmés</p>
+                                <h3 id="stat-courses-count" class="text-3xl font-black text-slate-900">...</h3>
                             </div>
                             <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
-                                <i class="fas fa-chart-line text-xl"></i>
+                                <i class="fas fa-book text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-amber-600 font-bold">
-                            <i class="fas fa-arrow-up mr-1 text-emerald-500"></i> +0.6 pts ce trimestre
+                            <i class="fas fa-arrow-up mr-1 text-emerald-500"></i> Suivi en temps réel
                         </div>
                     </div>
                 </div>
@@ -296,7 +311,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 mt-4 leading-relaxed">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 mt-4 leading-relaxed font-semibold">
                             <i class="fas fa-university text-amber-500 mr-2"></i>
                             La validation des cours et la surveillance des délibérations constituent la priorité de l'administration du Décanat.
                         </div>
@@ -305,7 +320,7 @@
             </div>
 
             <!-- ========================================== -->
-            <!-- TAB 2: COURS DE CRYPTOGRAPHIE (MY TEACHING)-->
+            <!-- TAB 2: MON ENSEIGNEMENT ET SAISIE DE NOTES -->
             <!-- ========================================== -->
             <div id="tab-myteaching" class="tab-pane space-y-8 hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -313,11 +328,16 @@
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                                <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Saisie des Cotes (Cryptographie Avancée)</h3>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Master 1 • Sécurité des Réseaux</p>
+                                <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Saisie des Cotes (Chaire d'Enseignement)</h3>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <label class="text-[10px] font-black uppercase text-slate-400">Cours actif :</label>
+                                    <select id="teaching-course-selector" onchange="handleTeachingCourseChange(this.value)" class="bg-slate-50 border border-slate-200 text-xs font-bold rounded-lg p-1 px-2 focus:outline-upkol-jaune">
+                                        <!-- Injected dynamically -->
+                                    </select>
+                                </div>
                             </div>
                             <button onclick="publishDoyenGrades()" class="bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase px-4 py-2.5 rounded-xl transition-all shadow-sm">
-                                <i class="fas fa-paper-plane mr-2"></i> Publier au SG
+                                <i class="fas fa-paper-plane mr-2"></i> Publier les notes
                             </button>
                         </div>
 
@@ -325,7 +345,7 @@
                             <table class="w-full text-left min-w-[550px]">
                                 <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
                                     <tr>
-                                        <th class="px-6 py-4">Étudiant de Master</th>
+                                        <th class="px-6 py-4">Étudiant</th>
                                         <th class="px-6 py-4 text-center">Interrogation (/20)</th>
                                         <th class="px-6 py-4 text-center">Examen (/20)</th>
                                         <th class="px-6 py-4 text-center">Moyenne (/20)</th>
@@ -343,20 +363,10 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-6 flex flex-col justify-between">
                         <div>
                             <h4 class="font-black text-xs uppercase text-slate-400">Matériel Didactique</h4>
-                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Syllabus de Cryptographie</h3>
+                            <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight mb-4">Syllabus de Cours</h3>
                             
                             <div class="space-y-4" id="doyen-uploaded-list">
-                                <!-- syllabus preview item -->
-                                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <i class="fas fa-file-pdf text-red-500 text-xl"></i>
-                                        <div>
-                                            <h4 class="text-xs font-black text-slate-800">Syllabus_M1_Crypto_2026.pdf</h4>
-                                            <span class="text-[9px] text-slate-400 font-bold block">4.2 MB • Publié le 10/05/2026</span>
-                                        </div>
-                                    </div>
-                                    <button class="text-slate-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                                </div>
+                                <!-- Loaded dynamically from supports_cours -->
                             </div>
                         </div>
 
@@ -419,7 +429,7 @@
                                 <!-- Injected dynamically by JS -->
                             </div>
                         </div>
-                        <div class="p-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-500">
+                        <div class="p-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 font-semibold">
                             <i class="fas fa-info-circle text-amber-500 mr-2"></i> L'arbitrage du Doyen met fin à tout litige de note et applique une mise à jour en base de données.
                         </div>
                     </div>
@@ -438,35 +448,35 @@
                             <div id="petition-preview-details" class="hidden mt-6 space-y-4 text-xs">
                                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
                                     <div class="flex justify-between font-bold">
-                                        <span class="text-slate-400 uppercase">Étudiant</span>
-                                        <span id="pet-stu-name" class="text-slate-900 font-black">Jean Mukendi</span>
+                                        <span class="text-slate-400 uppercase font-black">Étudiant</span>
+                                        <span id="pet-stu-name" class="text-slate-900 font-black">Chargement...</span>
                                     </div>
                                     <div class="flex justify-between font-bold">
-                                        <span class="text-slate-400 uppercase">Note Actuelle</span>
-                                        <span id="pet-stu-grade" class="text-rose-500 font-black">09 /20</span>
+                                        <span class="text-slate-400 uppercase font-black">Note Actuelle</span>
+                                        <span id="pet-stu-grade" class="text-rose-500 font-black">00 /20</span>
                                     </div>
                                     <div class="flex justify-between font-bold">
-                                        <span class="text-slate-400 uppercase">Cours</span>
-                                        <span id="pet-stu-course" class="text-slate-900 font-black">Algorithmes Complexes</span>
+                                        <span class="text-slate-400 uppercase font-black">Cours</span>
+                                        <span id="pet-stu-course" class="text-slate-900 font-black">...</span>
                                     </div>
                                 </div>
 
                                 <div class="space-y-1">
-                                    <span class="text-[9px] font-black uppercase text-slate-400">Justificatif de l'étudiant :</span>
-                                    <p id="pet-stu-desc" class="p-3 bg-slate-50 border border-slate-100 rounded-xl italic text-slate-600 font-medium leading-relaxed">
-                                        J'ai fourni toute la documentation demandée mais j'ai été pénalisé sur la partie théorie...
+                                    <span class="text-[9px] font-black uppercase text-slate-400 block">Justificatif de l'étudiant :</span>
+                                    <p id="pet-stu-desc" class="p-3 bg-slate-50 border border-slate-100 rounded-xl italic text-slate-600 font-semibold leading-relaxed">
+                                        ...
                                     </p>
                                 </div>
 
                                 <div class="space-y-2 pt-2 border-t border-slate-100">
                                     <label class="block text-[9px] font-black uppercase text-slate-400">Nouvelle Note Soumise (Double correction)</label>
-                                    <input type="number" min="0" max="20" id="pet-new-grade" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune" placeholder="Attribuer une nouvelle note...">
+                                    <input type="number" min="0" max="20" id="pet-new-grade" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-black focus:outline-upkol-jaune" placeholder="Attribuer une nouvelle note...">
                                 </div>
                             </div>
                         </div>
 
                         <div id="petition-preview-actions" class="hidden border-t border-slate-100 pt-4 flex space-x-2">
-                            <button onclick="dismissPetition()" class="w-1/2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 text-[10px] font-black uppercase py-4 rounded-xl transition-all">Rejeter le recours</button>
+                            <button onclick="dismissPetition()" class="w-1/2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 text-[10px] font-black uppercase py-4 rounded-xl transition-all">Rejeter</button>
                             <button onclick="approvePetitionCorrection()" class="w-1/2 bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-[10px] font-black uppercase py-4 rounded-xl transition-all shadow-md">Valider Note</button>
                         </div>
                     </div>
@@ -474,7 +484,7 @@
             </div>
 
             <!-- ========================================== -->
-            <!-- TAB 5: RÉSOLUTIONS & AVIS (RESOLUTIONS)    -->
+            <!-- TAB 5: CIRCULAIRES & AVIS (RESOLUTIONS)    -->
             <!-- ========================================== -->
             <div id="tab-resolutions" class="tab-pane space-y-8 hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -488,11 +498,11 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titre de l'Avis Facultaire</label>
-                                <input type="text" id="res-title" placeholder="Ex: Report des travaux dirigés en Telecom" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune">
+                                <input type="text" id="res-title" placeholder="Ex: Report des travaux dirigés en Telecom" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-black focus:outline-upkol-jaune">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Contenu de la Circulaire</label>
-                                <textarea id="res-body" rows="6" placeholder="Le Doyen informe les étudiants de la faculté que..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune"></textarea>
+                                <textarea id="res-body" rows="6" placeholder="Le Doyen informe les étudiants de la faculté que..." class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-semibold focus:outline-upkol-jaune"></textarea>
                             </div>
                             
                             <button onclick="publishFacultyResolution()" class="w-full bg-upkol-noir text-upkol-jaune hover:bg-slate-800 text-xs font-black uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
@@ -523,7 +533,7 @@
                     <!-- Contacts List -->
                     <div class="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/30">
                         <div class="p-6 border-b border-slate-100 bg-white">
-                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight">Membres du Corps Académique</h3>
+                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight">Membres de l'Université</h3>
                         </div>
                         <div class="flex-grow overflow-y-auto" id="inter-messaging-contacts">
                             <!-- Injected by JS -->
@@ -542,7 +552,7 @@
                         </div>
                         <div class="p-6 bg-white border-t border-slate-100">
                             <form id="inter-msg-form" onsubmit="sendInterMessage(event)" class="flex gap-2">
-                                <input type="text" id="inter-msg-input" class="flex-grow bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-upkol-jaune" placeholder="Saisissez votre message...">
+                                <input type="text" id="inter-msg-input" class="flex-grow bg-slate-50 border border-slate-200 p-4 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-upkol-jaune" placeholder="Saisissez votre message...">
                                 <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-md hover:bg-slate-800">
                                     <i class="fas fa-paper-plane mr-2"></i> Envoyer
                                 </button>
@@ -558,14 +568,22 @@
             <div id="tab-profile" class="tab-pane space-y-8 hidden">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 max-w-2xl mx-auto">
                     <h3 class="font-black text-xl text-slate-900 uppercase tracking-tight mb-6">Mon Identité Académique</h3>
-                    <form onsubmit="saveProfile(event)" class="space-y-4">
+                    <form id="profile-edit-form" onsubmit="saveProfile(event)" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titre & Nom</label>
-                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="Prof. Dr. Kakudji">
+                            <input type="text" id="profile-name" required class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-black">
                         </div>
                         <div>
                             <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail de Décanat</label>
-                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="kakudji.doyen@upkol.cd" readonly>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-black" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Faculté Assignée</label>
+                            <input type="text" id="profile-faculty" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-black" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nouveau Mot de passe</label>
+                            <input type="password" id="profile-password" placeholder="Saisir pour modifier..." class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-black">
                         </div>
                         <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md hover:bg-slate-800 w-full">
                             Confirmer les changements
@@ -585,7 +603,7 @@
     <div id="custom-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-all duration-300" id="modal-card">
             <h3 id="modal-title" class="text-base font-black text-slate-900 uppercase tracking-tight">Notification</h3>
-            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-medium leading-relaxed">Description.</p>
+            <p id="modal-message" class="text-xs text-slate-500 mt-2 font-semibold leading-relaxed">Description.</p>
             
             <div id="modal-input-container" class="mt-4 hidden">
                 <input type="text" id="modal-input" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:outline-upkol-jaune" placeholder="...">
@@ -607,36 +625,20 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let doyenLoggedUser = null;
+        let loggedUser = null;
         let facultyChartInstance = null;
         let selectedPetitionId = null;
 
-        // Mock Teachers & syllabus oversight data belonging to Sciences & Technologies Faculty
-        let facultyTeachers = [
-            { id: "ft-1", name: "Dr. Kalala", course: "Bases de données relationnelles", target: "Licence 1", hours: "45h", status: "attente_validation" },
-            { id: "ft-2", name: "Prof. Ilunga", course: "Algorithmique complexe", target: "Licence 2", hours: "60h", status: "valide" },
-            { id: "ft-3", name: "CT Tshibangu", course: "Architecture des ordinateurs", target: "Licence 1", hours: "30h", status: "valide" }
-        ];
-
-        // Mock Students in Doyen's Cryptography course (Master 1)
-        let masterStudents = [
-            { id: "mst-1", name: "Marc Kasongo", tp: 15, exam: 16 },
-            { id: "mst-2", name: "Lydie Ngombe", tp: 12, exam: 14 },
-            { id: "mst-3", name: "Ephraïm Mujinga", tp: 14, exam: 13 },
-            { id: "mst-4", name: "Esther Banze", tp: 16, exam: 17 }
-        ];
-
-        // Mock grade appeals / petitions submitted by students
-        let gradePetitions = [
-            { id: "pet-1", studentName: "Jean Mukendi", course: "Bases de données relationnelles", teacher: "Dr. Kalala", oldGrade: 9, description: "J'ai bien développé l'entité-association lors de l'examen de rattrapage mais j'ai obtenu une mauvaise note injustifiée. Je sollicite une révision du Doyen.", resolved: false },
-            { id: "pet-2", studentName: "Rachel Tshiza", course: "Architecture des ordinateurs", teacher: "CT Tshibangu", oldGrade: 11, description: "Mon TP d'assembleur n'a pas été comptabilisé dans la moyenne finale, ce qui me prive d'une distinction.", resolved: false }
-        ];
-
-        // Mock resolutions / Faculty wide decisons
-        let facultyResolutions = [
-            { id: 1, title: "Exigence de dépôt de syllabus pour le Semestre 2", body: "Le décanat de la faculté des Sciences & Technologies rappelle à l'ensemble du corps enseignant qu'aucun cours ne pourra démarrer au S2 sans validation préalable du syllabus complet par le conseil décanal.", date: "15/06/2026" },
-            { id: 2, title: "Consigne d'assiduité - Travaux Dirigés (TD)", body: "Tout étudiant ayant manqué plus de 2 séances de travaux pratiques ou travaux dirigés d'un cours se verra automatiquement exclu de la première session d'examen correspondante.", date: "10/06/2026" }
-        ];
+        // Dynamic State loaded from Supabase
+        let facultyTeachers = [];
+        let facultyCourses = [];
+        let assignedCourses = [];
+        let selectedCourseId = null;
+        let studentsInCourse = [];
+        let gradePetitions = [];
+        let facultyResolutions = [];
+        let academicContacts = [];
+        let currentInterChatTarget = null;
 
         // --- SYSTEM DIALOG HELPER ---
         function showCustomConfirm(title, message, onConfirm) {
@@ -693,14 +695,14 @@
         }
 
         // --- NAVIGATION MANAGER ---
-        function showTab(tabId) {
+        async function showTab(tabId) {
             document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('hidden'));
             const target = document.getElementById(`tab-${tabId}`);
             if (target) {
                 target.classList.remove('hidden');
                 target.classList.add('fade-in');
             }
-
+        
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('nav-link-active');
                 link.classList.add('text-slate-400');
@@ -715,94 +717,124 @@
             if (tabId === 'overview') {
                 setTimeout(renderFacultyDeptChart, 100);
             } else if (tabId === 'myteaching') {
-                renderDoyenGradingTable();
+                await loadMyAssignedCourses();
             } else if (tabId === 'oversight') {
+                await fetchFacultyTeachers();
                 renderOversightTable();
             } else if (tabId === 'petitions') {
+                await fetchPetitions();
                 renderPetitionsList();
             } else if (tabId === 'resolutions') {
+                await fetchResolutions();
                 renderFacultyResolutions();
-            } else if (tabId === 'inter-messaging') { // New: Initialize inter-messaging
+            } else if (tabId === 'inter-messaging') {
+                await fetchAcademicContacts();
                 renderInterMessagingContacts();
-                if (currentInterChatTarget) renderInterChatMessages();
             }
         }
 
         // --- SYSTÈME DE MESSAGERIE INTER-ACADÉMIQUE ---
-        let currentInterChatTarget = null;
-        const connectedUserRole = 'doyen'; // Set role for Dean
-        const interAcademicContacts = [
-            { id: 'recteur', name: 'Cabinet Recteur', role: 'Rectorat' },
-            { id: 'sg', name: 'Secrétariat Général', role: 'Académique' },
-            { id: 'doyen', name: 'Décanat (Doyen)', role: 'Direction Faculté' }, // Self, will be filtered out
-            { id: 'chef_dept', name: 'Chef de Département', role: 'Coordination' },
-            { id: 'tresorerie', name: 'Trésorerie Centrale', role: 'Finances' },
-            { id: 'enseignant', name: 'Corps Enseignant', role: 'Chaire Académique' }
-        ];
+        async function fetchAcademicContacts() {
+            try {
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('id, name, role, email')
+                    .neq('role', 'etudiant');
+
+                if (error) throw error;
+                academicContacts = data.filter(u => u.id !== loggedUser.id);
+            } catch (err) {
+                console.error("Error loading academic contacts:", err);
+            }
+        }
 
         function renderInterMessagingContacts() {
             const contactsList = document.getElementById('inter-messaging-contacts');
             if (!contactsList) return;
             contactsList.innerHTML = '';
-            interAcademicContacts.forEach(contact => {
-                if (contact.id === connectedUserRole) return; // Don't show self in contacts
+            
+            academicContacts.forEach(contact => {
                 contactsList.insertAdjacentHTML('beforeend', `
                     <button onclick="selectInterChatTarget('${contact.id}')" class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors border-b border-slate-100 text-left ${currentInterChatTarget === contact.id ? 'bg-white shadow-inner' : ''}">
                         <div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-slate-500 shadow-sm border border-slate-300/50">${contact.name.charAt(0)}</div>
                         <div>
                             <p class="text-[10px] font-black text-slate-900 uppercase tracking-tight">${contact.name}</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${contact.role}</p>
+                            <p class="text-[9px] text-amber-600 font-bold uppercase tracking-widest">${contact.role}</p>
                         </div>
                     </button>
                 `);
             });
         }
 
-        window.selectInterChatTarget = function(id) {
+        async function selectInterChatTarget(id) {
             currentInterChatTarget = id;
-            const contact = interAcademicContacts.find(c => c.id === id);
+            const contact = academicContacts.find(c => c.id === id);
+            if (!contact) return;
+            
             document.getElementById('inter-chat-target-name').innerText = contact.name;
             document.getElementById('inter-chat-avatar').innerText = contact.name.charAt(0);
+            
             renderInterMessagingContacts();
-            renderInterChatMessages();
-        };
+            await renderInterChatMessages();
+        }
 
-        function renderInterChatMessages() {
+        async function renderInterChatMessages() {
             const container = document.getElementById('inter-chat-messages');
             if (!container || !currentInterChatTarget) return;
             container.innerHTML = '';
-            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
-            const filtered = store.filter(m => 
-                (m.from === connectedUserRole && m.to === currentInterChatTarget) || 
-                (m.from === currentInterChatTarget && m.to === connectedUserRole)
-            );
-            filtered.forEach(m => {
-                const isMine = m.from === connectedUserRole;
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
-                            <p class="text-xs font-semibold leading-relaxed">${m.text}</p>
-                            <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest">${m.date}</span>
+
+            try {
+                const { data, error } = await _supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`and(sender_id.eq.${loggedUser.id},recipient_id.eq.${currentInterChatTarget}),and(sender_id.eq.${currentInterChatTarget},recipient_id.eq.${loggedUser.id})`)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                data.forEach(m => {
+                    const isMine = m.sender_id === loggedUser.id;
+                    const dateObj = new Date(m.created_at);
+                    const formattedTime = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
+                                <p class="text-xs font-semibold leading-relaxed">${m.content}</p>
+                                <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest text-slate-400">${formattedTime}</span>
+                            </div>
                         </div>
-                    </div>
-                `);
-            });
-            container.scrollTop = container.scrollHeight;
+                    `);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (err) {
+                console.error("Error rendering messages:", err);
+            }
         }
 
-        window.sendInterMessage = function(e) {
+        async function sendInterMessage(e) {
             e.preventDefault();
             const input = document.getElementById('inter-msg-input');
             const text = input.value.trim();
             if (!text || !currentInterChatTarget) return;
-            const now = new Date();
-            const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
-            store.push({ from: connectedUserRole, to: currentInterChatTarget, text, date: time });
-            localStorage.setItem('upkolInterMessages', JSON.stringify(store));
-            input.value = '';
-            renderInterChatMessages();
-        };
+
+            try {
+                const { error } = await _supabase
+                    .from('messages')
+                    .insert({
+                        sender_id: loggedUser.id,
+                        recipient_id: currentInterChatTarget,
+                        content: text
+                    });
+
+                if (error) throw error;
+                input.value = '';
+                await renderInterChatMessages();
+            } catch (err) {
+                console.error("Error sending message:", err);
+                showCustomToast("Une erreur est survenue lors de l'envoi.", "error");
+            }
+        }
 
         // --- TAB 1: FACULTY DEPT CHART ---
         function renderFacultyDeptChart() {
@@ -822,10 +854,10 @@
                             label: 'Taux de réussite (%)',
                             data: [78, 65, 82, 72],
                             backgroundColor: [
-                                'rgba(255, 215, 0, 0.85)', // Gold UPKOL
-                                'rgba(59, 130, 246, 0.85)', // Blue
-                                'rgba(16, 185, 129, 0.85)', // Green
-                                'rgba(139, 92, 246, 0.85)'  // Purple
+                                'rgba(255, 215, 0, 0.85)', 
+                                'rgba(59, 130, 246, 0.85)', 
+                                'rgba(16, 185, 129, 0.85)', 
+                                'rgba(139, 92, 246, 0.85)'  
                             ],
                             borderRadius: 12
                         }
@@ -846,28 +878,152 @@
         }
 
         // --- TAB 2: MY TEACHING GRADING ---
+        async function loadMyAssignedCourses() {
+            try {
+                const { data, error } = await _supabase
+                    .from('cours')
+                    .select('*')
+                    .eq('teacher_id', loggedUser.id);
+
+                if (error) throw error;
+                assignedCourses = data;
+
+                const selector = document.getElementById('teaching-course-selector');
+                if (selector) {
+                    selector.innerHTML = assignedCourses.map(c => `
+                        <option value="${c.id}">${c.name} (${c.target_class})</option>
+                    `).join('');
+                }
+
+                if (assignedCourses.length > 0) {
+                    await handleTeachingCourseChange(assignedCourses[0].id);
+                } else {
+                    document.getElementById('doyen-grading-body').innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">
+                                Aucun cours assigné trouvé en base de données pour votre compte.
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (err) {
+                console.error("Error loading assigned courses:", err);
+            }
+        }
+
+        async function handleTeachingCourseChange(courseId) {
+            selectedCourseId = courseId;
+            await fetchGradesForCourse(courseId);
+            await loadCourseSyllabus(courseId);
+            renderDoyenGradingTable();
+        }
+
+        async function fetchGradesForCourse(courseId) {
+            try {
+                const { data: students, error: sError } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('role', 'etudiant');
+                if (sError) throw sError;
+
+                const { data: notes, error: nError } = await _supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('course_id', courseId);
+                if (nError) throw nError;
+
+                studentsInCourse = students.map(st => {
+                    const grade = notes.find(n => n.student_id === st.id);
+                    return {
+                        id: st.id,
+                        name: st.name,
+                        matricule: st.matricule,
+                        tp: grade ? parseFloat(grade.tp_grade) : 0,
+                        exam: grade ? parseFloat(grade.exam_grade) : 0,
+                        noteId: grade ? grade.id : null
+                    };
+                });
+            } catch (err) {
+                console.error("Error loading grades:", err);
+            }
+        }
+
+        async function loadCourseSyllabus(courseId) {
+            try {
+                const { data, error } = await _supabase
+                    .from('supports_cours')
+                    .select('*')
+                    .eq('course_id', courseId);
+
+                if (error) throw error;
+
+                const list = document.getElementById('doyen-uploaded-list');
+                if (!list) return;
+                list.innerHTML = '';
+
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-4">Aucun support partagé.</p>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    list.insertAdjacentHTML('beforeend', `
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                <div class="max-w-[150px] md:max-w-xs overflow-hidden">
+                                    <h4 class="text-xs font-black text-slate-800 truncate">${item.title}</h4>
+                                    <span class="text-[9px] text-slate-400 font-bold block">${item.file_size || 'N/A'} • Publié le ${new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+                                </div>
+                            </div>
+                            <button class="text-slate-400 hover:text-red-500" onclick="deleteSyllabusItem('${item.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `);
+                });
+            } catch (err) {
+                console.error("Error loading syllabus:", err);
+            }
+        }
+
+        async function deleteSyllabusItem(id) {
+            showCustomConfirm("Suppression de support", "Voulez-vous supprimer ce support de cours ?", async () => {
+                try {
+                    const { error } = await _supabase.from('supports_cours').delete().eq('id', id);
+                    if (error) throw error;
+                    showCustomToast("Support supprimé avec succès.", "success");
+                    await loadCourseSyllabus(selectedCourseId);
+                } catch (err) {
+                    console.error("Error deleting support:", err);
+                    showCustomToast("Impossible de supprimer le support.", "error");
+                }
+            });
+        }
+
         function renderDoyenGradingTable() {
             const tbody = document.getElementById('doyen-grading-body');
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            masterStudents.forEach(st => {
+            studentsInCourse.forEach(st => {
                 const avg = ((st.tp + st.exam) / 2).toFixed(1);
                 let mentionColor = 'text-slate-600 bg-slate-100';
                 let mention = 'Satis.';
                 if (avg >= 16) {
                     mentionColor = 'text-green-700 bg-green-50 border border-green-100';
                     mention = 'Distinction';
+                } else if (avg >= 14) {
+                    mentionColor = 'text-blue-700 bg-blue-50 border border-blue-100';
+                    mention = 'Bien';
                 }
 
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr class="hover:bg-slate-50 transition-all">
-                        <td class="px-6 py-4 font-black text-slate-900">${st.name}</td>
+                        <td class="px-6 py-4 font-black text-slate-900">${st.name} <p class="text-[10px] text-slate-400 font-bold">${st.matricule || ''}</p></td>
                         <td class="px-6 py-4 text-center">
-                            <input type="number" min="0" max="20" value="${st.tp}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune" onchange="updateDoyenStudentGrade('${st.id}', 'tp', this.value)">
+                            <input type="number" min="0" max="20" step="0.5" value="${st.tp}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune font-black" onchange="updateDoyenStudentGrade('${st.id}', 'tp', this.value)">
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <input type="number" min="0" max="20" value="${st.exam}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune" onchange="updateDoyenStudentGrade('${st.id}', 'exam', this.value)">
+                            <input type="number" min="0" max="20" step="0.5" value="${st.exam}" class="w-16 text-center border border-slate-200 rounded-lg p-1.5 focus:outline-upkol-jaune font-black" onchange="updateDoyenStudentGrade('${st.id}', 'exam', this.value)">
                         </td>
                         <td class="px-6 py-4 text-center font-black text-slate-800">
                             <span id="doy-avg-${st.id}">${avg}/20</span>
@@ -881,7 +1037,7 @@
         }
 
         function updateDoyenStudentGrade(studentId, key, value) {
-            const student = masterStudents.find(s => s.id === studentId);
+            const student = studentsInCourse.find(s => s.id === studentId);
             if (student) {
                 student[key] = parseFloat(value) || 0;
                 
@@ -894,54 +1050,138 @@
                 if (avg >= 16) {
                     mentionColor = 'text-green-700 bg-green-50 border border-green-100';
                     mention = 'Distinction';
+                } else if (avg >= 14) {
+                    mentionColor = 'text-blue-700 bg-blue-50 border border-blue-100';
+                    mention = 'Bien';
                 }
                 mentionEl.className = `text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${mentionColor}`;
                 mentionEl.innerText = mention;
             }
         }
 
-        function uploadDoyenSyllabus(event) {
+        async function uploadDoyenSyllabus(event) {
             event.preventDefault();
             const fileInput = document.getElementById('doyen-syllabus-file');
-            if (fileInput.files.length > 0) {
+            if (fileInput.files.length > 0 && selectedCourseId) {
                 const fileName = fileInput.files[0].name;
-                const fileSize = (fileInput.files[0].size / (1024 * 1024)).toFixed(1);
+                const fileSize = (fileInput.files[0].size / (1024 * 1024)).toFixed(1) + " MB";
                 
-                const list = document.getElementById('doyen-uploaded-list');
-                list.insertAdjacentHTML('beforeend', `
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas fa-file-pdf text-red-500 text-xl"></i>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800">${fileName}</h4>
-                                <span class="text-[9px] text-slate-400 font-bold block">${fileSize} MB • Publié le ${new Date().toLocaleDateString('fr-FR')}</span>
-                            </div>
-                        </div>
-                        <button class="text-slate-400 hover:text-red-500" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
-                    </div>
-                `);
+                try {
+                    const { error } = await _supabase
+                        .from('supports_cours')
+                        .insert({
+                            course_id: selectedCourseId,
+                            teacher_id: loggedUser.id,
+                            title: fileName,
+                            file_size: fileSize,
+                            type: 'PDF'
+                        });
 
-                showCustomToast("Nouveau matériel cryptographique téléversé !", "success");
-                document.getElementById('doyen-upload-form').reset();
+                    if (error) throw error;
+
+                    showCustomToast("Nouveau support téléversé avec succès !", "success");
+                    document.getElementById('doyen-upload-form').reset();
+                    await loadCourseSyllabus(selectedCourseId);
+                } catch (err) {
+                    console.error("Error uploading support:", err);
+                    showCustomToast("Une erreur est survenue lors de l'enregistrement.", "error");
+                }
             }
         }
 
         function publishDoyenGrades() {
+            if (!selectedCourseId) return;
             showCustomConfirm(
-                "Publication des notes de Cryptographie",
+                "Publication des notes",
                 "Êtes-vous certain de vouloir transmettre définitivement ces notes au Secrétariat Général Académique pour promulgation ?",
-                () => {
-                    showCustomToast("Notes transmises avec succès au Secrétariat Général d'UPKOL !", "success");
+                async () => {
+                    try {
+                        for (const student of studentsInCourse) {
+                            if (student.noteId) {
+                                await _supabase
+                                    .from('notes')
+                                    .update({
+                                        tp_grade: student.tp,
+                                        exam_grade: student.exam,
+                                        is_published: true
+                                    })
+                                    .eq('id', student.noteId);
+                            } else {
+                                await _supabase
+                                    .from('notes')
+                                    .insert({
+                                        student_id: student.id,
+                                        course_id: selectedCourseId,
+                                        tp_grade: student.tp,
+                                        exam_grade: student.exam,
+                                        is_published: true
+                                    });
+                            }
+                        }
+                        showCustomToast("Notes transmises avec succès au Secrétariat Général d'UPKOL !", "success");
+                        await fetchGradesForCourse(selectedCourseId);
+                        renderDoyenGradingTable();
+                    } catch (err) {
+                        console.error("Error transmitting grades:", err);
+                        showCustomToast("Erreur lors de la transmission des notes.", "error");
+                    }
                 }
             );
         }
 
         // --- TAB 3: OVERSIGHT & SYLLABUS VALIDATION ---
+        async function fetchFacultyTeachers() {
+            try {
+                const { data: courses, error: cError } = await _supabase
+                    .from('cours')
+                    .select('*');
+                if (cError) throw cError;
+
+                const { data: users, error: uError } = await _supabase
+                    .from('users')
+                    .select('id, name')
+                    .eq('role', 'enseignant');
+                if (uError) throw uError;
+
+                let filteredCourses = courses;
+                // Deans only see their specific Faculty courses
+                if (loggedUser.role === 'doyen' && loggedUser.faculte) {
+                    filteredCourses = courses.filter(c => c.faculty === loggedUser.faculte);
+                }
+
+                facultyTeachers = filteredCourses.map(c => {
+                    const teacher = users.find(u => u.id === c.teacher_id);
+                    return {
+                        id: c.id,
+                        name: teacher ? teacher.name : 'Titulaire non assigné',
+                        course: c.name,
+                        target: c.target_class,
+                        hours: c.hours ? `${c.hours}h` : '30h',
+                        status: c.syllabus_status || 'attente_validation'
+                    };
+                });
+            } catch (err) {
+                console.error("Error loading teachers/courses oversight:", err);
+            }
+        }
+
         function renderOversightTable() {
             const tbody = document.getElementById('oversight-table-body');
             if (!tbody) return;
-
+        
             tbody.innerHTML = '';
+            
+            if (facultyTeachers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">
+                            Aucun cours ni enseignant actif enregistré.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             facultyTeachers.forEach(teach => {
                 const isValide = teach.status === 'valide';
                 const statusBadge = isValide 
@@ -976,26 +1216,84 @@
             }
         }
 
-        function approveSyllabus(teachId) {
-            const course = facultyTeachers.find(t => t.id === teachId);
-            if (course) {
+        async function approveSyllabus(courseId) {
+            const courseObj = facultyTeachers.find(t => t.id === courseId);
+            if (courseObj) {
                 showCustomConfirm(
                     "Validation du syllabus d'enseignement",
-                    `Confirmez-vous que le syllabus du cours de "${course.course}" soumis par le ${course.name} est conforme au programme d'UPKOL ?`,
-                    () => {
-                        course.status = 'valide';
-                        showCustomToast("Syllabus validé avec succès !", "success");
-                        renderOversightTable();
+                    `Confirmez-vous que le syllabus du cours de "${courseObj.course}" soumis est conforme au programme d'UPKOL ?`,
+                    async () => {
+                        try {
+                            const { error } = await _supabase
+                                .from('cours')
+                                .update({ syllabus_status: 'valide' })
+                                .eq('id', courseId);
+
+                            if (error) throw error;
+
+                            showCustomToast("Syllabus validé avec succès !", "success");
+                            await fetchFacultyTeachers();
+                            renderOversightTable();
+                        } catch (err) {
+                            console.error("Error approving syllabus:", err);
+                        }
                     }
                 );
             }
         }
 
         // --- TAB 4: RECOURS & PLAINTE (PETITIONS) ---
+        async function fetchPetitions() {
+            try {
+                const { data: petitions, error: pError } = await _supabase
+                    .from('recours_notes')
+                    .select('*');
+                if (pError) throw pError;
+
+                const { data: students, error: sError } = await _supabase
+                    .from('users')
+                    .select('id, name')
+                    .eq('role', 'etudiant');
+                if (sError) throw sError;
+
+                const { data: courses, error: cError } = await _supabase
+                    .from('cours')
+                    .select('*');
+                if (cError) throw cError;
+
+                const { data: teachers, error: tError } = await _supabase
+                    .from('users')
+                    .select('id, name')
+                    .eq('role', 'enseignant');
+                if (tError) throw tError;
+
+                gradePetitions = petitions.map(p => {
+                    const studentObj = students.find(s => s.id === p.student_id);
+                    const courseObj = courses.find(c => c.id === p.course_id);
+                    const teacherObj = courseObj ? teachers.find(t => t.id === courseObj.teacher_id) : null;
+
+                    return {
+                        id: p.id,
+                        studentId: p.student_id,
+                        courseId: p.course_id,
+                        studentName: studentObj ? studentObj.name : 'Étudiant Inconnu',
+                        course: courseObj ? courseObj.name : 'Cours Inconnu',
+                        teacher: teacherObj ? teacherObj.name : 'Enseignant non assigné',
+                        oldGrade: p.old_grade,
+                        description: p.description || 'Aucun motif renseigné',
+                        status: p.status || 'en_attente',
+                        resolved: p.status === 'resolu' || p.status === 'rejete'
+                    };
+                });
+            } catch (err) {
+                console.error("Error loading petitions:", err);
+            }
+        }
+
         function renderPetitionsList() {
             const container = document.getElementById('petitions-list-container');
             if (!container) return;
-
+        
             container.innerHTML = '';
             const activePetitions = gradePetitions.filter(p => !p.resolved);
 
@@ -1006,18 +1304,16 @@
                         Aucun recours en cours d'évaluation.
                     </div>`;
                 
-                // Update Badge
                 document.getElementById('badge-pending-petitions').classList.add('hidden');
                 return;
             }
 
-            // Update Badge count
             document.getElementById('badge-pending-petitions').innerText = activePetitions.length;
             document.getElementById('badge-pending-petitions').classList.remove('hidden');
 
             activePetitions.forEach(pet => {
                 container.insertAdjacentHTML('beforeend', `
-                    <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 transition-all">
+                    <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 transition-all border-b border-slate-100">
                         <div>
                             <div class="flex items-center space-x-2">
                                 <h4 class="font-black text-xs uppercase text-slate-900">${pet.studentName}</h4>
@@ -1056,19 +1352,27 @@
             showCustomConfirm(
                 "Rejeter le recours d'étudiant",
                 "Êtes-vous certain de vouloir rejeter cette requête de correction et de confirmer la note initiale de l'étudiant ?",
-                () => {
-                    const pet = gradePetitions.find(p => p.id === selectedPetitionId);
-                    if (pet) {
-                        pet.resolved = true;
-                        showCustomToast("Le recours a été classé sans suite.", "info");
+                async () => {
+                    try {
+                        const { error } = await _supabase
+                            .from('recours_notes')
+                            .update({ status: 'rejete' })
+                            .eq('id', selectedPetitionId);
+
+                        if (error) throw error;
+
+                        showCustomToast("Le recours a été classé sans suite (Rejeté).", "info");
                         resetPetitionConsole();
+                        await fetchPetitions();
                         renderPetitionsList();
+                    } catch (err) {
+                        console.error("Error dismissing petition:", err);
                     }
                 }
             );
         }
 
-        function approvePetitionCorrection() {
+        async function approvePetitionCorrection() {
             if (!selectedPetitionId) return;
 
             const newGradeValue = parseFloat(document.getElementById('pet-new-grade').value);
@@ -1079,25 +1383,58 @@
 
             showCustomConfirm(
                 "Approuver la double-correction",
-                `Êtes-vous certain d'appliquer la nouvelle note de ${newGradeValue}/20 pour l'étudiant ? Cette note remplacera immédiatement la précédente en base de données.`,
+                `Êtes-vous certain d'appliquer la nouvelle note de ${newGradeValue}/20 pour l'étudiant ? Cette note remplacera immédiatement la précédente.`,
                 async () => {
-                    const pet = gradePetitions.find(p => p.id === selectedPetitionId);
-                    if (pet) {
-                        pet.resolved = true;
+                    try {
+                        const petObj = gradePetitions.find(p => p.id === selectedPetitionId);
+                        if (!petObj) return;
 
-                        // Synchronisation avec les données d'évaluation locales (par exemple pour l'étudiant Jean Mukendi)
-                        if (pet.studentName === "Jean Mukendi") {
-                            let users = JSON.parse(localStorage.getItem('superAdminUsers')) || [];
-                            const index = users.findIndex(u => u.name === "Jean Mukendi" && u.role === "etudiant");
-                            if (index > -1) {
-                                users[index].examGrade = newGradeValue; // double correction du Doyen s'applique
-                                localStorage.setItem('superAdminUsers', JSON.stringify(users));
-                            }
+                        // 1. Update recour status in recourse table
+                        const { error: rError } = await _supabase
+                            .from('recours_notes')
+                            .update({
+                                new_grade: newGradeValue,
+                                status: 'resolu'
+                            })
+                            .eq('id', selectedPetitionId);
+
+                        if (rError) throw rError;
+
+                        // 2. Overwrite note in notes table
+                        const { data: existingNotes, error: nFindError } = await _supabase
+                            .from('notes')
+                            .select('*')
+                            .eq('student_id', petObj.studentId)
+                            .eq('course_id', petObj.courseId);
+
+                        if (nFindError) throw nFindError;
+
+                        if (existingNotes && existingNotes.length > 0) {
+                            const { error: nError } = await _supabase
+                                .from('notes')
+                                .update({ exam_grade: newGradeValue })
+                                .eq('id', existingNotes[0].id);
+                            if (nError) throw nError;
+                        } else {
+                            const { error: nError } = await _supabase
+                                .from('notes')
+                                .insert({
+                                    student_id: petObj.studentId,
+                                    course_id: petObj.courseId,
+                                    tp_grade: 0,
+                                    exam_grade: newGradeValue,
+                                    is_published: true
+                                });
+                            if (nError) throw nError;
                         }
 
-                        showCustomToast(`Note validée et enregistrée : ${newGradeValue}/20 !`, "success");
+                        showCustomToast(`Note rectifiée et enregistrée : ${newGradeValue}/20 !`, "success");
                         resetPetitionConsole();
+                        await fetchPetitions();
                         renderPetitionsList();
+                    } catch (err) {
+                        console.error("Error approving petition correction:", err);
+                        showCustomToast("Impossible de sauvegarder la double-correction.", "error");
                     }
                 }
             );
@@ -1112,17 +1449,44 @@
         }
 
         // --- TAB 5: RESOLUTIONS & ANNOUNCEMENTS ---
+        async function fetchResolutions() {
+            try {
+                const { data, error } = await _supabase
+                    .from('documents_officiels')
+                    .select('*')
+                    .eq('doc_type', 'circulaire_faculte')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                facultyResolutions = data.map(doc => ({
+                    id: doc.id,
+                    title: doc.title,
+                    body: doc.content,
+                    date: new Date(doc.created_at).toLocaleDateString('fr-FR')
+                }));
+            } catch (err) {
+                console.error("Error fetching announcements:", err);
+            }
+        }
+
         function renderFacultyResolutions() {
             const feed = document.getElementById('published-resolutions-feed');
             if (!feed) return;
 
             feed.innerHTML = '';
+            
+            if (facultyResolutions.length === 0) {
+                feed.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-12">Aucune circulaire publiée.</p>';
+                return;
+            }
+
             facultyResolutions.forEach(res => {
                 feed.insertAdjacentHTML('beforeend', `
                     <div class="p-5 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 relative shadow-sm">
                         <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">${res.date}</span>
                         <h4 class="font-black text-sm text-slate-950 uppercase">${res.title}</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">${res.body}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed font-semibold">${res.body}</p>
                         <div class="text-right text-[8px] font-black text-slate-400 uppercase tracking-widest pt-2">
                             Le Doyen d'UPKOL • Signé électroniquement
                         </div>
@@ -1131,7 +1495,7 @@
             });
         }
 
-        function publishFacultyResolution() {
+        async function publishFacultyResolution() {
             const title = document.getElementById('res-title').value.trim();
             const body = document.getElementById('res-body').value.trim();
 
@@ -1140,49 +1504,59 @@
                 return;
             }
 
-            const newRes = {
-                id: Date.now(),
-                title: title,
-                body: body,
-                date: new Date().toLocaleDateString('fr-FR')
-            };
+            try {
+                const { error } = await _supabase
+                    .from('documents_officiels')
+                    .insert({
+                        author_id: loggedUser.id,
+                        doc_type: 'circulaire_faculte',
+                        title: title,
+                        content: body,
+                        signature_data: `Signé électroniquement par ${loggedUser.name}`
+                    });
 
-            facultyResolutions.unshift(newRes);
-            renderFacultyResolutions();
-            showCustomToast("L'avis facultaire a été diffusé à tous les départements !", "success");
+                if (error) throw error;
 
-            document.getElementById('res-title').value = '';
-            document.getElementById('res-body').value = '';
+                showCustomToast("L'avis facultaire a été diffusé avec succès !", "success");
+                document.getElementById('res-title').value = '';
+                document.getElementById('res-body').value = '';
+                
+                await fetchResolutions();
+                renderFacultyResolutions();
+            } catch (err) {
+                console.error("Error creating circular:", err);
+                showCustomToast("Une erreur est survenue lors de la publication.", "error");
+            }
         }
 
-        // --- AUTHENTICATION ---
-        document.getElementById('btn-login-doyen').onclick = function() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
+        // --- PROFILE CONTROL ---
+        async function saveProfile(event) {
+            event.preventDefault();
+            const newName = document.getElementById('profile-name').value.trim();
+            const newPass = document.getElementById('profile-password').value.trim();
 
-            if (email.toLowerCase() === "kakudji.doyen@upkol.cd" && pass === "Pass1234") {
-                const gateway = document.getElementById('login-gateway');
-                gateway.style.opacity = '0';
-                
-                doyenLoggedUser = { name: "Prof. Dr. Kakudji", title: "Doyen des Sciences & Technologies" };
-                localStorage.setItem('connectedDoyen', JSON.stringify(doyenLoggedUser));
+            try {
+                const updates = { name: newName };
+                if (newPass) updates.password = newPass;
 
-                setTimeout(() => {
-                    gateway.classList.add('hidden');
-                    showCustomToast("Cabinet décanal officiellement ouvert !", 'success');
-                }, 400);
-            } else {
-                showCustomToast("Identifiants académiques incorrects.", 'error');
+                const { error } = await _supabase
+                    .from('users')
+                    .update(updates)
+                    .eq('id', loggedUser.id);
+
+                if (error) throw error;
+
+                loggedUser.name = newName;
+                if (newPass) loggedUser.password = newPass;
+                localStorage.setItem('connectedUser', JSON.stringify(loggedUser));
+
+                document.getElementById('user-header-name').innerText = loggedUser.name;
+                showCustomToast("Profil mis à jour avec succès !", "success");
+                document.getElementById('profile-password').value = '';
+            } catch (err) {
+                console.error("Error saving profile:", err);
+                showCustomToast("Erreur lors de la mise à jour.", "error");
             }
-        };
-
-        function logout() {
-            localStorage.removeItem('connectedDoyen');
-            document.getElementById('login-gateway').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('login-gateway').style.opacity = '1';
-                showCustomToast("Cabinet du Doyen clos.", "info");
-            }, 10);
         }
 
         // --- MOBILE MENU SIDEBAR ---
@@ -1206,15 +1580,130 @@
         closeSidebarBtn.addEventListener('click', toggleSidebar);
         sidebarBackdrop.addEventListener('click', toggleSidebar);
 
+        // --- AUTHENTICATION & LOGIN ---
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const loginButton = document.getElementById('login-button');
+            const originalButtonHTML = loginButton.innerHTML;
+
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
+            loginButton.disabled = true;
+
+            try {
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .in('role', ['doyen', 'chef_dept'])
+                    .single();
+
+                if (error || !data) {
+                    showCustomToast("Identifiants incorrects ou rôle non autorisé.", "error");
+                    throw new Error("User not found or not a dean/head of dept.");
+                }
+
+                if (data.password === password) {
+                    if (!data.active) {
+                        showCustomToast("Ce compte a été désactivé.", "warning");
+                    } else {
+                        loggedUser = data;
+                        localStorage.setItem('connectedUser', JSON.stringify(loggedUser));
+                        const gateway = document.getElementById('access-gateway');
+                        gateway.style.opacity = '0';
+                        setTimeout(() => {
+                            gateway.classList.add('hidden');
+                            showCustomToast(`Bienvenue, ${loggedUser.name}`, 'success');
+                            initializeDashboard();
+                        }, 500);
+                    }
+                } else {
+                    showCustomToast("Mot de passe incorrect.", "error");
+                }
+            } catch (err) {
+                console.error("Login error:", err.message);
+            } finally {
+                loginButton.innerHTML = originalButtonHTML;
+                loginButton.disabled = false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('connectedUser');
+            loggedUser = null;
+            const gateway = document.getElementById('access-gateway');
+            gateway.classList.remove('hidden');
+            setTimeout(() => {
+                gateway.style.opacity = '1';
+                showCustomToast("Session fermée.", "info");
+            }, 10);
+        }
+
+        // --- INITIAL DASHBOARD SETUP ---
+        async function initializeDashboard() {
+            // Update Header Name and Role
+            document.getElementById('user-header-name').innerText = loggedUser.name;
+            const userRoleTitle = loggedUser.role === 'doyen' ? `Doyen • ${loggedUser.faculte || 'Sciences'}` : `Chef de Département • ${loggedUser.departement || 'Informatique'}`;
+            document.getElementById('user-header-role').innerText = userRoleTitle;
+
+            // Fill Profile Fields
+            document.getElementById('profile-name').value = loggedUser.name;
+            document.getElementById('profile-email').value = loggedUser.email;
+            document.getElementById('profile-faculty').value = loggedUser.faculte || 'Sciences & Technologies';
+
+            // Load counts for overview stats
+            await loadOverviewStats();
+
+            // Render Overview Tab
+            showTab('overview');
+        }
+
+        async function loadOverviewStats() {
+            try {
+                // Students count
+                const { count: sCount, error: sError } = await _supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'etudiant');
+                
+                // Teachers count
+                const { count: tCount, error: tError } = await _supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'enseignant');
+
+                // Courses count
+                const { count: cCount, error: cError } = await _supabase
+                    .from('cours')
+                    .select('*', { count: 'exact', head: true });
+
+                if (sError || tError || cError) throw new Error("Stats load error");
+
+                document.getElementById('stat-students-count').innerText = sCount || 0;
+                document.getElementById('stat-teachers-count').innerText = `${tCount || 0} Profs`;
+                document.getElementById('stat-courses-count').innerText = cCount || 0;
+
+                if (loggedUser.faculte) {
+                    document.getElementById('faculty-dept-list-text').innerText = loggedUser.faculte;
+                }
+            } catch (err) {
+                console.error("Overview stats error:", err);
+            }
+        }
+
         // --- INITIAL EXECUTION SEQUENCE ---
         document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('connectedDoyen');
-            if (saved) {
-                doyenLoggedUser = JSON.parse(saved);
-                document.getElementById('login-gateway').classList.add('hidden');
+            const savedUser = localStorage.getItem('connectedUser');
+            if (savedUser) {
+                loggedUser = JSON.parse(savedUser);
+                if (loggedUser.role === 'doyen' || loggedUser.role === 'chef_dept') {
+                    document.getElementById('access-gateway').classList.add('hidden');
+                    initializeDashboard();
+                } else {
+                    logout();
+                }
             }
-
-            showTab('overview');
         });
     </script>
 </body>
