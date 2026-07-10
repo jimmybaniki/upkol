@@ -69,35 +69,46 @@
             </div>
         </div>
 
-        <form id="login-form" onsubmit="handleLogin(event)" class="w-full space-y-5">
-            <div>
-                <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Identifiant (Email)</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-user-shield text-slate-400 text-xs"></i>
-                    </div>
-                    <input type="email" id="login-email" required placeholder="nom.prenom@upkol.cd" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-black uppercase text-slate-500 mb-1.5">Mot de passe</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-lock text-slate-400 text-xs"></i>
-                    </div>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-upkol-jaune focus:ring-1 focus:ring-upkol-jaune transition-all shadow-inner">
-                </div>
-            </div>
-            <button type="submit" id="login-button" class="w-full bg-upkol-noir text-upkol-jaune py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg flex items-center justify-center mt-2 group">
-                <i class="fas fa-sign-in-alt mr-2 group-hover:translate-x-1 transition-transform"></i> Connexion Sécurisée
-            </button>
-        </form>
+        <!-- Grille de sélection des profils -->
+        <div class="w-full grid grid-cols-2 gap-4">
+            <a href="e-learning.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-user-graduate"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Étudiant</span>
+            </a>
+            <a href="enseignants.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-chalkboard-teacher"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Enseignant</span>
+            </a>
+            <a href="doyens.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-university"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Décanat</span>
+            </a>
+            <a href="secr_tariat_g_n_ral_upkol.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-file-signature"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Secrétariat</span>
+            </a>
+            <a href="budgetannuel.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-wallet"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Finances</span>
+            </a>
+            <a href="espace_recteur_upkol.html" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-upkol-jaune/20 hover:border-upkol-jaune border-2 border-transparent rounded-2xl transition-all group">
+                <div class="w-12 h-12 bg-upkol-noir text-upkol-jaune rounded-full flex items-center justify-center text-xl mb-2 shadow-md group-hover:scale-110 transition-transform"><i class="fas fa-user-tie"></i></div>
+                <span class="text-xs font-black text-slate-800 uppercase">Rectorat</span>
+            </a>
+        </div>
         
         <div class="mt-8 pt-6 border-t border-gray-100 text-center">
             <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
                 <i class="fas fa-server mr-1"></i> Accès restreint au personnel et étudiants habilités.
             </p>
             <a href="index.html" class="text-xs text-slate-500 hover:text-upkol-jaune font-bold mt-4 inline-block">Retour au site public</a>
+        </div>
+
+        <!-- Bouton caché pour le Super Admin -->
+        <div class="absolute bottom-4 right-4">
+            <a href="dashboard_super_admin.html" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-upkol-jaune transition-colors" title="Accès Super Administrateur">
+                <i class="fas fa-shield-alt"></i>
+            </a>
         </div>
     </div>
 
@@ -109,83 +120,6 @@
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        // --- MAPPING DES RÔLES VERS LES FICHIERS ---
-        const roleRedirects = {
-            'super_admin': 'dashboard_super_admin.html',
-            'recteur': 'espace_recteur_upkol.html',
-            'secretaire': 'secr_tariat_g_n_ral_upkol.html',
-            'doyen': 'doyens.html',
-            'chef_dept': 'doyens.html', // Les chefs de département utilisent le même portail que les doyens
-            'enseignant': 'enseignants.html',
-            'tresorier': 'budgetannuel.html',
-            'etudiant': 'e-learning.html' // Les étudiants sont redirigés vers la plateforme e-learning
-        };
-
-        // --- GESTION DE LA CONNEXION ---
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const submitBtn = document.getElementById('login-button');
-            const originalText = submitBtn.innerHTML;
-
-            if (!email || !password) {
-                showToast("Veuillez remplir tous les champs.", "error");
-                return;
-            }
-
-            // Indiquer le chargement
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
-            submitBtn.disabled = true;
-
-            try {
-                // Recherche de l'utilisateur dans la table 'users'
-                const { data, error } = await _supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .single(); // .single() car l'email doit être unique
-
-                if (error || !data) {
-                    showToast('Identifiants incorrects ou utilisateur non trouvé.', 'error');
-                    throw new Error('User not found or Supabase error');
-                }
-
-                // Vérification du mot de passe et du statut
-                if (data.password === password) {
-                    if (!data.active) {
-                        showToast("Accès refusé : Ce compte a été désactivé.", "warning");
-                    } else {
-                        const userRole = data.role;
-                        const redirectUrl = roleRedirects[userRole];
-
-                        if (redirectUrl) {
-                            showToast(`Connexion réussie. Bienvenue ${data.name}. Redirection...`, 'success');
-                            // Stocker les informations utilisateur pour les utiliser dans les autres pages
-                            localStorage.setItem('connectedUser', JSON.stringify(data));
-                            setTimeout(() => {
-                                window.location.href = redirectUrl;
-                            }, 1500);
-                        } else {
-                            showToast("Votre rôle n'a pas de page de destination définie.", "error");
-                        }
-                    }
-                } else {
-                    showToast('Mot de passe incorrect.', 'error');
-                }
-
-            } catch (err) {
-                console.error("Erreur de connexion:", err.message);
-                // Ne pas afficher d'erreur technique à l'utilisateur, le toast "identifiants incorrects" est suffisant.
-            } finally {
-                // Restaurer le bouton après un délai pour éviter le spam
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }, 1000);
-            }
-        }
 
         // --- SYSTÈME DE NOTIFICATION (TOAST) ---
         function showToast(message, type = 'success') {
