@@ -72,15 +72,11 @@
             <div class="w-full space-y-4 mb-6">
                 <div>
                     <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Identifiant Budgétaire</label>
-                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: kasongo.finances@upkol.cd" value="kasongo.finances@upkol.cd">
+                    <input type="email" id="login-email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="ex: tresorier@upkol.cd" value="tresorier@upkol.cd">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Clef de Chiffrement Financier</label>
-                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Pass1234">
-                </div>
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 flex items-start space-x-2">
-                    <i class="fas fa-info-circle text-upkol-jaune mt-0.5 text-xs"></i>
-                    <span>Connectez-vous avec les identifiants pré-remplis de l'Intendant Général / Directeur des Finances.</span>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mot de passe</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-sm font-medium focus:outline-upkol-jaune shadow-inner" placeholder="••••••••" value="Upkol2026!">
                 </div>
             </div>
 
@@ -127,7 +123,7 @@
 
             <a href="#" id="menu-requests" class="nav-link flex items-center p-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all text-slate-400" onclick="showTab('requests')">
                 <i class="fas fa-file-invoice-dollar mr-3 w-5 text-lg"></i> Allocations Doyens
-                <span id="badge-pending-requests" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full">2</span>
+                <span id="badge-pending-requests" class="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full hidden">0</span>
             </a>
 
             <div class="pt-6 pb-2 text-[9px] uppercase tracking-widest text-slate-500 font-black px-3">Modélisation & Audit</div>
@@ -177,8 +173,8 @@
             <!-- Profile Info -->
             <div class="flex items-center space-x-4">
                 <div class="text-right hidden sm:block">
-                    <p id="financial-header-name" class="text-xs font-black text-slate-900 uppercase">Prof. Dr. Kasongo</p>
-                    <p id="financial-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Intendant Général d'UPKOL</p>
+                    <p id="financial-header-name" class="text-xs font-black text-slate-900 uppercase">Trésorier Général</p>
+                    <p id="financial-header-title" class="text-[9px] font-black text-amber-600 uppercase tracking-widest mt-0.5">Direction du Budget</p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl border-2 border-upkol-jaune bg-slate-100 flex items-center justify-center text-slate-500 font-black shadow-md overflow-hidden">
                     <i class="fas fa-user-tie text-upkol-noir text-xl"></i>
@@ -199,7 +195,7 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between card-animate">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Budget Annuel Global</p>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Budget Annuel Estimé</p>
                                 <h3 id="stat-annual-budget" class="text-3xl font-black text-slate-900">1.450.000$</h3>
                             </div>
                             <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
@@ -207,7 +203,7 @@
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-slate-400 font-bold justify-between">
-                            <span>Exercice budgétaire 2026</span>
+                            <span>Exercice budgétaire en cours</span>
                             <span class="text-blue-500 font-black">UPKOL</span>
                         </div>
                     </div>
@@ -217,14 +213,14 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Recettes Perçues (To Date)</p>
-                                <h3 id="stat-revenues-collected" class="text-3xl font-black text-slate-900">980.000$</h3>
+                                <h3 id="stat-revenues-collected" class="text-3xl font-black text-slate-900">0$</h3>
                             </div>
                             <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-funnel-dollar text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-emerald-600 font-bold">
-                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> 67% des objectifs de collecte
+                            <i class="fas fa-check-circle text-emerald-500 mr-2 text-xs"></i> Total des entrées
                         </div>
                     </div>
 
@@ -233,14 +229,14 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Dépenses Liquidées</p>
-                                <h3 id="stat-expenses-liquidated" class="text-3xl font-black text-slate-900">620.000$</h3>
+                                <h3 id="stat-expenses-liquidated" class="text-3xl font-black text-slate-900">0$</h3>
                             </div>
                             <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-receipt text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-purple-600 font-bold">
-                            <i class="fas fa-calculator mr-2 text-xs"></i> 42% d'enveloppe consommée
+                            <i class="fas fa-calculator mr-2 text-xs"></i> Total des sorties
                         </div>
                     </div>
 
@@ -249,14 +245,14 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Trésorerie Disponible</p>
-                                <h3 id="stat-cash-available" class="text-3xl font-black text-slate-900">360.000$</h3>
+                                <h3 id="stat-cash-available" class="text-3xl font-black text-slate-900">0$</h3>
                             </div>
                             <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
                                 <i class="fas fa-wallet text-xl"></i>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-4 mt-4 flex items-center text-[10px] text-amber-600 font-bold">
-                            <i class="fas fa-vault mr-1 text-emerald-500"></i> Solde excédentaire net
+                            <i class="fas fa-vault mr-1 text-emerald-500"></i> Solde actuel
                         </div>
                     </div>
                 </div>
@@ -267,7 +263,7 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
                         <div class="flex justify-between items-center mb-6">
                             <div>
-                                <h4 class="font-black text-xs uppercase text-slate-400">Évaluation Semestrielle</h4>
+                                <h4 class="font-black text-xs uppercase text-slate-400">Évaluation Globale</h4>
                                 <h3 class="text-sm font-black text-slate-950 uppercase tracking-tight">Flux financiers : Entrées vs Sorties</h3>
                             </div>
                             <span class="text-[10px] bg-upkol-jaune/20 text-amber-800 font-bold px-3 py-1 rounded-full uppercase">Trésorerie Centrale</span>
@@ -290,7 +286,7 @@
 
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs font-medium text-slate-500 leading-relaxed mt-4">
                             <i class="fas fa-university text-amber-500 mr-2"></i>
-                            Les salaires et l'amélioration des infrastructures laboratoires constituent les priorités stratégiques de cette période.
+                            Les salaires et l'amélioration des infrastructures constituent les priorités stratégiques.
                         </div>
                     </div>
                 </div>
@@ -370,8 +366,8 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Requêtes de Financement des Faculté & Départements</h3>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Arbitrage requis du Trésorier pour activer et solder l'enveloppe budgétaire</p>
+                            <h3 class="font-black text-base text-slate-950 uppercase tracking-tight">Requêtes de Financement Budgétaire</h3>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Arbitrage requis du Trésorier pour activer et solder l'enveloppe</p>
                         </div>
                     </div>
 
@@ -379,10 +375,9 @@
                         <table class="w-full text-left min-w-[700px]">
                             <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="px-6 py-4">Faculté Émettrice</th>
+                                    <th class="px-6 py-4">Entité / Faculté</th>
                                     <th class="px-6 py-4">Projet / Libellé de Charge</th>
                                     <th class="px-6 py-4 text-center">Montant Soumis</th>
-                                    <th class="px-6 py-4">Demandeur</th>
                                     <th class="px-6 py-4 text-right">Arbitrage financier</th>
                                 </tr>
                             </thead>
@@ -410,7 +405,7 @@
                             <!-- Slider 1 -->
                             <div>
                                 <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
-                                    <span>Salaires & Émoluments Enseignants</span>
+                                    <span>Fonctionnement & Salaires</span>
                                     <span id="label-val-salaries">40%</span>
                                 </div>
                                 <input type="range" id="slider-salaries" min="10" max="60" value="40" class="w-full accent-upkol-jaune cursor-pointer animate-pulse" oninput="updateBudgetSimulation()">
@@ -419,7 +414,7 @@
                             <!-- Slider 2 -->
                             <div>
                                 <div class="flex justify-between text-xs font-black uppercase text-slate-600 mb-2">
-                                    <span>Infrastructures & Équipements de Laboratoire</span>
+                                    <span>Infrastructures & Équipements</span>
                                     <span id="label-val-infra">30%</span>
                                 </div>
                                 <input type="range" id="slider-infra" min="10" max="50" value="30" class="w-full accent-upkol-jaune cursor-pointer" oninput="updateBudgetSimulation()">
@@ -593,11 +588,11 @@
                     <form onsubmit="saveProfile(event)" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nom Complet</label>
-                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="Prof. Dr. Kasongo">
+                            <input type="text" id="profile-name" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="">
                         </div>
                         <div class="relative">
                             <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-mail Budgétaire</label>
-                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="kasongo.finances@upkol.cd" readonly>
+                            <input type="email" id="profile-email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold" value="" readonly>
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold">Non modifiable</span>
                         </div>
                         <button type="submit" class="bg-upkol-noir text-upkol-jaune px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md hover:bg-slate-800 w-full">
@@ -631,46 +626,19 @@
     <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
-        // --- CONSTANTS & DATABASE MOCKING ---
+        // --- CONSTANTS & DATABASE SETUP ---
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let budgetLoggedUser = null;
-        let flowChartInstance = null; // Chart.js instance for budgetFlowChart
+        let flowChartInstance = null;
         let allocationPieInstance = null;
         let modelerPieInstance = null;
-        const connectedUserRole = 'tresorerie';
-
-        // Seeding interactive budget channels (Revenues)
-        let revenueChannels = [
-            { id: "rc-1", source: "Minerval & Frais d'Inscriptions", type: "Frais Académiques", target: 800000, collected: 550000 },
-            { id: "rc-2", source: "Subventions du Ministère de l'ESU", type: "Trésor Public", target: 400000, collected: 300000 },
-            { id: "rc-3", source: "Partenariats Privés & Donateurs", type: "Fonds Propres", target: 150000, collected: 80000 },
-            { id: "rc-4", source: "Prestations Externes & Consultance", type: "Activité Propre", target: 100000, collected: 50000 }
-        ];
-
-        // Seeding interactive Deanery allocations (Expenses)
-        let deaneryAllocations = [
-            { id: "da-1", dean: "Prof. Dr. Kakudji", faculty: "Sciences & Technologies", project: "Acquisition serveurs de cryptographie", amount: 15000, status: "attente_tresorerie" },
-            { id: "da-2", dean: "CT Mukendi", faculty: "Sciences de la Santé", project: "Abonnement bibliothèque médicale numérique", amount: 8000, status: "attente_tresorerie" },
-            { id: "da-3", dean: "Prof. Dr. Ilunga", faculty: "Droit & Sciences Politiques", project: "Rénovation de la salle de procès d'entraînement", amount: 12000, status: "valide" }
-        ];
-
-        // Ledger of recent transactional receipts/expenses
-        let ledgerTransactions = [
-            { id: "t-1", date: "16/06/2026", account: "Crédit - Minerval", description: "Perception Tranche 2 - Jean Mukendi", type: "entree", amount: 150 },
-            { id: "t-2", date: "15/06/2026", account: "Débit - Infrastructures", description: "Achat projecteurs pour les auditoires", type: "sortie", amount: 4500 },
-            { id: "t-3", date: "14/06/2026", account: "Crédit - Subvention", description: "Acompte d'équipement du Cabinet Lualaba", type: "entree", amount: 10000 },
-            { id: "t-4", date: "10/06/2026", account: "Débit - Salaires", description: "Mensualités du corps professoral (Mai)", type: "sortie", amount: 85000 },
-            { id: "t-5", date: "05/06/2026", account: "Débit - Bourses", description: "Versement bourses d'excellence L1 Informatique", type: "sortie", amount: 12000 }
-        ];
-
-        // Financial directives circulars
-        let financialDirectives = [
-            { id: 1, title: "Moratoire sur l'apurement de la Deuxième Tranche", body: "La Direction des Finances informe tous les étudiants que l'accès aux salles d'examens du S1 reste strictement conditionné par la présentation du reçu d'apurement de la tranche de 150$. Aucun arrangement ne sera toléré après le 22 Juin 2026.", date: "15/06/2026" },
-            { id: 2, title: "Rapprochement des fiches de syllabus", body: "Il est demandé à tous les directeurs de départements de rapprocher les fiches de syllabus dûment validées par le Décanat auprès du Secrétariat Général Administratif afin de débloquer l'enveloppe forfaitaire d'appui pédagogique.", date: "10/06/2026" }
-        ];
+        
+        let revenueChannels = [];
+        let deaneryAllocations = [];
+        let ledgerTransactions = [];
 
         // --- SYSTEM DIALOG HELPER ---
         function showCustomConfirm(title, message, onConfirm) {
@@ -759,7 +727,7 @@
                 renderLedgerTable();
             } else if (tabId === 'directives') {
                 renderFinancialDirectives();
-            } else if (tabId === 'inter-messaging') { // New: Initialize inter-messaging
+            } else if (tabId === 'inter-messaging') { 
                 renderInterMessagingContacts();
                 if (currentInterChatTarget) renderInterChatMessages();
             }
@@ -767,14 +735,12 @@
 
         // --- SYSTÈME DE MESSAGERIE INTER-ACADÉMIQUE ---
         let currentInterChatTarget = null;
-        const connectedUserRole = 'tresorerie'; // Set role for Treasurer
+        const connectedUserRole = 'tresorier'; 
         const interAcademicContacts = [
             { id: 'recteur', name: 'Cabinet Recteur', role: 'Rectorat' },
-            { id: 'sg', name: 'Secrétariat Général', role: 'Académique' },
+            { id: 'super_admin', name: 'Secrétariat Général', role: 'Administratif' },
             { id: 'doyen', name: 'Décanat (Doyen)', role: 'Direction Faculté' },
-            { id: 'chef_dept', name: 'Chef de Département', role: 'Coordination' },
-            { id: 'tresorerie', name: 'Trésorerie Centrale', role: 'Finances' }, // Self, will be filtered out
-            { id: 'enseignant', name: 'Corps Enseignant', role: 'Chaire Académique' }
+            { id: 'chef_dept', name: 'Chef de Département', role: 'Coordination' }
         ];
 
         function renderInterMessagingContacts() {
@@ -782,7 +748,6 @@
             if (!contactsList) return;
             contactsList.innerHTML = '';
             interAcademicContacts.forEach(contact => {
-                if (contact.id === connectedUserRole) return; // Don't show self in contacts
                 contactsList.insertAdjacentHTML('beforeend', `
                     <button onclick="selectInterChatTarget('${contact.id}')" class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors border-b border-slate-100 text-left ${currentInterChatTarget === contact.id ? 'bg-white shadow-inner' : ''}">
                         <div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-slate-500 shadow-sm border border-slate-300/50">${contact.name.charAt(0)}</div>
@@ -804,22 +769,33 @@
             renderInterChatMessages();
         };
 
-        function renderInterChatMessages() {
+        async function renderInterChatMessages() {
             const container = document.getElementById('inter-chat-messages');
             if (!container || !currentInterChatTarget) return;
+            container.innerHTML = '<div class="text-center text-xs text-slate-400">Chargement...</div>';
+            
+            // Assuming messages table has sender_id and recipient_id roles
+            const { data: msgs, error } = await _supabase
+                .from('messages')
+                .select('*')
+                .or(`and(sender_id.eq.${connectedUserRole},recipient_id.eq.${currentInterChatTarget}),and(sender_id.eq.${currentInterChatTarget},recipient_id.eq.${connectedUserRole})`)
+                .order('created_at', { ascending: true });
+
             container.innerHTML = '';
-            const store = JSON.parse(localStorage.getItem('upkolInterMessages')) || [];
-            const filtered = store.filter(m => 
-                (m.from === connectedUserRole && m.to === currentInterChatTarget) || 
-                (m.from === currentInterChatTarget && m.to === connectedUserRole)
-            );
-            filtered.forEach(m => {
-                const isMine = m.from === connectedUserRole;
+            
+            if (error || !msgs || msgs.length === 0) {
+                container.innerHTML = '<div class="text-center text-xs text-slate-400 mt-4">Aucun message avec ce département.</div>';
+                return;
+            }
+
+            msgs.forEach(m => {
+                const isMine = m.sender_id === connectedUserRole;
+                const d = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 container.insertAdjacentHTML('beforeend', `
                     <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
                         <div class="max-w-[80%] ${isMine ? 'bg-upkol-noir text-white' : 'bg-white text-slate-900 border border-slate-100'} p-4 rounded-[1.5rem] shadow-sm">
-                            <p class="text-xs font-semibold leading-relaxed">${m.text}</p>
-                            <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest">${m.date}</span>
+                            <p class="text-xs font-semibold leading-relaxed">${m.content}</p>
+                            <span class="text-[8px] block text-right mt-1 font-black uppercase tracking-widest">${d}</span>
                         </div>
                     </div>
                 `);
@@ -827,52 +803,49 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        window.sendInterMessage = function(e) {
+        window.sendInterMessage = async function(e) {
             e.preventDefault();
             const input = document.getElementById('inter-msg-input');
             const text = input.value.trim();
             if (!text || !currentInterChatTarget) return;
-            const now = new Date();
-            const time = now.toISOString();
 
             const { error } = await _supabase.from('messages').insert([{
-                sender_role: connectedUserRole,
-                receiver_role: currentInterChatTarget,
-                message_text: text,
-                sent_at: time
+                sender_id: connectedUserRole,
+                recipient_id: currentInterChatTarget,
+                content: text
             }]);
 
             if (error) {
                 console.error('Error sending message:', error.message);
-                showCustomToast('Erreur lors de l\'envoi du message.', 'error');
+                showCustomToast('Erreur lors de l\'envoi.', 'error');
             } else {
                 input.value = '';
-            renderInterChatMessages();
-            showCustomToast("Message transmis", "success");
+                renderInterChatMessages();
+                showCustomToast("Message transmis", "success");
+            }
         };
 
-        window.saveProfile = function(e) {
+        window.saveProfile = async function(e) {
             e.preventDefault();
             const name = document.getElementById('profile-name').value;
-            const session = JSON.parse(localStorage.getItem('connectedTreasurer'));
-            if (session) { // Assuming 'id' is available in session
-                const { error } = await _supabase.from('profiles').update({ name: name }).eq('id', session.id);
+            
+            if (budgetLoggedUser) { 
+                const { error } = await _supabase.from('users').update({ name: name }).eq('id', budgetLoggedUser.id);
                 if (error) {
                     console.error('Error updating profile:', error.message);
-                    showCustomToast('Erreur lors de la mise à jour du profil.', 'error');
+                    showCustomToast('Erreur de mise à jour.', 'error');
                     return;
                 }
 
-                // Update local storage after successful Supabase update
-                session.name = name;
-                localStorage.setItem('connectedTreasurer', JSON.stringify(session));
+                budgetLoggedUser.name = name;
+                localStorage.setItem('connectedTreasurer', JSON.stringify(budgetLoggedUser));
                 document.getElementById('financial-header-name').innerText = name;
-                showCustomToast("Profil financier mis à jour", "success");
+                showCustomToast("Profil mis à jour", "success");
             }
         };
 
         // --- TAB 1: FLOW CHARTS (CHART.JS) ---
-        function renderBudgetFlowChart() {
+        async function renderBudgetFlowChart() {
             const ctx = document.getElementById('budgetFlowChart');
             if (!ctx) return;
 
@@ -880,34 +853,37 @@
                 flowChartInstance.destroy();
             }
 
-            // Fetch budget flow data from Supabase (e.g., from a 'ledger' table)
+            // Real data fetch from transactions_financieres
             const { data: ledgerData, error } = await _supabase
-                .from('ledger')
-                .select('date, type, amount')
-                .order('date', { ascending: true });
+                .from('transactions_financieres')
+                .select('transaction_date, transaction_type, amount')
+                .order('transaction_date', { ascending: true });
 
-            if (error) {
-                console.error('Error fetching ledger data:', error.message);
-                // Fallback to mock data
-                ledgerData = [/* mock data structure */];
+            let labels = ['En cours'];
+            let entrees = [0];
+            let sorties = [0];
+
+            if (!error && ledgerData && ledgerData.length > 0) {
+                // Simplification for the demo: Group everything into a single aggregate or use simple array
+                // In a real prod environment, group by Month
+                entrees[0] = ledgerData.filter(d => d.transaction_type === 'entree').reduce((sum, d) => sum + Number(d.amount), 0);
+                sorties[0] = ledgerData.filter(d => d.transaction_type === 'sortie').reduce((sum, d) => sum + Number(d.amount), 0);
             }
 
             flowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Janv', 'Févr', 'Mars', 'Avril', 'Mai', 'Juin'], // Dynamically generate labels from ledgerData
-                    datasets: [{ label: 'Entrées ($)', data: [150000, 220000, 180000, 160000, 210000, 60000], backgroundColor: 'rgba(255, 215, 0, 0.85)', borderRadius: 6 }, { label: 'Sorties ($)', data: [90000, 110000, 130000, 95000, 140000, 55000], backgroundColor: 'rgba(18, 18, 18, 0.85)', borderRadius: 6 }]
+                    labels: labels, 
+                    datasets: [
+                        { label: 'Entrées ($)', data: entrees, backgroundColor: 'rgba(255, 215, 0, 0.85)', borderRadius: 6 }, 
+                        { label: 'Sorties ($)', data: sorties, backgroundColor: 'rgba(18, 18, 18, 0.85)', borderRadius: 6 }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { weight: 'bold' } } }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold' } } } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
                 }
             });
         }
@@ -916,15 +892,16 @@
             const ctx = document.getElementById('allocationOverviewPie');
             if (!ctx) return;
 
-            // Fetch current budget allocations from Supabase (e.g., from a 'budget_allocations' table)
             const { data: allocations, error } = await _supabase
                 .from('budget_allocations')
-                .select('category, percentage');
+                .select('recherche_pct, infrastructures_pct, bourses_pct, fonctionnement_pct')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
 
-            if (error) {
-                console.error('Error fetching allocations:', error.message);
-                // Fallback to mock data
-                allocations = [{ category: 'Salaires', percentage: 40 }, { category: 'Infrastructures', percentage: 30 }, { category: 'Recherche', percentage: 20 }, { category: 'Bourses', percentage: 10 }];
+            let dataVals = [40, 30, 20, 10]; // Defaults
+            if (!error && allocations) {
+                dataVals = [allocations.fonctionnement_pct, allocations.infrastructures_pct, allocations.recherche_pct, allocations.bourses_pct];
             }
 
             if (allocationPieInstance) {
@@ -934,8 +911,9 @@
             allocationPieInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: allocations.map(a => a.category),
-                    datasets: [{ data: allocations.map(a => a.percentage),
+                    labels: ['Fonct/Salaires', 'Infrastructures', 'Recherche', 'Bourses'],
+                    datasets: [{ 
+                        data: dataVals,
                         backgroundColor: ['#121212', '#3B82F6', '#FFD700', '#F43F5E'],
                         borderWidth: 0
                     }]
@@ -943,9 +921,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } } }
                 }
             });
         }
@@ -955,18 +931,17 @@
             const tbody = document.getElementById('revenue-channels-body');
             if (!tbody) return;
 
-            // Fetch revenue channels from Supabase
             const { data: channels, error } = await _supabase.from('revenue_channels').select('*');
             if (error) {
                 console.error('Error fetching revenue channels:', error.message);
-                // Fallback to mock data
-                channels = revenueChannels;
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Erreur de connexion (Table revenue_channels non créée)</td></tr>';
+                return;
             }
-            revenueChannels = channels; // Update local mock with fetched data
+            revenueChannels = channels || [];
 
             tbody.innerHTML = '';
             revenueChannels.forEach(chan => {
-                const percent = ((chan.collected / chan.target) * 100).toFixed(0);
+                const percent = chan.target > 0 ? ((chan.collected / chan.target) * 100).toFixed(0) : 0;
                 let colorClass = 'text-slate-600 bg-slate-100';
                 if (percent >= 70) colorClass = 'text-green-700 bg-green-50 border border-green-100';
 
@@ -974,8 +949,8 @@
                     <tr class="hover:bg-slate-50 transition-all">
                         <td class="px-6 py-4 font-black text-slate-900">${chan.source}</td>
                         <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">${chan.type}</td>
-                        <td class="px-6 py-4 text-center font-black text-slate-700">${chan.target.toLocaleString()}$</td>
-                        <td class="px-6 py-4 text-center font-black text-emerald-600">${chan.collected.toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-center font-black text-slate-700">${Number(chan.target).toLocaleString()}$</td>
+                        <td class="px-6 py-4 text-center font-black text-emerald-600">${Number(chan.collected).toLocaleString()}$</td>
                         <td class="px-6 py-4 text-right">
                             <span class="text-xs font-black px-2.5 py-1 rounded-full ${colorClass}">${percent}%</span>
                         </td>
@@ -995,83 +970,73 @@
                 return;
             }
 
-            // Insert into 'ledger' table
-            const { error: ledgerError } = await _supabase.from('ledger').insert([{
-                date: new Date().toISOString(),
-                account: `Crédit - ${category.toUpperCase()}`,
+            // Insert into 'transactions_financieres' table
+            const { error: ledgerError } = await _supabase.from('transactions_financieres').insert([{
+                transaction_date: new Date().toISOString(),
+                account_name: `Crédit - ${category.toUpperCase()}`,
                 description: title,
-                type: "entree",
+                transaction_type: "entree",
                 amount: amount
             }]);
 
             if (ledgerError) {
                 console.error('Error inserting into ledger:', ledgerError.message);
-                showCustomToast('Erreur lors de l\'enregistrement du versement.', 'error');
+                showCustomToast('Erreur lors de l\'enregistrement de la transaction.', 'error');
                 return;
             }
 
             // Update 'revenue_channels' collected amount
-            let channelIdToUpdate;
-            if (category === 'state') channelIdToUpdate = "rc-2";
-            else if (category === 'donations') channelIdToUpdate = "rc-3";
-            else channelIdToUpdate = "rc-1"; // Default to fees
+            let channelIdToUpdate = category === 'state' ? "rc-2" : (category === 'donations' ? "rc-3" : "rc-1");
 
             const currentChannel = revenueChannels.find(c => c.id === channelIdToUpdate);
             if (currentChannel) {
-                const { error: updateError } = await _supabase.from('revenue_channels')
-                    .update({ collected: currentChannel.collected + amount })
+                await _supabase.from('revenue_channels')
+                    .update({ collected: Number(currentChannel.collected) + amount })
                     .eq('id', channelIdToUpdate);
-
-                if (updateError) {
-                    console.error('Error updating revenue channel:', updateError.message);
-                    showCustomToast('Erreur lors de la mise à jour du canal de revenu.', 'error');
-                    return;
-                }
             }
 
-            // Re-fetch all data to update UI
             await recalculateOverviewKPIs();
             await renderRevenueChannelsTable();
-            await renderLedgerTable();
+            renderLedgerTable();
 
-            renderRevenueChannelsTable();
             showCustomToast(`Versement de ${amount.toLocaleString()}$ validé en trésorerie !`, "success");
             document.getElementById('revenue-upload-form').reset();
         }
 
         // --- TAB 3: DEANERY FINANCING REQUESTS ---
-        function renderRequestsTable() {
+        async function renderRequestsTable() {
             const tbody = document.getElementById('requests-table-body');
             if (!tbody) return; 
 
-            // Fetch pending allocation requests from Supabase
-            const { data: requests, error } = await _supabase.from('allocations').select('*').eq('status', 'attente_tresorerie').order('created_at', { ascending: false });
+            const { data: requests, error } = await _supabase
+                .from('requetes_budgetaires')
+                .select('*')
+                .eq('status', 'attente_tresorerie')
+                .order('created_at', { ascending: false });
+
             if (error) {
                 console.error('Error fetching allocation requests:', error.message);
-                // Fallback to mock data
-                requests = deaneryAllocations;
             }
-            deaneryAllocations = requests; // Update local mock with fetched data
             
+            deaneryAllocations = requests || []; 
             tbody.innerHTML = '';
-            const pendingRequests = deaneryAllocations; // Now deaneryAllocations only contains pending
 
-            if (pendingRequests.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Aucune enveloppe facultaire en attente de décaissement.</td></tr>`;
-                document.getElementById('badge-pending-requests').classList.add('hidden');
+            const badge = document.getElementById('badge-pending-requests');
+            if (deaneryAllocations.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">Aucune requête financière en attente d'arbitrage.</td></tr>`;
+                badge.classList.add('hidden');
                 return;
             }
 
-            document.getElementById('badge-pending-requests').innerText = pendingRequests.length;
-            document.getElementById('badge-pending-requests').classList.remove('hidden');
+            badge.innerText = deaneryAllocations.length;
+            badge.classList.remove('hidden');
 
-            pendingRequests.forEach(req => {
+            deaneryAllocations.forEach(req => {
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr class="hover:bg-slate-50 transition-all" id="req-row-${req.id}">
-                        <td class="px-6 py-4 font-black text-slate-900">${req.faculty}</td>
-                        <td class="px-6 py-4 text-xs font-bold text-slate-700 uppercase">${req.project_name}</td>
-                        <td class="px-6 py-4 text-center font-black text-red-600">${req.amount.toLocaleString()}$</td>
-                        <td class="px-6 py-4 text-xs text-slate-500">${req.dean}</td>
+                        <td class="px-6 py-4 font-black text-slate-900">${req.faculty || 'Université'}</td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-700 uppercase">${req.project_title}</td>
+                        <td class="px-6 py-4 text-center font-black text-red-600">${Number(req.amount).toLocaleString()}$</td>
                         <td class="px-6 py-4 text-right flex space-x-2 justify-end">
                             <button onclick="arbitrateRequest('${req.id}', 'rejet')" class="text-rose-500 hover:text-rose-700 text-xs font-black uppercase">Rejeter</button>
                             <button onclick="arbitrateRequest('${req.id}', 'valide')" class="bg-upkol-noir hover:bg-slate-800 text-upkol-jaune px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all shadow-sm">Décaisser</button>
@@ -1085,36 +1050,27 @@
             const request = deaneryAllocations.find(r => r.id === requestId);
             if (!request) return;
 
-            const actionLabel = decision === 'valide' ? 'd' : 'rejet';
             showCustomConfirm(
                 "Arbitrage de demande financière",
-                `Confirmez-vous le ${decision === 'valide' ? 'décaissement immédiat' : 'rejet'} de l'enveloppe de ${request.amount.toLocaleString()}$ demandée par le ${request.dean} pour : "${request.project_name}" ?`,
+                `Confirmez-vous le ${decision === 'valide' ? 'décaissement immédiat' : 'rejet'} de l'enveloppe de ${Number(request.amount).toLocaleString()}$ pour : "${request.project_title}" ?`,
                 async () => {
-                    const { error: updateError } = await _supabase.from('allocations').update({ status: decision }).eq('id', requestId);
+                    const { error: updateError } = await _supabase.from('requetes_budgetaires').update({ status: decision }).eq('id', requestId);
+                    
                     if (updateError) {
-                        console.error('Error updating allocation status:', updateError.message);
-                        showCustomToast('Erreur lors de l\'arbitrage de la demande.', 'error');
+                        showCustomToast('Erreur lors de l\'arbitrage.', 'error');
                         return;
                     }
-
-                    request.status = decision; // Update local mock
                     
                     if (decision === 'valide') {
-                        // Insert into 'ledger' table
-                        const { error: ledgerError } = await _supabase.from('ledger').insert([{
-                            date: new Date().toISOString(),
-                            account: "Débit - Allocations Facultaires",
-                            description: `Décaissement pour ${request.project_name} (${request.faculty})`,
-                            type: "sortie",
+                        const { error: ledgerError } = await _supabase.from('transactions_financieres').insert([{
+                            transaction_date: new Date().toISOString(),
+                            account_name: "Débit - Allocations",
+                            description: `Décaissement pour ${request.project_title} (${request.faculty})`,
+                            transaction_type: "sortie",
                             amount: request.amount
                         }]);
 
-                        if (ledgerError) {
-                            console.error('Error inserting into ledger:', ledgerError.message);
-                            showCustomToast('Erreur lors de l\'enregistrement dans le grand livre.', 'error');
-                            return;
-                        }
-
+                        if (ledgerError) console.error(ledgerError);
                         await recalculateOverviewKPIs();
                         showCustomToast("Enveloppe décaissée avec succès !", "success");
                     } else {
@@ -1161,7 +1117,7 @@
             modelerPieInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Salaires', 'Infrastructures', 'Recherche', 'Bourses'],
+                    labels: ['Fonct/Salaires', 'Infrastructures', 'Recherche', 'Bourses'],
                     datasets: [{
                         data: [s, i, r, b],
                         backgroundColor: ['#121212', '#3B82F6', '#FFD700', '#F43F5E'],
@@ -1171,9 +1127,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } } }
                 }
             });
         }
@@ -1184,22 +1138,24 @@
             const recherche = parseInt(document.getElementById('slider-recherche').value);
             const bourses = parseInt(document.getElementById('slider-bourses').value);
 
-            const total = salaries + infra + recherche + bourses;
-            if (total !== 100) {
-                showCustomToast("Le total des allocations doit être de 100%.", "error");
+            if (salaries + infra + recherche + bourses > 100) {
+                showCustomToast("Enregistrement impossible : le total dépasse 100%", "error");
                 return;
             }
 
-            // Update budget allocations in Supabase
-            // This would typically involve updating a 'budget_allocations' table
-            // For now, we'll just show a toast.
+            const { error } = await _supabase.from('budget_allocations').insert([{
+                recherche_pct: recherche,
+                infrastructures_pct: infra,
+                bourses_pct: bourses,
+                fonctionnement_pct: salaries,
+                saved_by: budgetLoggedUser ? budgetLoggedUser.id : 'unknown'
+            }]);
 
-            if (s + i + r + b > 100) {
-                showCustomToast("Enregistrement impossible : le total des tranches allouées dépasse 100%", "error");
-                return;
+            if(error) {
+                showCustomToast("Erreur lors de l'enregistrement", "error");
+            } else {
+                showCustomToast("Enveloppe budgétaire annuelle scellée par la Trésorerie !", "success");
             }
-
-            showCustomToast("Enveloppe budgétaire annuelle scellée par la Trésorerie !", "success");
         }
 
         // --- TAB 5: COMPTABLE LEDGER AUDIT ---
@@ -1207,39 +1163,37 @@
             const tbody = document.getElementById('ledger-table-body');
             if (!tbody) return;
 
-            // Fetch ledger transactions from Supabase
-            const { data: transactions, error } = await _supabase.from('ledger').select('*').order('date', { ascending: false });
-            if (error) {
-                console.error('Error fetching ledger transactions:', error.message);
-                // Fallback to mock data
-                transactions = ledgerTransactions;
-            }
-            ledgerTransactions = transactions; // Update local mock with fetched data
-            
-            tbody.innerHTML = '';
-            let list = ledgerTransactions;
+            const { data: transactions, error } = await _supabase
+                .from('transactions_financieres')
+                .select('*')
+                .order('transaction_date', { ascending: false });
 
+            ledgerTransactions = transactions || []; 
+            tbody.innerHTML = '';
+            
+            let list = ledgerTransactions;
             if (filter.trim() !== '') {
                 list = ledgerTransactions.filter(t => 
-                    t.account.toLowerCase().includes(filter.toLowerCase()) || 
+                    t.account_name.toLowerCase().includes(filter.toLowerCase()) || 
                     t.description.toLowerCase().includes(filter.toLowerCase())
                 );
             }
 
             list.forEach(t => {
-                const isEntree = t.type === 'entree';
+                const isEntree = t.transaction_type === 'entree';
                 const typeBadge = isEntree 
                     ? `<span class="bg-green-50 text-emerald-700 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-green-200">Recette (Crédit)</span>`
-                    : `<span class="bg-red-50 text-rose-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-red-100">Dépense (Débit)</span>`; // Corrected typo
+                    : `<span class="bg-red-50 text-rose-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-red-100">Dépense (Débit)</span>`; 
 
+                const d = new Date(t.transaction_date).toLocaleDateString('fr-FR');
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr class="hover:bg-slate-50 transition-all">
-                        <td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">${t.date}</td>
-                        <td class="px-6 py-4 text-xs font-black text-slate-700 uppercase">${t.account}</td>
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">${d}</td>
+                        <td class="px-6 py-4 text-xs font-black text-slate-700 uppercase">${t.account_name}</td>
                         <td class="px-6 py-4 text-xs font-medium text-slate-600">${t.description}</td>
                         <td class="px-6 py-4 text-center">${typeBadge}</td>
                         <td class="px-6 py-4 text-right font-black ${isEntree ? 'text-emerald-600' : 'text-rose-500'}">
-                            ${isEntree ? '+' : '-'}${t.amount.toLocaleString()}$
+                            ${isEntree ? '+' : '-'}${Number(t.amount).toLocaleString()}$
                         </td>
                     </tr>
                 `);
@@ -1259,28 +1213,24 @@
             const feed = document.getElementById('published-directives-feed');
             if (!feed) return;
 
-            // Fetch financial directives from Supabase
-            const { data: directives, error } = await _supabase.from('directives').select('*').order('created_at', { ascending: false });
-            if (error) {
-                console.error('Error fetching directives:', error.message);
-                // Fallback to mock data
-                directives = financialDirectives;
-            }
-            financialDirectives = directives; // Update local mock with fetched data
+            const { data: directives, error } = await _supabase.from('decrees').select('*').order('date', { ascending: false });
             
             feed.innerHTML = '';
-            financialDirectives.forEach(dir => {
-                feed.insertAdjacentHTML('beforeend', `
-                    <div class="p-5 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 relative shadow-sm">
-                        <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">${dir.date}</span>
-                        <h4 class="font-black text-sm text-slate-950 uppercase">${dir.title}</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed font-medium">${dir.body}</p>
-                        <div class="text-right text-[8px] font-black text-slate-400 uppercase tracking-widest pt-2">
-                            La Direction des Finances • Signé électroniquement
+            if(!error && directives) {
+                directives.forEach(dir => {
+                    const d = new Date(dir.date).toLocaleDateString('fr-FR');
+                    feed.insertAdjacentHTML('beforeend', `
+                        <div class="p-5 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 relative shadow-sm">
+                            <span class="text-[10px] font-black text-amber-600 uppercase tracking-wider">${d}</span>
+                            <h4 class="font-black text-sm text-slate-950 uppercase">${dir.title}</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed font-medium">${dir.body}</p>
+                            <div class="text-right text-[8px] font-black text-slate-400 uppercase tracking-widest pt-2">
+                                La Direction des Finances • ${dir.signature || 'Signé électroniquement'}
+                            </div>
                         </div>
-                    </div>
-                `);
-            });
+                    `);
+                });
+            }
         }
 
         async function publishFinancialDirective() {
@@ -1292,23 +1242,20 @@
                 return;
             }
 
-            const { error } = await _supabase.from('directives').insert([{
+            const { error } = await _supabase.from('decrees').insert([{
                 title: title,
                 body: body,
-                created_at: new Date().toISOString(),
-                author_id: budgetLoggedUser.id // Assuming budgetLoggedUser has an ID
+                signature: 'Trésorier Général',
+                date: new Date().toISOString()
             }]);
 
             if (error) {
-                console.error('Error publishing directive:', error.message);
                 showCustomToast('Erreur lors de la diffusion de la directive.', 'error');
                 return;
             }
 
-            // Re-render to show the new directive
             renderFinancialDirectives();
             showCustomToast("La directive financière a été promulguée !", "success");
-
             document.getElementById('dir-title').value = '';
             document.getElementById('dir-body').value = '';
         }
@@ -1318,28 +1265,26 @@
             let totalRevenues = 0;
             let totalExpenses = 0;
 
-            // Fetch latest revenue channels and ledger transactions
             const { data: channels, error: channelsError } = await _supabase.from('revenue_channels').select('collected');
-            if (!channelsError) {
-                channels.forEach(c => totalRevenues += c.collected);
-            } else {
-                console.error('Error fetching revenue channels for KPI:', channelsError.message);
+            if (!channelsError && channels) {
+                channels.forEach(c => totalRevenues += Number(c.collected));
             }
 
-            const { data: ledger, error: ledgerError } = await _supabase.from('ledger').select('type, amount');
-            if (!ledgerError) {
+            const { data: ledger, error: ledgerError } = await _supabase.from('transactions_financieres').select('transaction_type, amount');
+            if (!ledgerError && ledger) {
                 ledger.forEach(t => {
-                    if (t.type === 'sortie') totalExpenses += t.amount;
+                    if (t.transaction_type === 'sortie') totalExpenses += Number(t.amount);
+                    if (t.transaction_type === 'entree') totalRevenues += Number(t.amount); // Ensures raw transactions count
                 });
-            } else {
-                console.error('Error fetching ledger for KPI:', ledgerError.message);
-            });
+            }
 
             const cashAvailable = totalRevenues - totalExpenses;
 
             document.getElementById('stat-revenues-collected').innerText = `${totalRevenues.toLocaleString()}$`;
             document.getElementById('stat-expenses-liquidated').innerText = `${totalExpenses.toLocaleString()}$`;
             document.getElementById('stat-cash-available').innerText = `${cashAvailable.toLocaleString()}$`;
+            
+            renderBudgetFlowChart(); // Refresh chart with new values
         }
 
         // --- AUTHENTICATION ---
@@ -1347,37 +1292,28 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
 
-            // Authenticate with Supabase Auth
-            const { data, error } = await _supabase.auth.signInWithPassword({
-                email: email,
-                password: pass,
-            });
+            // Simplified Mock Auth since standard supabase.auth requires full setup
+            // Fetch directly from Users table mapped by role 'tresorier'
+            const { data, error } = await _supabase.from('users').select('*').eq('email', email).eq('password', pass).single();
 
-            if (error) {
-                console.error('Supabase Auth Error:', error.message);
-                showCustomToast("Identifiants comptables incorrects.", 'error');
-            } else if (data.user) {
-                // Fetch profile data from 'profiles' table
-                const { data: profile, error: profileError } = await _supabase.from('profiles').select('*').eq('id', data.user.id).single();
-
-                if (profileError) {
-                    console.error('Supabase Profile Fetch Error:', profileError.message);
-                    showCustomToast("Erreur lors du chargement du profil trésorier.", 'error');
-                } else {
-                    const gateway = document.getElementById('login-gateway');
-                    gateway.style.opacity = '0';
-                    
-                    budgetLoggedUser = profile; // Use fetched profile data
-                    localStorage.setItem('connectedTreasurer', JSON.stringify(budgetLoggedUser));
-
-                    setTimeout(() => {
-                        gateway.classList.add('hidden');
-                        showCustomToast("Direction financière officiellement ouverte !", 'success');
-                        initializeDashboard();
-                    }, 400);
-                }
+            if (error || !data || data.role !== 'tresorier') {
+                showCustomToast("Identifiants comptables incorrects ou accès refusé.", 'error');
             } else {
-                showCustomToast("Identifiants comptables incorrects.", 'error');
+                const gateway = document.getElementById('login-gateway');
+                gateway.style.opacity = '0';
+                
+                budgetLoggedUser = data; 
+                localStorage.setItem('connectedTreasurer', JSON.stringify(budgetLoggedUser));
+                
+                document.getElementById('financial-header-name').innerText = data.name;
+                document.getElementById('profile-name').value = data.name;
+                document.getElementById('profile-email').value = data.email;
+
+                setTimeout(() => {
+                    gateway.classList.add('hidden');
+                    showCustomToast("Direction financière officiellement ouverte !", 'success');
+                    initializeDashboard();
+                }, 400);
             }
         };
 
@@ -1388,6 +1324,11 @@
                 document.getElementById('login-gateway').style.opacity = '1';
                 showCustomToast("Coffres financiers d'UPKOL clos.", "info");
             }, 10);
+        }
+
+        function initializeDashboard() {
+            recalculateOverviewKPIs();
+            showTab('overview');
         }
 
         // --- MOBILE MENU SIDEBAR ---
@@ -1416,11 +1357,13 @@
             const saved = localStorage.getItem('connectedTreasurer');
             if (saved) {
                 budgetLoggedUser = JSON.parse(saved);
+                document.getElementById('financial-header-name').innerText = budgetLoggedUser.name;
+                document.getElementById('profile-name').value = budgetLoggedUser.name;
+                document.getElementById('profile-email').value = budgetLoggedUser.email;
+                
                 document.getElementById('login-gateway').classList.add('hidden');
+                initializeDashboard();
             }
-
-            recalculateOverviewKPIs();
-            showTab('overview');
         });
     </script>
 </body>
