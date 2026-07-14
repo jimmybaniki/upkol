@@ -31,6 +31,10 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Chart.js pour l'analyse stratégique -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -93,6 +97,20 @@
             font-family: 'Cinzel', serif;
             transform: rotate(-8deg);
         }
+
+        /* 3D Card CSS */
+        .card-container { perspective: 1000px; }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-container:hover .card-inner, .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .card-back { transform: rotateY(180deg); }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-800">
@@ -833,6 +851,13 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Bouton de téléchargement -->
+                    <div class="mt-6 text-center">
+                        <button onclick="downloadCardAsPDF()" class="bg-upkol-noir text-upkol-jaune px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-800 transition-all shadow-md flex items-center justify-center mx-auto gap-2">
+                            <i class="fas fa-download"></i> Télécharger la Carte
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1003,7 +1028,7 @@
                                         </div>
                                         <div>
                                             <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
-                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Pédagogique de Kolwezi</span>
                                         </div>
                                     </div>
                                     <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
@@ -1042,6 +1067,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Bouton de téléchargement -->
+                    <div class="mt-6 text-center">
+                        <button onclick="downloadCardAsPDF()" class="bg-upkol-noir text-upkol-jaune px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-800 transition-all shadow-md flex items-center justify-center mx-auto gap-2">
+                            <i class="fas fa-download"></i> Télécharger la Carte
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1628,6 +1660,80 @@
             }
         }
 
+        // --- PDF CARD DOWNLOAD ---
+        async function downloadCardAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const cardFront = document.querySelector('#tab-idcard .card-front');
+            const cardBack = document.querySelector('#tab-idcard .card-back');
+            const matricule = document.getElementById('idcard-matricule-display').innerText || 'carte-recteur-upkol';
+
+            if (!cardFront || !cardBack) {
+                showCustomToast("Erreur: Impossible de trouver les éléments de la carte.", "error");
+                return;
+            }
+
+            showCustomToast("Génération du PDF en cours...", "info");
+
+            try {
+                const canvasFront = await html2canvas(cardFront, { scale: 3, useCORS: true, backgroundColor: null });
+                const canvasBack = await html2canvas(cardBack, { scale: 3, useCORS: true, backgroundColor: null });
+
+                const imgDataFront = canvasFront.toDataURL('image/png');
+                const imgDataBack = canvasBack.toDataURL('image/png');
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvasFront.width, canvasFront.height]
+                });
+
+                pdf.addImage(imgDataFront, 'PNG', 0, 0, canvasFront.width, canvasFront.height);
+                pdf.addPage([canvasBack.width, canvasBack.height], 'portrait');
+                pdf.addImage(imgDataBack, 'PNG', 0, 0, canvasBack.width, canvasBack.height);
+                pdf.save(`carte_upkol_${matricule}.pdf`);
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF:", error);
+                showCustomToast("Une erreur est survenue lors de la création du PDF.", "error");
+            }
+        }
+
+        // --- PDF CARD DOWNLOAD ---
+        async function downloadCardAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const cardFront = document.querySelector('#tab-idcard .card-front');
+            const cardBack = document.querySelector('#tab-idcard .card-back');
+            const matricule = document.getElementById('idcard-matricule-display').innerText || 'carte-recteur-upkol';
+
+            if (!cardFront || !cardBack) {
+                showCustomToast("Erreur: Impossible de trouver les éléments de la carte.", "error");
+                return;
+            }
+
+            showCustomToast("Génération du PDF en cours...", "info");
+
+            try {
+                const canvasFront = await html2canvas(cardFront, { scale: 3, useCORS: true, backgroundColor: null });
+                const canvasBack = await html2canvas(cardBack, { scale: 3, useCORS: true, backgroundColor: null });
+
+                const imgDataFront = canvasFront.toDataURL('image/png');
+                const imgDataBack = canvasBack.toDataURL('image/png');
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvasFront.width, canvasFront.height]
+                });
+
+                pdf.addImage(imgDataFront, 'PNG', 0, 0, canvasFront.width, canvasFront.height);
+                pdf.addPage([canvasBack.width, canvasBack.height], 'portrait');
+                pdf.addImage(imgDataBack, 'PNG', 0, 0, canvasBack.width, canvasBack.height);
+                pdf.save(`carte_upkol_${matricule}.pdf`);
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF:", error);
+                showCustomToast("Une erreur est survenue lors de la création du PDF.", "error");
+            }
+        }
+
         // --- LOGIQUE D'AUTHENTIFICATION DE LA PASSERELLE ---
         async function authenticateGateway() {
             const emailInput = document.getElementById('login-email').value.trim();
@@ -1650,28 +1756,23 @@
                     .eq('role', 'recteur')
                     .single();
 
-                if (error || !data) {
-                    if (emailInput === 'recteur@upkol.cd' && passwordInput === ' yourcode ') {
-                        console.warn("Connexion impossible à Supabase. Utilisation du mode local pour la démo.");
-                        finalizeLogin({ id: 'fallback', name: 'Prof. Mbuyi (Mode Local)', email: emailInput, personal_email: 'mbuyi.perso@upkol.cd', role: 'recteur' });
-                        return;
-                    }
+                if (error || !data) {                    
                     showCustomToast("Identifiant Recteur introuvable ou accès non autorisé.", "error");
-                    resetLoginBtn(btn);
-                    return;
+                    throw new Error("User not found or not a rector."); // Stoppe l'exécution ici
                 }
 
                 if (data.password !== passwordInput && data.matricule !== passwordInput) {
                     showCustomToast("Clé d'authentification invalide.", "error");
-                    resetLoginBtn(btn);
-                    return;
+                    throw new Error("Invalid password."); // Stoppe l'exécution ici
                 }
 
                 finalizeLogin(data);
 
             } catch (err) {
-                console.error("Erreur d'authentification:", err);
-                finalizeLogin({ id: 'fallback', name: 'Prof. Mbuyi', email: 'recteur@upkol.cd', personal_email: 'mbuyi.perso@upkol.cd', role: 'recteur' });
+                console.error("Erreur d'authentification:", err.message);
+                resetLoginBtn(btn);
+            } finally {
+                // Le `finally` ne s'exécute que si une erreur est levée, donc on peut le laisser vide ou le supprimer.
             }
         }
 
@@ -1696,6 +1797,11 @@
             document.getElementById('profile-email').value = connectedUser.email;
             document.getElementById('profile-personal-email').value = connectedUser.personal_email;
             document.getElementById('profile-display-name').innerText = connectedUser.name;
+
+            // Remplir la carte de membre
+            document.getElementById('idcard-name').innerText = connectedUser.name;
+            document.getElementById('idcard-role').innerText = roleLabels['recteur'].roleText;
+            document.getElementById('idcard-matricule-display').innerText = userData.matricule || 'UPK-REC-0001';
 
             // Charger l'avatar en mémoire locale s'il existe
             const savedAvatar = localStorage.getItem(`avatar_recteur_${connectedUser.id}`);
@@ -3513,19 +3619,20 @@
 
         // --- INITIALISATION DU DASHBOARD ---
         async function initializeDashboardOnAuth() {
+            const session = JSON.parse(localStorage.getItem('connectedUser'));
+            if (!session || !session.id) return;
+
             loadCandidaturesPourRecteur();
             loadInscritsPourRecteur();
             renderDecrees();
             renderSecurityLogs();
             updateBudgetSimulation();
             loadWithdrawals(); // Charge l'historique des décaissements
-
+            
             // Charger tous les utilisateurs pour la messagerie
             try {
                 const { data, error } = await _supabase.from('users').select('*');
-                if (!error) {
-                    allUsersData = data || [];
-                }
+                if (!error) allUsersData = data || [];
             } catch (err) {
                 console.error(err);
             }
@@ -3533,55 +3640,13 @@
             renderFeesCollectionChart(); 
             loadNotifications(); 
             renderContacts();
-            
-            document.getElementById('rectorFacultyFilter').addEventListener('change', () => {
-                afficherCandidatures(candidaturesList);
-            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const session = localStorage.getItem('connectedUser');
             if (session) {
                 const user = JSON.parse(session);
-
-                if(user.role === 'recteur') {
-                    document.getElementById('login-gateway').classList.add('hidden');
-                    document.getElementById('user-name').innerText = user.name;
-                    document.getElementById('user-role').innerText = roleLabels['recteur'].roleText;
-                    
-                    // Remplir profil
-                    document.getElementById('profile-name').value = user.name;
-                    document.getElementById('profile-email').value = user.email;
-                    document.getElementById('profile-personal-email').value = user.personal_email || localStorage.getItem('personal_email') || 'mbuyi.personnel@gmail.com';
-                    document.getElementById('profile-display-name').innerText = user.name;
-
-            // ID Card
-            document.getElementById('idcard-name').innerText = user.name;
-            document.getElementById('idcard-role').innerText = roleLabels['recteur'].roleText;
-            document.getElementById('idcard-matricule-display').innerText = user.matricule || 'UPK-REC-0001';
-            
-            // Carte de membre - Photo
-            const cardPhotoImg = document.getElementById('idcard-photo-img');
-            if (savedAvatar && cardPhotoImg) {
-                cardPhotoImg.src = savedAvatar;
-                cardPhotoImg.classList.remove('hidden');
-                document.getElementById('idcard-photo-fallback').classList.add('hidden');
-            }
-
-                    const savedAvatar = user.id ? localStorage.getItem(`avatar_recteur_${user.id}`) : null;
-                    if (savedAvatar) {
-                        applyGlobalAvatar(savedAvatar);
-                    }
-                    
-                    initializeDashboardOnAuth();
-                } else {
-                if (savedAvatar && cardPhotoImg) {
-                    cardPhotoImg.src = savedAvatar;
-                    cardPhotoImg.classList.remove('hidden');
-                    document.getElementById('idcard-photo-fallback').classList.add('hidden');
-                }
-                    localStorage.removeItem('connectedUser');
-                }
+                finalizeLogin(user);
             }
         });
     </script>

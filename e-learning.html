@@ -30,6 +30,10 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -456,7 +460,7 @@
                                         </div>
                                         <div>
                                             <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
-                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Pédagogique de Kolwezi</span>
                                         </div>
                                     </div>
                                     <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
@@ -513,6 +517,13 @@
                             </div>
 
                         </div>
+                    </div>
+
+                    <!-- Bouton de téléchargement -->
+                    <div class="mt-6 text-center">
+                        <button onclick="downloadCardAsPDF()" class="bg-upkol-noir text-upkol-jaune px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-800 transition-all shadow-md flex items-center justify-center mx-auto gap-2">
+                            <i class="fas fa-download"></i> Télécharger la Carte
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1313,6 +1324,80 @@
             const cardInner = document.getElementById('student-card-inner');
             if (cardInner) {
                 cardInner.parentNode.classList.toggle('flipped');
+            }
+        }
+
+        // --- PDF CARD DOWNLOAD ---
+        async function downloadCardAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const cardFront = document.querySelector('#tab-idcard .card-front');
+            const cardBack = document.querySelector('#tab-idcard .card-back');
+            const matricule = document.getElementById('idcard-matricule-display').innerText || 'carte-upkol';
+
+            if (!cardFront || !cardBack) {
+                showCustomToast("Erreur: Impossible de trouver les éléments de la carte.", "error");
+                return;
+            }
+
+            showCustomToast("Génération du PDF en cours...", "info");
+
+            try {
+                const canvasFront = await html2canvas(cardFront, { scale: 3, useCORS: true, backgroundColor: null });
+                const canvasBack = await html2canvas(cardBack, { scale: 3, useCORS: true, backgroundColor: null });
+
+                const imgDataFront = canvasFront.toDataURL('image/png');
+                const imgDataBack = canvasBack.toDataURL('image/png');
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvasFront.width, canvasFront.height]
+                });
+
+                pdf.addImage(imgDataFront, 'PNG', 0, 0, canvasFront.width, canvasFront.height);
+                pdf.addPage([canvasBack.width, canvasBack.height], 'portrait');
+                pdf.addImage(imgDataBack, 'PNG', 0, 0, canvasBack.width, canvasBack.height);
+                pdf.save(`carte_upkol_${matricule}.pdf`);
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF:", error);
+                showCustomToast("Une erreur est survenue lors de la création du PDF.", "error");
+            }
+        }
+
+        // --- PDF CARD DOWNLOAD ---
+        async function downloadCardAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const cardFront = document.querySelector('#tab-idcard .card-front');
+            const cardBack = document.querySelector('#tab-idcard .card-back');
+            const matricule = document.getElementById('idcard-matricule-display').innerText || 'carte-upkol';
+
+            if (!cardFront || !cardBack) {
+                showCustomToast("Erreur: Impossible de trouver les éléments de la carte.", "error");
+                return;
+            }
+
+            showCustomToast("Génération du PDF en cours...", "info");
+
+            try {
+                const canvasFront = await html2canvas(cardFront, { scale: 3, useCORS: true, backgroundColor: null });
+                const canvasBack = await html2canvas(cardBack, { scale: 3, useCORS: true, backgroundColor: null });
+
+                const imgDataFront = canvasFront.toDataURL('image/png');
+                const imgDataBack = canvasBack.toDataURL('image/png');
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvasFront.width, canvasFront.height]
+                });
+
+                pdf.addImage(imgDataFront, 'PNG', 0, 0, canvasFront.width, canvasFront.height);
+                pdf.addPage([canvasBack.width, canvasBack.height], 'portrait');
+                pdf.addImage(imgDataBack, 'PNG', 0, 0, canvasBack.width, canvasBack.height);
+                pdf.save(`carte_upkol_${matricule}.pdf`);
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF:", error);
+                showCustomToast("Une erreur est survenue lors de la création du PDF.", "error");
             }
         }
 

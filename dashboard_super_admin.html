@@ -28,6 +28,10 @@
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -463,7 +467,7 @@
                                         </div>
                                         <div>
                                             <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
-                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Pédagogique de Kolwezi</span>
                                         </div>
                                     </div>
                                     <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
@@ -491,6 +495,13 @@
                             <!-- Verso de la carte -->
                             <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-center items-center overflow-hidden"><p class="text-center text-slate-400 italic text-xs">Verso de la carte du Super Administrateur.</p></div>
                         </div>
+                    </div>
+
+                    <!-- Bouton de téléchargement -->
+                    <div class="mt-6 text-center">
+                        <button onclick="downloadCardAsPDF()" class="bg-upkol-noir text-upkol-jaune px-6 py-3 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-gray-800 transition-all shadow-md flex items-center justify-center mx-auto gap-2">
+                            <i class="fas fa-download"></i> Télécharger la Carte
+                        </button>
                     </div>
                 </div>
             </div>
