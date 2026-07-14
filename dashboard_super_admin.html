@@ -40,6 +40,16 @@
         .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
         .portal-enter { animation: portalFadeIn 0.5s ease-out forwards; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* 3D Card CSS */
+        .card-container { perspective: 1000px; }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-container:hover .card-inner, .card-container.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .card-back { transform: rotateY(180deg); }
         @keyframes portalFadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(10px); } }
         
         /* Toast Animation */
@@ -137,6 +147,18 @@
             <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3 mb-2 mt-6">Communication</p>
             <button id="btn-tab-messaging" onclick="switchAdminTab('messaging')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
                 <i class="fas fa-comments mr-3 w-5 text-center"></i> Messagerie Interne
+            </button>
+
+            <!-- CARTE DE MEMBRE SUPER ADMIN -->
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3 mb-2 mt-6">Identité</p>
+            <button id="btn-tab-idcard" onclick="switchAdminTab('idcard')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <i class="fas fa-id-card mr-3 w-5 text-center"></i> Carte de Membre
+            </button>
+
+            <!-- CARTE DE MEMBRE SUPER ADMIN -->
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-3 mb-2 mt-6">Identité</p>
+            <button id="btn-tab-idcard" onclick="switchAdminTab('idcard')" class="w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                <i class="fas fa-id-card mr-3 w-5 text-center"></i> Carte de Membre
             </button>
         </nav>
         <div class="p-4 border-t border-gray-800 mt-auto">
@@ -422,6 +444,62 @@
                 </div>
             </div>
 
+            <!-- ========================================== -->
+            <!-- SECTION 5 : CARTE DE MEMBRE SUPER ADMIN    -->
+            <!-- ========================================== -->
+            <div id="idcard-section" class="hidden">
+                <div class="flex flex-col items-center justify-center space-y-6 py-6">
+                    <div class="text-center">
+                        <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Carte Digitale d'Identité Professionnelle</h3>
+                        <p class="text-xs text-slate-400 font-bold uppercase mt-1">Appuyez sur la carte pour la retourner</p>
+                    </div>
+
+                    <!-- Carte 3D Interactive Container -->
+                    <div class="card-container w-80 h-[480px] cursor-pointer" onclick="this.classList.toggle('flipped')">
+                        <div class="card-inner w-full h-full relative">
+                            
+                            <!-- Recto de la carte -->
+                            <div class="card-front bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -right-16 -top-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-upkol-jaune rounded flex items-center justify-center text-slate-950">
+                                            <i class="fas fa-university text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md">
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                            <i class="fas fa-user-shield text-5xl"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h3 class="font-black text-lg tracking-tight uppercase" id="idcard-name">Chargement...</h3>
+                                        <p class="text-[9px] text-upkol-jaune font-bold tracking-widest uppercase mt-0.5" id="idcard-role">Super Administrateur</p>
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-800 pt-4 flex justify-between items-end text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <div><span>Matricule</span><p class="text-white font-black text-xs mt-0.5" id="idcard-matricule-display">UPK-ADM-0001</p></div>
+                                    <div class="text-right"><span>Statut</span><p class="text-emerald-500 font-black text-xs mt-0.5">Actif</p></div>
+                                </div>
+                            </div>
+
+                            <!-- Verso de la carte -->
+                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-center items-center overflow-hidden"><p class="text-center text-slate-400 italic text-xs">Verso de la carte du Super Administrateur.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -721,6 +799,11 @@
                         currentAdminUser = { id: 'demo_admin_id', name: 'Admin Démo', role: 'super_admin' };
                         document.getElementById('admin-header-name').innerText = currentAdminUser.name;
                         
+                        // Remplir la carte de membre
+                        document.getElementById('idcard-name').innerText = currentAdminUser.name;
+                        document.getElementById('idcard-role').innerText = "Super Administrateur";
+                        document.getElementById('idcard-matricule-display').innerText = "UPK-ADM-0001";
+
                         document.getElementById('login-portal').classList.add('hidden');
                         showToast('Connexion de secours réussie (Admin démo).', 'success');
                     } else {
@@ -813,6 +896,7 @@
             document.getElementById('candidatures-section').classList.add('hidden');
             document.getElementById('inscrits-section').classList.add('hidden');
             document.getElementById('messaging-section').classList.add('hidden');
+            document.getElementById('idcard-section').classList.add('hidden');
             document.getElementById('stats-dashboard').classList.remove('hidden');
             
             const btnClassesDefault = 'w-full flex items-center p-3 rounded-lg font-bold text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors';
@@ -820,6 +904,7 @@
             document.getElementById('btn-tab-candidatures').className = btnClassesDefault;
             document.getElementById('btn-tab-inscrits').className = btnClassesDefault;
             document.getElementById('btn-tab-messaging').className = btnClassesDefault;
+            document.getElementById('btn-tab-idcard').className = btnClassesDefault;
 
             document.getElementById(tabId + '-section').classList.remove('hidden');
             document.getElementById('btn-tab-' + tabId).className = 'w-full flex items-center p-3 rounded-lg font-bold text-sm bg-upkol-jaune text-black transition-all';
@@ -832,6 +917,9 @@
                 titleEl.innerHTML = 'Messagerie Sécurisée Super Admin';
                 document.getElementById('stats-dashboard').classList.add('hidden');
                 renderContacts();
+            }
+            if (tabId === 'idcard') {
+                titleEl.innerHTML = 'Carte de Membre Super Administrateur';
             }
 
             if(window.innerWidth < 1024) {

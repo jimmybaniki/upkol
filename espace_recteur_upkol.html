@@ -1010,10 +1010,9 @@
                                 </div>
 
                                 <div class="space-y-4">
-                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md">
-                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
-                                            <i class="fas fa-user-tie text-5xl"></i>
-                                        </div>
+                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md relative">
+                                        <i id="idcard-photo-fallback" class="fas fa-user-tie text-5xl text-slate-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+                                        <img id="idcard-photo-img" src="" alt="Photo de profil" class="hidden w-full h-full object-cover">
                                     </div>
 
                                     <div class="text-center">
@@ -1029,7 +1028,19 @@
                             </div>
 
                             <!-- Verso de la carte -->
-                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-center items-center overflow-hidden"><p class="text-center text-slate-400 italic text-xs">Verso de la carte du personnel.</p></div>
+                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-center items-center overflow-hidden">
+                                <div class="text-center border-b border-slate-800 pb-4">
+                                    <h4 class="font-black text-xs text-upkol-jaune uppercase tracking-wider">Charte & Accès Sécurisé</h4>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl w-40 h-40 mx-auto my-6 flex items-center justify-center shadow-inner">
+                                    <svg id="idcard-qrcode" class="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
+                                        <path d="M10,10 h30 v30 h-30 z M15,15 h20 v20 h-20 z M22,22 h6 v6 h-6 z M60,10 h30 v30 h-30 z M65,15 h20 v20 h-20 z M72,22 h6 v6 h-6 z M10,60 h30 v30 h-30 z M15,65 h20 v20 h-20 z M22,72 h6 v6 h-6 z M50,50 h10 v10 h-10 z M60,60 h10 v10 h-10 z M50,70 h15 v15 h-15 z M75,50 h15 v10 h-15 z M80,75 h10 v15 h-10 z M65,55 h8 v8 h-8 z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-[8px] text-slate-400 font-bold leading-relaxed text-center uppercase tracking-wide">
+                                    <p>Cette carte est personnelle et incessible.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1694,6 +1705,12 @@
 
             const gateway = document.getElementById('login-gateway');
             gateway.classList.add('opacity-0');
+            if (savedAvatar && cardPhotoImg) {
+                cardPhotoImg.src = savedAvatar;
+                cardPhotoImg.classList.remove('hidden');
+                document.getElementById('idcard-photo-fallback').classList.add('hidden');
+            }
+
             setTimeout(() => gateway.classList.add('hidden'), 500);
 
             showCustomToast(`Session exécutive ouverte : ${connectedUser.name}`, 'success');
@@ -3542,6 +3559,14 @@
             document.getElementById('idcard-name').innerText = user.name;
             document.getElementById('idcard-role').innerText = roleLabels['recteur'].roleText;
             document.getElementById('idcard-matricule-display').innerText = user.matricule || 'UPK-REC-0001';
+            
+            // Carte de membre - Photo
+            const cardPhotoImg = document.getElementById('idcard-photo-img');
+            if (savedAvatar && cardPhotoImg) {
+                cardPhotoImg.src = savedAvatar;
+                cardPhotoImg.classList.remove('hidden');
+                document.getElementById('idcard-photo-fallback').classList.add('hidden');
+            }
 
                     const savedAvatar = user.id ? localStorage.getItem(`avatar_recteur_${user.id}`) : null;
                     if (savedAvatar) {
@@ -3550,6 +3575,11 @@
                     
                     initializeDashboardOnAuth();
                 } else {
+                if (savedAvatar && cardPhotoImg) {
+                    cardPhotoImg.src = savedAvatar;
+                    cardPhotoImg.classList.remove('hidden');
+                    document.getElementById('idcard-photo-fallback').classList.add('hidden');
+                }
                     localStorage.removeItem('connectedUser');
                 }
             }
