@@ -53,6 +53,19 @@
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 3D Card CSS */
+        .card-container { perspective: 1000px; }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-container:hover .card-inner, .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .card-back { transform: rotateY(180deg); }
         /* Printable transcript layout preview */
         .academic-seal { background-image: radial-gradient(circle, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0) 70%); }
     </style>
@@ -381,6 +394,63 @@
                     </div>
                     <div class="divide-y divide-slate-100" id="transcript-students-list">
                         <!-- JS Injected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB : CARTE DE MEMBRE                      -->
+            <!-- ========================================== -->
+            <div id="tab-idcard" class="tab-pane space-y-8 hidden">
+                <div class="flex flex-col items-center justify-center space-y-6 py-6">
+                    <div class="text-center">
+                        <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Carte Digitale d'Identité Professionnelle</h3>
+                        <p class="text-xs text-slate-400 font-bold uppercase mt-1">Appuyez sur la carte pour la retourner</p>
+                    </div>
+
+                    <!-- Carte 3D Interactive Container -->
+                    <div class="card-container w-80 h-[480px] cursor-pointer" onclick="toggleCardFlip()">
+                        <div class="card-inner w-full h-full relative" id="staff-card-inner">
+                            
+                            <!-- Recto de la carte -->
+                            <div class="card-front bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-between overflow-hidden">
+                                <div class="absolute -right-16 -top-16 w-48 h-48 bg-upkol-jaune opacity-10 rounded-full"></div>
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-upkol-jaune rounded flex items-center justify-center text-slate-950">
+                                            <i class="fas fa-university text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-xs tracking-tighter text-upkol-jaune">UPKOL</h4>
+                                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-widest block -mt-1">Université Kolwezi</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[8px] bg-upkol-jaune/20 text-upkol-jaune font-black px-2 py-0.5 rounded uppercase border border-upkol-jaune/20">2025 - 2026</span>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="w-28 h-28 bg-slate-800 rounded-2xl border-2 border-upkol-jaune overflow-hidden mx-auto shadow-md">
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                            <i class="fas fa-user-shield text-5xl"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h3 class="font-black text-lg tracking-tight uppercase" id="idcard-name">Chargement...</h3>
+                                        <p class="text-[9px] text-upkol-jaune font-bold tracking-widest uppercase mt-0.5" id="idcard-role">Rôle...</p>
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-800 pt-4 flex justify-between items-end text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <div><span>Matricule</span><p class="text-white font-black text-xs mt-0.5" id="idcard-matricule-display">UPK-...</p></div>
+                                    <div class="text-right"><span>Statut</span><p class="text-emerald-500 font-black text-xs mt-0.5">Actif</p></div>
+                                </div>
+                            </div>
+
+                            <!-- Verso de la carte -->
+                            <div class="card-back bg-upkol-noir text-white rounded-3xl p-6 shadow-2xl border border-upkol-jaune/30 flex flex-col justify-center items-center overflow-hidden"><p class="text-center text-slate-400 italic text-xs">Verso de la carte du personnel.</p></div>
+                        </div>
                     </div>
                 </div>
             </div>
