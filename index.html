@@ -33,6 +33,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Bibliothèque pour les animations au défilement -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
@@ -48,29 +50,24 @@
 
         // Fonction pour gérer la déconnexion
         function signOut() {
-            // Supprimer les informations de l'utilisateur du localStorage
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userId');
-            localStorage.removeItem('userName'); // Supprimer aussi le nom complet
-            localStorage.removeItem('userPicture'); // Supprimer l'URL de la photo
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPicture');
 
-            // Demander à Google Identity Services de désactiver la sélection automatique
-            // Cela empêche le One Tap de réapparaître immédiatement
             if (google.accounts.id) {
                 google.accounts.id.disableAutoSelect();
             }
             
-            // Rediriger vers la page d'accueil ou de connexion
             window.location.href = 'index.html';
         }
 
         // Fonction pour mettre à jour l'interface utilisateur d'authentification
         function updateAuthUI() {
             const userEmail = localStorage.getItem('userEmail');
-            const userName = localStorage.getItem('userName'); // Récupérer le nom complet
-            const userPicture = localStorage.getItem('userPicture'); // Récupérer l'URL de la photo
+            const userName = localStorage.getItem('userName');
+            const userPicture = localStorage.getItem('userPicture');
             
-            // Mise à jour Desktop
             const desktopSignInContainer = document.getElementById('google-signin-button-container');
             const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
             const desktopDisplayName = document.getElementById('display-user-name');
@@ -89,7 +86,6 @@
                 if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
             }
 
-            // Mise à jour Mobile
             const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
             const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
             const mobileDisplayName = document.getElementById('mobile-display-user-name');
@@ -109,10 +105,7 @@
             }
         }
 
-        // Fonction pour enregistrer des actions spécifiques (ex: clics, téléchargements)
         function logAction(email, userId, action, details) {
-            // Supabase client is initialized globally in other files, assuming it will be here too.
-            // For index.html, we'll add the Supabase client initialization.
             const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
             const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -130,41 +123,36 @@
         function handleCredentialResponse(response) {
             const responsePayload = decodeJwtResponse(response.credential);
 
-            // Extraction et préparation des données pour les onglets 'utilisateurs' et 'Historique_Actions'
             const userData = {
                 id: responsePayload.sub,
                 nom_complet: responsePayload.name,
                 prenom: responsePayload.given_name,
                 email: responsePayload.email,
-                picture: responsePayload.picture, // Ajouter l'URL de la photo
+                picture: responsePayload.picture,
                 statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
                 action: "Connexion",
                 details: "Authentification via Google Identity Services"
             };
 
-            // Supabase client initialization (if not already global)
             const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
             const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-            // Check if user already exists in 'profiles' table
             _supabase.from('profiles').select('id').eq('email', userData.email).single()
-                .then(async ({ data: existingUser, error }) => {
+                .then(async ({ data: existingUser }) => {
                     if (existingUser) {
-                        // User exists, update their profile if needed
                         await _supabase.from('profiles').update({
                             name: userData.nom_complet,
                             picture: userData.picture,
                             last_login: new Date().toISOString()
                         }).eq('id', existingUser.id);
                     } else {
-                        // User does not exist, insert new profile
                         await _supabase.from('profiles').insert([{
                             id: userData.id,
                             name: userData.nom_complet,
                             email: userData.email,
                             picture: userData.picture,
-                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre', // Map to Supabase role
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
                             created_at: new Date().toISOString(),
                             last_login: new Date().toISOString()
                         }]);
@@ -174,8 +162,7 @@
                     localStorage.setItem('userName', userData.nom_complet);
                     localStorage.setItem('userPicture', userData.picture);
                     updateAuthUI();
-                    logAction(userData.email, userData.id, userData.action, userData.details); // Log the login action
-                    console.log("Données transmises avec succès :", userData);
+                    logAction(userData.email, userData.id, userData.action, userData.details);
                 })
                 .catch(error => console.error("Erreur lors de la transmission ou de la mise à jour Supabase :", error));
         }
@@ -194,15 +181,14 @@
         .bg-upkol-noir { background-color: var(--secondary); }
         
         .hero-section {
-            background-color: #121212; /* Couleur de secours si l'image ne charge pas */
+            background-color: #121212;
             background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
                               url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
-            background-attachment: scroll; /* Plus compatible que 'fixed' sur mobile */
+            background-attachment: scroll;
         }
 
-        /* Animations personnalisées */
         @keyframes slideFromTop {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -241,7 +227,6 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Barre de recherche animée */
         .search-container input:focus {
             width: 250px;
             border-color: var(--primary);
@@ -371,7 +356,6 @@
 
             <!-- Mobile Menu Toggle -->
             <div class="lg:hidden flex items-center space-x-3">
-                <!-- Auth visible en permanence sur le header mobile -->
                 <div id="mobile-google-signin-button-container">
                     <div class="g_id_signin" 
                         data-type="icon" 
@@ -400,7 +384,6 @@
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
             <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
-
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
@@ -482,15 +465,15 @@
     <main id="facultes" class="tab-content py-20 px-6 max-w-7xl mx-auto">
         <div class="text-center mb-16 reveal-down">
             <h2 class="text-4xl font-black uppercase mb-4">Nos <span class="text-upkol-jaune">Facultés & Filières</span></h2>
-            <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Découvrez l'ensemble des formations de l'UPKOL</p>
+            <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Cliquez sur une filière pour afficher tous les détails</p>
             <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
         </div>
         
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- 1. Psychologie -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left">
+            <div onclick="openFacultyModal('Psychologie & Sc. de l\'Éducation', 'Pédagogie', 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80', 'Formation des cadres en psychologie et sciences de l\'éducation pour le développement humain.', ['Psychologie Clinique', 'Psychopédagogie', 'Orientation Scolaire & Professionnelle'], '5 ans (Licence & Master)', 'Prof. Dr. Marie Kabamba')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
-                    <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80" alt="Psychologie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1546410531-bb4ffa1114d9?auto=format&fit=crop&w=800&q=80';">
+                    <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80" alt="Psychologie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Pédagogie</div>
                 </div>
                 <div class="p-8">
@@ -501,7 +484,7 @@
             </div>
 
             <!-- 2. Informatique -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down">
+            <div onclick="openFacultyModal('Sciences Informatiques', 'Technologie', 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80', 'Expertise en gestion et réseaux informatiques pour répondre aux défis numériques et technologiques de la province du Lualaba.', ['Génie Logiciel & Développement Web', 'Réseaux et Télécommunications', 'Cyber sécurité & Base de Données'], '5 ans (Licence & Master)', 'Prof. Ing. Jean-Paul Mwamba')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80" alt="Informatique" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Technologie</div>
@@ -514,9 +497,9 @@
             </div>
 
             <!-- 3. Santé -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right">
+            <div onclick="openFacultyModal('Sciences de la Santé', 'Santé', 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80', 'Pédiatrie, nutrition et santé publique pour une meilleure couverture sanitaire et un accompagnement médical de pointe.', ['Soins Infirmiers', 'Santé Publique & Nutrition', 'Technologie Médicale'], '3 à 5 ans', 'Dr. Sarah Tshala')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
-                    <img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" alt="Santé" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1576091160623-112de5cc029b?auto=format&fit=crop&w=800&q=80';">
+                    <img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" alt="Santé" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Santé</div>
                 </div>
                 <div class="p-8">
@@ -527,7 +510,7 @@
             </div>
 
             <!-- 4. Économie -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left">
+            <div onclick="openFacultyModal('Sc. Économiques & Gestion', 'Gestion', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80', 'Sciences commerciales, financières et développement rural pour stimuler l\'économie locale et la gestion d\'entreprises minières et commerciales.', ['Économie Internationale', 'Gestion Financière', 'Développement Rural & Entrepreneuriat'], '5 ans (Licence & Master)', 'Prof. Alain Mutombo')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Économie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Gestion</div>
@@ -540,7 +523,7 @@
             </div>
 
             <!-- 5. Droit -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down">
+            <div onclick="openFacultyModal('Faculté de Droit', 'Justice', 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80', 'Formation juridique rigoureuse préparant aux carrières de magistrat, avocat, juriste d\'entreprise et conseiller juridique.', ['Droit Privé & Judiciaire', 'Droit Public & Administratif', 'Droit Économique & Social'], '5 ans (Licence & Master)', 'Prof. Maître David Kalenga')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80" alt="Droit" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Justice</div>
@@ -553,7 +536,7 @@
             </div>
 
             <!-- 6. Sciences -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right">
+            <div onclick="openFacultyModal('Faculté des Sciences', 'Sciences', 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80', 'Chimie, Géologie minière, Marketing et Comptabilité adaptés aux richesses du sol et sous-sol du Lualaba.', ['Géologie & Mines', 'Chimie Industrielle', 'Marketing & Fiscalité'], '5 ans', 'Prof. Dr. François Ngoy')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80" alt="Sciences" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Sciences</div>
@@ -566,7 +549,7 @@
             </div>
 
             <!-- 7 & 8. Comm. & Secrétariat -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left">
+            <div onclick="openFacultyModal('Filières Administratives', 'Bureau', 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80', 'Sciences Commerciales, Financières et Secrétariat de Direction moderne pour un secrétariat hautement qualifié.', ['Secrétariat de Direction Bilingue', 'Administration des Affaires', 'Bureautique Avancée'], '3 ans (Graduat)', 'Mme. Chantal Ilunga')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80" alt="Administration" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Bureau</div>
@@ -579,9 +562,9 @@
             </div>
 
             <!-- 9. Tourisme -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down">
+            <div onclick="openFacultyModal('Hôtellerie & Tourisme', 'Accueil', 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80', 'Gestion hôtelière, touristique et accueil pour un secteur en pleine expansion dans la région minière et touristique du Lualaba.', ['Management Hôtelier', 'Gestion du Tourisme Durable', 'Arts Culinaires & Réception'], '3 à 5 ans', 'M. Patrick Kasongo')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
-                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80" alt="Hôtellerie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=800&q=80';">
+                    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80" alt="Hôtellerie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Accueil</div>
                 </div>
                 <div class="p-8">
@@ -592,7 +575,7 @@
             </div>
 
             <!-- 10. Agronomie -->
-            <div class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right">
+            <div onclick="openFacultyModal('Sciences Agronomiques', 'Terre', 'https://images.unsplash.com/photo-1530507629858-e4977d30e9e0?auto=format&fit=crop&w=800&q=80', 'Phytotechnie, Zootechnie et Économie Agricole pour relever le défi de la sécurité alimentaire et de la valorisation des sols arables.', ['Phytotechnie & Production Végétale', 'Zootechnie & Élevage', 'Économie et Vulgarisation Agricole'], '5 ans', 'Prof. Dr. Paulin Mbuyi')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte">
                 <div class="h-48 bg-gray-200 overflow-hidden relative">
                     <img src="https://images.unsplash.com/photo-1530507629858-e4977d30e9e0?auto=format&fit=crop&w=800&q=80" alt="Agronomie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Terre</div>
@@ -605,6 +588,59 @@
             </div>
         </div>
     </main>
+
+    <!-- POP-UP MODAL POUR LES DÉTAILS D'UNE FILIÈRE -->
+    <div id="faculty-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl transform transition-all animate__animated animate__fadeInUp">
+            <!-- Modal Header Image -->
+            <div class="relative h-64 bg-gray-900">
+                <img id="modal-img" src="" alt="Filière" class="w-full h-full object-cover opacity-90">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <button onclick="closeFacultyModal()" class="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white text-white hover:text-black rounded-full flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+                <div class="absolute bottom-6 left-6 right-6">
+                    <span id="modal-badge" class="bg-upkol-jaune text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Catégorie</span>
+                    <h3 id="modal-title" class="text-2xl md:text-3xl font-black text-white mt-2">Nom de la Filière</h3>
+                </div>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div>
+                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-info-circle text-upkol-jaune mr-2"></i> Description Complète</h4>
+                    <p id="modal-description" class="text-gray-700 text-sm leading-relaxed">Description détaillée de la formation...</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    <div>
+                        <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-graduation-cap text-upkol-jaune mr-2"></i> Options / Orientations</h4>
+                        <ul id="modal-options" class="space-y-2 text-xs font-bold text-gray-800">
+                            <!-- Options injectées par JS -->
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1"><i class="fas fa-clock text-upkol-jaune mr-2"></i> Durée des Études</h4>
+                            <p id="modal-duration" class="text-xs font-bold text-gray-800">5 ans</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1"><i class="fas fa-user-tie text-upkol-jaune mr-2"></i> Doyen / Responsable</h4>
+                            <p id="modal-doyen" class="text-xs font-bold text-gray-800">Prof. Dr.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
+                    <a href="inscription.html" class="flex-1 bg-upkol-jaune text-black text-center py-4 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-black hover:text-white transition-all shadow-lg">
+                        S'inscrire à cette filière
+                    </a>
+                    <button onclick="closeFacultyModal()" class="px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
@@ -644,10 +680,10 @@
     </footer>
 
     <script>
-        // Supabase client initialization for global use in this file
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -674,13 +710,44 @@
             const query = document.getElementById(inputId).value;
             if (query.trim() !== "") {
                 alert("Recherche en cours pour : " + query);
-                // Ici, vous pourriez rediriger vers une page de résultats
             }
         }
 
-        // Appeler la fonction pour mettre à jour l'UI d'authentification au chargement de la page
-        document.addEventListener('DOMContentLoaded', updateAuthUI);
+        // Fonctions pour gérer le Pop-up des filières
+        function openFacultyModal(title, badge, imgUrl, description, options, duration, doyen) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-badge').innerText = badge;
+            document.getElementById('modal-img').src = imgUrl;
+            document.getElementById('modal-description').innerText = description;
+            document.getElementById('modal-duration').innerText = duration;
+            document.getElementById('modal-doyen').innerText = doyen;
 
+            const optionsList = document.getElementById('modal-options');
+            optionsList.innerHTML = '';
+            options.forEach(opt => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check-circle text-upkol-jaune mr-2"></i> ${opt}`;
+                optionsList.appendChild(li);
+            });
+
+            const modal = document.getElementById('faculty-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeFacultyModal() {
+            const modal = document.getElementById('faculty-modal');
+            modal.classList.add('hidden');
+        }
+
+        // Fermer le modale en cliquant en dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('faculty-modal');
+            if (event.target == modal) {
+                closeFacultyModal();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
 </body>
 </html>
