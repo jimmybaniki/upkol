@@ -10,6 +10,7 @@
     <meta property="og:title" content="Présentation de l'UPKOL">
     <meta property="og:description" content="Découvrez l'histoire, la mission et les facultés de l'Université Pédagogique de Kolwezi.">
     <meta property="og:image" content="logo.png">
+    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SPRV7W7BYV"></script>
     <script>
@@ -18,31 +19,224 @@
         gtag('js', new Date());
         gtag('config', 'G-SPRV7W7BYV');
     </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Supabase Client & Google Identity Services (Importés de l'index) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        // Fonctions d'authentification importées
+        function decodeJwtResponse(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function signOut() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPicture');
+
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            window.location.reload();
+        }
+
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            const userPicture = localStorage.getItem('userPicture');
+            
+            const desktopSignInContainer = document.getElementById('google-signin-button-container');
+            const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
+            const desktopDisplayName = document.getElementById('display-user-name');
+            const desktopDisplayPicture = document.getElementById('display-user-picture');
+
+            if (userEmail) {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'none';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'flex';
+                if (desktopDisplayName) desktopDisplayName.innerText = userName || '';
+                if (desktopDisplayPicture) {
+                    desktopDisplayPicture.src = userPicture || '';
+                    desktopDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'block';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
+            }
+
+            const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
+            const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
+            const mobileDisplayName = document.getElementById('mobile-display-user-name');
+            const mobileDisplayPicture = document.getElementById('mobile-display-user-picture');
+
+            if (userEmail) {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'none';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'flex';
+                if (mobileDisplayName) mobileDisplayName.innerText = userName || '';
+                if (mobileDisplayPicture) {
+                    mobileDisplayPicture.src = userPicture || '';
+                    mobileDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'block';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'none';
+            }
+        }
+
+        function logAction(email, userId, action, details) {
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('action_logs').insert([{
+                user_id: userId,
+                user_email: email,
+                action_type: action,
+                details: details
+            }]).then(response => {
+                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+            const userData = {
+                id: responsePayload.sub,
+                nom_complet: responsePayload.name,
+                email: responsePayload.email,
+                picture: responsePayload.picture,
+                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
+                action: "Connexion",
+                details: "Authentification via Google Identity Services"
+            };
+
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('profiles').select('id').eq('email', userData.email).single()
+                .then(async ({ data: existingUser }) => {
+                    if (existingUser) {
+                        await _supabase.from('profiles').update({
+                            name: userData.nom_complet,
+                            picture: userData.picture,
+                            last_login: new Date().toISOString()
+                        }).eq('id', existingUser.id);
+                    } else {
+                        await _supabase.from('profiles').insert([{
+                            id: userData.id,
+                            name: userData.nom_complet,
+                            email: userData.email,
+                            picture: userData.picture,
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        }]);
+                    }
+                    localStorage.setItem('userEmail', userData.email);
+                    localStorage.setItem('userId', userData.id);
+                    localStorage.setItem('userName', userData.nom_complet);
+                    localStorage.setItem('userPicture', userData.picture);
+                    updateAuthUI();
+                    logAction(userData.email, userData.id, userData.action, userData.details);
+                })
+                .catch(error => console.error("Erreur Supabase :", error));
+        }
+
+        // Toggles Mobile 
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        function toggleMobileSearch() {
+            const search = document.getElementById('mobile-search-bar');
+            if (search) search.classList.toggle('hidden');
+        }
+        function handleSearch(inputId) {
+            const val = document.getElementById(inputId).value;
+            if(val) window.location.href = 'index.html?q=' + encodeURIComponent(val);
+        }
+    </script>
+    
     <style>
-        :root { --primary: #FACC15; --secondary: #0f172a; }
+        /* MODE D'ÉCLAIRAGE MIS À JOUR - Thème identique à l'index */
+        :root {
+            --primary: #FFD700; /* Jaune Or UPKOL */
+            --secondary: #121212; /* Noir Institutionnel */
+            --accent: #ffffff;
+        }
+        
         body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; background-color: #f8fafc; }
-        .bg-upkol-jaune { background-color: #FACC15; }
-        .text-upkol-jaune { color: #854d0e; }
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
         .bg-upkol-noir { background-color: var(--secondary); }
+
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideFromLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideFromRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .search-container input:focus {
+            width: 250px;
+            border-color: var(--primary);
+        }
+        .search-container input {
+            transition: width 0.4s ease, border-color 0.4s ease;
+            width: 150px;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
+
+    <!-- TOP BAR -->
     <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex flex-wrap gap-4 items-center">
                 <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</span>
                 <a href="mailto:upkolwezi@gmail.com" class="flex items-center hover:text-upkol-jaune transition-colors"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> upkolwezi@gmail.com</a>
             </div>
-            <div class="hidden md:flex space-x-4 italic text-gray-500">Excellence Pédagogique au Lualaba</div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
         </div>
     </div>
 
-    <nav class="sticky top-0 z-50 bg-white shadow-md h-20 flex items-center px-6">
-        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-3 group">
-                <div class="w-12 h-12 flex items-center justify-center overflow-hidden group-hover:rotate-3 transition-transform">
+    <!-- MAIN NAVIGATION -->
+    <div id="g_id_onload"
+         data-client_id="396005366251-5jl94257ahdgn21j0e5r3iiiajje0fc3.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer reveal-left">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
                     <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
                 </div>
                 <div>
@@ -50,18 +244,132 @@
                     <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
                 </div>
             </a>
-            <div class="hidden md:flex space-x-8 text-[11px] font-bold uppercase tracking-widest">
-                <a href="index.html" class="hover:text-upkol-jaune">Accueil</a>
-                <a href="presentation.html" class="text-upkol-jaune">À Propos</a>
-                <a href="index.html#facultes" class="hover:text-upkol-jaune">Facultés</a>
-                <a href="inscription.html" class="bg-upkol-jaune text-black px-4 py-2 rounded-full">S'inscrire</a>
+
+            <!-- Desktop Menu & Search -->
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                
+                <!-- Search Bar -->
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 bg-gray-50 text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    </div>
+                </div>
+
+                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
+
+                <!-- Section Enseignements -->
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
+                        </a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Creative Portal Entry -->
+                <div class="relative group">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                            <i class="fas fa-university text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
+                    </a>
+                </div>
+                
+                <!-- Bouton de connexion Google -->
+                <div id="google-signin-button-container">
+                    <div class="g_id_signin"
+                        data-type="icon"
+                        data-shape="circle"
+                        data-theme="outline"
+                        data-size="large">
+                    </div>
+                </div>
+
+                <!-- Informations utilisateur et bouton de déconnexion -->
+                <div id="logged-in-user-info" class="hidden items-center space-x-4">
+                    <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
+                        Déconnexion
+                    </button>
+                </div>
+
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-black hover:text-white transition transform hover:scale-105">
+                S'INSCRIRE
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <div id="mobile-google-signin-button-container">
+                    <div class="g_id_signin" data-type="icon" data-shape="circle" data-theme="outline"></div>
+                </div>
+                <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
+                    </div>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-upkol-jaune">À Propos</a>
+            <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
+            <a href="index.html#facultes" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
             </div>
         </div>
     </nav>
 
     <header class="relative bg-upkol-noir text-white py-32 px-6 text-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80" alt="Bâtiment universitaire" class="absolute inset-0 w-full h-full object-cover opacity-35 filter brightness-90">
-        <div class="absolute inset-0 bg-gradient-to-t from-upkol-noir via-transparent to-black opacity-70"></div>
+        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80" alt="Bâtiment universitaire" class="absolute inset-0 w-full h-full object-cover opacity-40 filter brightness-90">
+        <div class="absolute inset-0 bg-gradient-to-t from-upkol-noir via-transparent to-black opacity-80"></div>
         <div class="relative z-10 max-w-4xl mx-auto">
             <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase tracking-wide">À Propos de <span class="text-upkol-jaune">l'UPKOL</span></h1>
             <p class="text-2xl md:text-3xl font-extrabold text-upkol-jaune drop-shadow-md">La formation, La Recherche et l'Excellence</p>
@@ -232,7 +540,7 @@
                 <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
             </div>
 
-            <!-- FORMULAIRE DE PUBLICATION AVEC UPLOAD DE FICHIERS (Titre 'Publier une actualité' retiré) -->
+            <!-- FORMULAIRE DE PUBLICATION -->
             <div class="bg-white rounded-3xl p-8 shadow-xl mb-16 border border-gray-100">
                 <form id="newsForm" class="space-y-6">
                     <div>
@@ -269,7 +577,7 @@
     </section>
 
     <div id="filiereModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative animate-scaleUp">
+        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative animate__animated animate__fadeInUp">
             <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-gray-100 text-slate-800 rounded-full flex items-center justify-center font-bold text-lg hover:bg-upkol-jaune transition-colors z-10"><i class="fas fa-times"></i></button>
             <div id="modalImageContainer" class="h-64 relative">
                 <img id="modalImg" src="" alt="Filière" class="w-full h-full object-cover">
@@ -302,7 +610,7 @@
     </div>
 
     <section class="py-24 px-6 max-w-7xl mx-auto">
-        <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row">
+        <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
             <div class="p-12 md:w-1/2">
                 <h2 class="text-3xl font-black mb-8 uppercase">Adresses et <span class="text-upkol-jaune">Contacts</span></h2>
                 <div class="space-y-6">
@@ -346,7 +654,7 @@
     <section class="py-24 text-center px-6 bg-white">
         <h2 class="text-3xl font-black uppercase mb-6">Soyez les bienvenus à l'université de l'émergence !</h2>
         <div class="flex justify-center space-x-4">
-            <a href="inscription.html" class="bg-upkol-jaune text-black px-10 py-5 font-black rounded-lg hover:scale-105 transition-transform uppercase shadow-lg">S'inscrire maintenant</a>
+            <a href="inscription.html" class="bg-upkol-jaune text-black px-10 py-5 font-black rounded-lg hover:bg-black hover:text-white transition-all uppercase shadow-lg">S'inscrire maintenant</a>
         </div>
     </section>
 
@@ -376,6 +684,12 @@
     </div>
 
     <script>
+        // Gestion de l'UI Auth au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadNews();
+        });
+
         // Gestion des Popups Filières
         function openModal(title, desc, grade, options, img) {
             document.getElementById('modalTitle').innerText = title;
@@ -413,7 +727,6 @@
             });
         }
 
-        // Custom Confirmation box (replacing standard confirm())
         function showCustomConfirm(callback) {
             const modal = document.getElementById('customConfirmModal');
             modal.classList.remove('hidden');
@@ -437,54 +750,41 @@
             });
         }
 
-        // Gestion des Actualités avec LocalStorage & Upload d'images
-        document.addEventListener('DOMContentLoaded', () => {
+        // Gestion des Actualités
+        const form = document.getElementById('newsForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const author = document.getElementById('authorName').value;
+            const desc = document.getElementById('newsDesc').value;
+
+            const file1 = document.getElementById('img1File').files[0];
+            const file2 = document.getElementById('img2File').files[0];
+            const file3 = document.getElementById('img3File').files[0];
+
+            let images = [];
+            try {
+                if (file1) images.push(await convertFileToBase64(file1));
+                if (file2) images.push(await convertFileToBase64(file2));
+                if (file3) images.push(await convertFileToBase64(file3));
+            } catch (err) {
+                console.error("Erreur de lecture des fichiers", err);
+            }
+
+            const newPost = {
+                id: Date.now(),
+                author,
+                desc,
+                images,
+                date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+                stars: 0
+            };
+
+            let posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
+            posts.unshift(newPost);
+            localStorage.setItem('upkol_news', JSON.stringify(posts));
+
+            form.reset();
             loadNews();
-
-            const form = document.getElementById('newsForm');
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const author = document.getElementById('authorName').value;
-                const desc = document.getElementById('newsDesc').value;
-
-                const file1 = document.getElementById('img1File').files[0];
-                const file2 = document.getElementById('img2File').files[0];
-                const file3 = document.getElementById('img3File').files[0];
-
-                let images = [];
-                try {
-                    if (file1) {
-                        const b64_1 = await convertFileToBase64(file1);
-                        images.push(b64_1);
-                    }
-                    if (file2) {
-                        const b64_2 = await convertFileToBase64(file2);
-                        images.push(b64_2);
-                    }
-                    if (file3) {
-                        const b64_3 = await convertFileToBase64(file3);
-                        images.push(b64_3);
-                    }
-                } catch (err) {
-                    console.error("Erreur de lecture des fichiers", err);
-                }
-
-                const newPost = {
-                    id: Date.now(),
-                    author,
-                    desc,
-                    images,
-                    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
-                    stars: 0
-                };
-
-                let posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
-                posts.unshift(newPost);
-                localStorage.setItem('upkol_news', JSON.stringify(posts));
-
-                form.reset();
-                loadNews();
-            });
         });
 
         function loadNews() {
@@ -517,7 +817,7 @@
                     </div>`;
                 }
 
-                container.innerHTML += `<article class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
+                container.innerHTML += `<article class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate__animated animate__fadeIn">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center space-x-3">
                             <div class="w-12 h-12 bg-upkol-jaune text-black font-black flex items-center justify-center rounded-full text-lg shadow-inner">
