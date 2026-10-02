@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualités | UPKOL - Université Pédagogique de Kolwezi</title>
+    <link rel="icon" href="favicon.png?v=2" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.upkol.academy/actualites.html">
+    <meta property="og:title" content="Actualités | UPKOL">
+    <meta property="og:description" content="Toutes les actualités, événements, résultats académiques et communiqués de l'Université Pédagogique de Kolwezi.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        :root {
+            --primary: #FFD700; /* Jaune Or UPKOL */
+            --secondary: #121212; /* Noir Institutionnel */
+            --accent: #ffffff;
+        }
+        
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: #F9FAFB; }
+
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+        
+        /* Animations personnalisées */
+        @keyframes slideFromTop {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideFromLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideFromRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Barre de recherche animée */
+        .search-container input:focus {
+            width: 250px;
+            border-color: var(--primary);
+        }
+        .search-container input {
+            transition: width 0.4s ease, border-color 0.4s ease;
+            width: 150px;
+        }
+
+        /* Styles spécifiques pour les catégories */
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Styles pour la galerie de photos */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 2rem;
+        }
+        @media (min-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+        }
+        .photo-gallery a {
+            display: block;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            position: relative;
+            padding-bottom: 100%; /* Ratio 1:1 pour des carrés parfaits */
+        }
+        .photo-gallery img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .photo-gallery a:hover img {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer reveal-left">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>UPKOL</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                    </div>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="actualites.html" class="text-upkol-jaune border-b-2 border-upkol-jaune py-8 transition-colors">Actualités</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
+                        </a>
+                    </div>
+                </div>
+
+                <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                    <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                        <i class="fas fa-university text-[10px]"></i>
+                    </div>
+                    <span class="text-[10px] font-black text-gray-500 hover:text-upkol-noir">PORTAIL</span>
+                </a>
+                
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-upkol-noir hover:text-white transition transform hover:scale-105">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-upkol-jaune">Actualités</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- NEWS HEADER -->
+    <header class="bg-upkol-noir text-white py-16 relative overflow-hidden">
+        <!-- Abstract Background Shapes -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-upkol-jaune opacity-10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500 opacity-10 blur-3xl"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center reveal-down">
+                <h1 class="text-4xl md:text-6xl font-black uppercase mb-4 tracking-tight">Le Fil d'<span class="text-upkol-jaune">Actualités</span></h1>
+                <p class="text-gray-400 font-bold text-sm md:text-base tracking-widest uppercase mb-6 max-w-2xl mx-auto">Restez informé des derniers événements, résultats académiques et annonces officielles de l'UPKOL.</p>
+                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        
+        <!-- À LA UNE (Featured News) -->
+        <section class="mb-16 reveal-left">
+            <div class="flex items-center space-x-2 mb-6">
+                <div class="w-3 h-8 bg-upkol-jaune rounded-full"></div>
+                <h2 class="text-2xl font-black uppercase tracking-tight">À la une</h2>
+            </div>
+            
+            <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 flex flex-col group hover:shadow-2xl transition-shadow duration-500">
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/2 relative overflow-hidden h-72 md:h-auto">
+                        <img src="https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg" alt="Collation des grades" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg backdrop-blur-sm bg-opacity-90">
+                            <i class="fas fa-star mr-1"></i> Événement Majeur
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                        <div class="flex items-center text-sm text-gray-500 font-bold mb-4 space-x-4">
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-2"></i> 25 Octobre 2024</span>
+                            <span><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Campus Principal</span>
+                        </div>
+                        <h3 class="text-3xl font-black mb-4 uppercase leading-tight group-hover:text-upkol-jaune transition-colors">Cérémonie de Collation des Grades Académiques 2024</h3>
+                        <p class="text-gray-600 mb-8 leading-relaxed">L'Université Pédagogique de Kolwezi convie toute la communauté académique, les autorités de la province du Lualaba et les familles à la grande cérémonie de collation des grades et clôture de l'année académique.</p>
+                        <div>
+                            <button onclick="document.getElementById('galerie-collation').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center bg-upkol-noir text-white font-bold px-8 py-3 rounded-full hover:bg-upkol-jaune hover:text-black transition-colors transform hover:-translate-y-1">
+                                Voir la galerie photos <i class="fas fa-camera ml-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Galerie de l'événement -->
+                <div id="galerie-collation" class="p-8 border-t border-gray-100 bg-gray-50">
+                    <h4 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-images text-upkol-jaune mr-3"></i> Retour en images sur la cérémonie</h4>
+                    <div class="photo-gallery">
+                        <a href="https://ibb.co/Q3ZzW3D0" target="_blank"><img src="https://i.ibb.co/hJkhGJY0/Whats-App-Image-2026-10-02-at-5-59-54-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/4ZGLgdsw" target="_blank"><img src="https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/spGdWGxY" target="_blank"><img src="https://i.ibb.co/vCG6XGyn/Whats-App-Image-2026-10-02-at-5-59-55-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/VYps2P6G" target="_blank"><img src="https://i.ibb.co/60JkgfQS/Whats-App-Image-2026-10-02-at-5-59-55-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/m53tjtJt" target="_blank"><img src="https://i.ibb.co/Mkmpvpnp/Whats-App-Image-2026-10-02-at-5-59-55-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/JLdcN9p" target="_blank"><img src="https://i.ibb.co/tfhHS92/Whats-App-Image-2026-10-02-at-5-59-55-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/nMKRB4jD" target="_blank"><img src="https://i.ibb.co/fdTQ9ZHC/Whats-App-Image-2026-10-02-at-5-59-56-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/Kx6jP9M2" target="_blank"><img src="https://i.ibb.co/1GZfg9Dr/Whats-App-Image-2026-10-02-at-5-59-56-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/YC6P7Fj" target="_blank"><img src="https://i.ibb.co/J1NmRwk/Whats-App-Image-2026-10-02-at-5-59-56-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/6R8f9kcN" target="_blank"><img src="https://i.ibb.co/8DbSvHnX/Whats-App-Image-2026-10-02-at-5-59-57-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/HDd3S2H8" target="_blank"><img src="https://i.ibb.co/ynS79RQj/Whats-App-Image-2026-10-02-at-5-59-57-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/QZHq8bd" target="_blank"><img src="https://i.ibb.co/gGWXvjV/Whats-App-Image-2026-10-02-at-5-59-57-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/93C604M3" target="_blank"><img src="https://i.ibb.co/WpYZXzTp/Whats-App-Image-2026-10-02-at-5-59-57-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/32HQ0S8" target="_blank"><img src="https://i.ibb.co/hbvwK2n/Whats-App-Image-2026-10-02-at-5-59-58-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/SDV9qnm8" target="_blank"><img src="https://i.ibb.co/gbtBsTWp/Whats-App-Image-2026-10-02-at-5-59-58-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/spWJh2B5" target="_blank"><img src="https://i.ibb.co/mrNFmGxv/Whats-App-Image-2026-10-02-at-5-59-58-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/N22gLLWd" target="_blank"><img src="https://i.ibb.co/F44kBB8L/Whats-App-Image-2026-10-02-at-5-59-59-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/k608kxtW" target="_blank"><img src="https://i.ibb.co/n8fcZbF5/Whats-App-Image-2026-10-02-at-5-59-59-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/3mgjggZ1" target="_blank"><img src="https://i.ibb.co/s98N88Yj/Whats-App-Image-2026-10-02-at-5-59-59-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/JW36Hvch" target="_blank"><img src="https://i.ibb.co/cKYfQ6ym/Whats-App-Image-2026-10-02-at-5-59-59-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/cKKkRQ30" target="_blank"><img src="https://i.ibb.co/Cppm4Q8g/Whats-App-Image-2026-10-02-at-6-00-00-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/ycs4q0Cg" target="_blank"><img src="https://i.ibb.co/DHKrQ4Fw/Whats-App-Image-2026-10-02-at-6-00-00-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/Pvny1B9s" target="_blank"><img src="https://i.ibb.co/pB8T4CR6/Whats-App-Image-2026-10-02-at-6-00-00-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/5gDmTSFR" target="_blank"><img src="https://i.ibb.co/ycTt0ZSQ/Whats-App-Image-2026-10-02-at-6-00-01-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/fz4FZ82L" target="_blank"><img src="https://i.ibb.co/mV6TdvGg/Whats-App-Image-2026-10-02-at-6-00-01-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/BHJ6hLP0" target="_blank"><img src="https://i.ibb.co/dsvpNBc8/Whats-App-Image-2026-10-02-at-6-00-01-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/99nPZttv" target="_blank"><img src="https://i.ibb.co/6RYQXBBZ/Whats-App-Image-2026-10-02-at-6-00-01-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/wNJXFPng" target="_blank"><img src="https://i.ibb.co/ynh1cZzP/Whats-App-Image-2026-10-02-at-6-00-02-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/DHNc8C2C" target="_blank"><img src="https://i.ibb.co/7dHMRWmW/Whats-App-Image-2026-10-02-at-6-00-02-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/r2VQX2Kq" target="_blank"><img src="https://i.ibb.co/B29fY2Hv/Whats-App-Image-2026-10-02-at-6-00-02-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/N2wTSQp4" target="_blank"><img src="https://i.ibb.co/tpyLXkcd/Whats-App-Image-2026-10-02-at-6-00-03-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/7J5fL97r" target="_blank"><img src="https://i.ibb.co/gMp2hnst/Whats-App-Image-2026-10-02-at-6-00-03-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/PGNS4T1p" target="_blank"><img src="https://i.ibb.co/23ybP8c2/Whats-App-Image-2026-10-02-at-6-00-03-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/8LyGTfzM" target="_blank"><img src="https://i.ibb.co/Q3WhzT89/Whats-App-Image-2026-10-02-at-6-00-03-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/bM9xc2qh" target="_blank"><img src="https://i.ibb.co/W4JQmPq9/Whats-App-Image-2026-10-02-at-6-00-04-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/Y9kxbtx" target="_blank"><img src="https://i.ibb.co/7cWqbGq/Whats-App-Image-2026-10-02-at-6-00-04-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/dwsfzdZT" target="_blank"><img src="https://i.ibb.co/Kpc53MnP/Whats-App-Image-2026-10-02-at-6-00-04-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/q3pYRd7S" target="_blank"><img src="https://i.ibb.co/1tTG9L7g/Whats-App-Image-2026-10-02-at-6-00-04-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/zhjgvXmb" target="_blank"><img src="https://i.ibb.co/rGThrxQM/Whats-App-Image-2026-10-02-at-6-00-05-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/m5HGRchh" target="_blank"><img src="https://i.ibb.co/7tGXS1rr/Whats-App-Image-2026-10-02-at-6-00-05-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/Y4rZYjK3" target="_blank"><img src="https://i.ibb.co/cKmLMTp1/Whats-App-Image-2026-10-02-at-6-00-05-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/zhb7TMT0" target="_blank"><img src="https://i.ibb.co/PZ49vLvf/Whats-App-Image-2026-10-02-at-6-00-06-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/CKrWLNwX" target="_blank"><img src="https://i.ibb.co/Qv5X0zJq/Whats-App-Image-2026-10-02-at-6-00-06-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="https://ibb.co/7xv38Gnb" target="_blank"><img src="https://i.ibb.co/Ngx0QL97/Whats-App-Image-2026-10-02-at-6-00-06-PM.jpg" alt="Photo cérémonie"></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BARRE DE RECHERCHE ET FILTRES DES ACTUALITÉS -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-10 reveal-right">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <!-- Barre de recherche spécifique aux actualités -->
+                <div class="relative w-full md:w-1/3">
+                    <input type="text" id="news-search" placeholder="Rechercher une actualité..." 
+                           class="w-full bg-gray-50 border-2 border-gray-200 px-5 py-3 rounded-full outline-none focus:border-upkol-jaune transition-colors text-gray-700 font-medium" onkeyup="searchNews()">
+                    <button class="absolute right-4 top-3.5 text-gray-400 hover:text-upkol-jaune transition-colors">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <!-- Filtres Catégories -->
+                <div class="flex flex-wrap gap-2 md:w-2/3 md:justify-end">
+                    <button class="filter-btn active border border-gray-300 text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-all" onclick="filterNews('tout')">Tout Voir</button>
+                    <button class="filter-btn bg-white text-gray-600 border border-gray-300 hover:border-upkol-jaune hover:text-upkol-jaune text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-all shadow-sm" onclick="filterNews('recteur')"><i class="fas fa-user-tie mr-1"></i> Activités du Recteur</button>
+                    <button class="filter-btn bg-white text-gray-600 border border-gray-300 hover:border-upkol-jaune hover:text-upkol-jaune text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-all shadow-sm" onclick="filterNews('resultats')">Résultats</button>
+                    <button class="filter-btn bg-white text-gray-600 border border-gray-300 hover:border-upkol-jaune hover:text-upkol-jaune text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-all shadow-sm" onclick="filterNews('rendez-vous')">Admissions</button>
+                    <button class="filter-btn bg-white text-gray-600 border border-gray-300 hover:border-upkol-jaune hover:text-upkol-jaune text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-all shadow-sm" onclick="filterNews('evenements')">Événements</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRILLE D'ACTUALITÉS -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
+            
+            <!-- Article : Activités du Recteur 1 -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="recteur">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1558025251-4172445eb037?auto=format&fit=crop&w=800&q=80" alt="Audience du Recteur" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-upkol-noir text-upkol-jaune text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow border border-upkol-jaune">
+                        <i class="fas fa-star mr-1"></i> RECTORAT
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié Aujourd'hui
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Audience avec le Gouverneur de la Province du Lualaba</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Monsieur le Recteur de l'UPKOL a été reçu ce matin en audience par l'Exécutif Provincial pour discuter des nouveaux partenariats visant l'expansion de l'infrastructure universitaire.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Lire le compte-rendu <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article : Activités du Recteur 2 -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="recteur">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1560439514-4e964502213e?auto=format&fit=crop&w=800&q=80" alt="Discours du Recteur" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-upkol-noir text-upkol-jaune text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow border border-upkol-jaune">
+                        <i class="fas fa-bullhorn mr-1"></i> AGENDA
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 28 Octobre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Clôture du séminaire pédagogique par le Recteur</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Le Recteur a prononcé le discours de clôture lors du séminaire de renforcement des capacités destiné au corps professoral, insistant sur l'excellence académique.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Voir les photos <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 1 : Résultats -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="resultats">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80" alt="Résultats des examens" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        RÉSULTATS ACADÉMIQUES
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié il y a 2 heures
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Publication des résultats de la première session (2023-2024)</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Le Secrétariat Général Académique informe les étudiants de toutes les facultés que les résultats des examens de la première session sont désormais disponibles aux valves et sur le portail numérique.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Consulter la liste <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 2 : Rendez-vous -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="rendez-vous">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80" alt="Inscriptions" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-green-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        ADMISSIONS & RENDEZ-VOUS
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 10 Octobre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Calendrier des rendez-vous pour les nouveaux inscrits</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Afin de finaliser les dossiers d'inscription, le service de la scolarité publie le calendrier de réception des nouveaux candidats. Veuillez respecter votre créneau horaire.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Voir les horaires <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 3 : Événements -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="evenements">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=800&q=80" alt="Conférence" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        ÉVÉNEMENT
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 05 Octobre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Conférence sur l'Innovation Technologique au Lualaba</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">La Faculté des Sciences Informatiques organise une conférence ouverte au public sur les enjeux de la digitalisation dans le secteur minier et éducatif.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        S'inscrire à l'événement <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 4 : Communiqué (Bourses) -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="communiques">
+                <div class="relative h-56 overflow-hidden bg-upkol-noir flex items-center justify-center">
+                    <i class="fas fa-bullhorn text-6xl text-gray-700"></i>
+                    <div class="absolute top-4 left-4 bg-purple-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        COMMUNIQUÉ
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 02 Octobre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Lancement de la campagne de bourses d'excellence</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Le comité de gestion informe les étudiants s'étant distingués par une mention "Distinction" qu'ils peuvent désormais postuler au programme de bourse UPKOL 2024-2025.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Télécharger le formulaire <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 5 : Résultats (Défenses) -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="resultats">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80" alt="Défenses" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        RÉSULTATS JURYS
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 28 Septembre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Procès-verbaux des défenses de mémoires (Faculté d'Économie)</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Suite aux soutenances publiques qui se sont tenues la semaine dernière, le décanat rend publics les résultats et les mentions attribuées aux finalistes.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Consulter les PV <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Article 6 : Communiqué (Rentrée) -->
+            <article class="news-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-2 flex flex-col" data-category="communiques">
+                <div class="relative h-56 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1519452310860-23b9d031c261?auto=format&fit=crop&w=800&q=80" alt="Campus" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-gray-800 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow">
+                        OFFICIEL
+                    </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-xs text-gray-500 font-bold mb-3">
+                        <i class="far fa-clock mr-2"></i> Publié le 15 Septembre
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight hover:text-upkol-jaune transition-colors"><a href="#">Fixation de la date de la rentrée académique</a></h3>
+                    <p class="text-sm text-gray-600 mb-6 line-clamp-3 flex-grow">Conformément aux directives du Ministère de l'ESU, la rentrée académique solennelle est fixée au mois de Novembre. Découvrez le calendrier complet de l'année.</p>
+                    <a href="#" class="text-upkol-noir font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors inline-flex items-center mt-auto">
+                        Voir le calendrier <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+            </article>
+
+        </div>
+        
+        <!-- Pagination (Factice pour le design) -->
+        <div class="flex justify-center mt-12 space-x-2">
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-colors bg-white font-bold"><i class="fas fa-chevron-left text-xs"></i></button>
+            <button class="w-10 h-10 rounded-full bg-upkol-jaune text-black flex items-center justify-center font-black">1</button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-colors bg-white font-bold">2</button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-colors bg-white font-bold">3</button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-upkol-jaune hover:border-upkol-jaune hover:text-black transition-colors bg-white font-bold"><i class="fas fa-chevron-right text-xs"></i></button>
+        </div>
+    </main>
+
+    <!-- LIGHTBOX MODAL (Visionneuse d'images plein écran) -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black bg-opacity-95 hidden flex items-center justify-center opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white hover:text-upkol-jaune text-5xl focus:outline-none z-50 transition-colors">&times;</button>
+        <img id="lightbox-img" src="" alt="Aperçu en plein écran" class="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl transition-transform duration-300 scale-95">
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune mt-12">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div>
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation dans l'enseignement et la recherche.</p>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens Utiles</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Contact & Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold mb-2"><i class="fas fa-map-marker-alt mr-2"></i> Kolwezi, Lualaba<br>République Démocratique du Congo</p>
+                <p class="text-xs text-gray-400 font-bold"><i class="fas fa-envelope mr-2"></i> contact@upkol.org</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span class="mb-4 md:mb-0">&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <div class="flex space-x-6">
+                <span>Formation.</span>
+                <span>Recherche.</span>
+                <span>Excellence.</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== "") {
+                console.log("Recherche globale lancée pour : " + query);
+            }
+        }
+
+        // Variables globales pour conserver l'état des filtres
+        let currentCategory = 'tout';
+
+        // Système combiné de filtrage (Catégories + Barre de recherche)
+        function applyFilters() {
+            const searchQuery = document.getElementById('news-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.news-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h3').innerText.toLowerCase();
+                const text = card.querySelector('p').innerText.toLowerCase();
+                
+                // Vérifier la catégorie
+                const categoryMatch = (currentCategory === 'tout' || card.dataset.category === currentCategory);
+                
+                // Vérifier la recherche texte
+                const searchMatch = (title.includes(searchQuery) || text.includes(searchQuery));
+
+                // Afficher si les deux conditions sont remplies
+                if (categoryMatch && searchMatch) {
+                    if(card.style.display === 'none') {
+                        card.style.display = 'flex';
+                        card.classList.add('animate__animated', 'animate__fadeIn');
+                        setTimeout(() => card.classList.remove('animate__animated', 'animate__fadeIn'), 500);
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterNews(category) {
+            currentCategory = category;
+            
+            // Mise à jour de l'apparence des boutons de catégorie
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'bg-upkol-jaune', 'text-black', 'border-upkol-jaune');
+                btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+            });
+            
+            event.currentTarget.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+            event.currentTarget.classList.add('active', 'bg-upkol-jaune', 'text-black', 'border-upkol-jaune');
+
+            // Appliquer les filtres (catégorie + texte éventuel)
+            applyFilters();
+        }
+
+        function searchNews() {
+            // Déclenché à chaque frappe dans la barre de recherche des actualités
+            applyFilters();
+        }
+
+        // --- GESTION DE LA GALERIE EN PLEIN ÉCRAN (LIGHTBOX) ---
+        function openLightbox(imageSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightboxImg.src = imageSrc;
+            lightbox.classList.remove('hidden');
+            
+            // Forcer un recalcul du style pour que la transition d'opacité fonctionne
+            void lightbox.offsetWidth;
+            
+            lightbox.classList.remove('opacity-0');
+            lightboxImg.classList.remove('scale-95');
+            lightboxImg.classList.add('scale-100');
+            
+            // Empêcher le défilement de la page en arrière-plan
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightbox.classList.add('opacity-0');
+            lightboxImg.classList.remove('scale-100');
+            lightboxImg.classList.add('scale-95');
+            
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                lightboxImg.src = '';
+                // Restaurer le défilement de la page
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Attacher les événements aux images de la galerie au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            const galleryLinks = document.querySelectorAll('.photo-gallery a');
+            galleryLinks.forEach(link => {
+                // Supprimer l'attribut target pour éviter l'ouverture de nouveaux onglets par erreur
+                link.removeAttribute('target');
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); // Bloque la navigation vers le site hébergeur
+                    // On récupère le lien de la balise <img> enfant, car elle contient l'URL directe de la photo
+                    const imgSrc = this.querySelector('img').src; 
+                    openLightbox(imgSrc);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
