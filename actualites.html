@@ -23,7 +23,7 @@
             --accent: #ffffff;
         }
         
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: #F9FAFB; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: #F9FAFB; transition: background-color 0.4s ease, color 0.4s ease; }
 
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
@@ -107,11 +107,33 @@
             opacity: 0;
             transform: scale(0.95);
         }
+
+        /* --- GESTION DES THÈMES --- */
+        
+        /* 1. Mode Nuit */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu, body.theme-night aside .bg-white { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        
+        /* 2. Mode Gris (Low contrast) */
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu, body.theme-gray aside .bg-white { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        /* 3. Mode Confort des yeux (Sépia / Chaud) */
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu, body.theme-comfort aside .bg-white { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
 <body class="text-gray-900 select-none">
 
-    <!-- TOP BAR (Bande Supérieure - Conservée intacte) -->
+    <!-- TOP BAR (Bande Supérieure) -->
     <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex space-x-6">
@@ -210,6 +232,19 @@
             </div>
         </div>
     </nav>
+
+    <!-- THEME SWITCHER (Mode Clair, Gris, Nuit, Confort) -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" title="Mode Clair" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" title="Mode Gris" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" title="Mode Nuit" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" title="Mode Confort des Yeux" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
+        </div>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
 
     <!-- NEWS HEADER -->
     <header class="bg-upkol-noir text-white py-12 md:py-16 relative overflow-hidden">
@@ -922,8 +957,38 @@
             }
         });
 
-        // Détection paramètre de recherche depuis l'URL si présent
+        /* --- GESTION DES THÈMES --- */
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function setTheme(theme) {
+            // Retirer les thèmes existants
+            document.body.classList.remove('theme-night', 'theme-gray', 'theme-comfort');
+            
+            // Ajouter le nouveau thème si différent de 'light'
+            if (theme !== 'light') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            
+            // Mettre à jour l'état actif des boutons
+            document.querySelectorAll('#theme-menu button').forEach(btn => btn.classList.remove('active-theme'));
+            const activeBtn = document.getElementById(`btn-theme-${theme}`);
+            if (activeBtn) activeBtn.classList.add('active-theme');
+            
+            // Sauvegarder dans localStorage
+            localStorage.setItem('upkol-theme', theme);
+        }
+
+        // Exécution au chargement de la page
         window.addEventListener('DOMContentLoaded', () => {
+            // Appliquer le thème sauvegardé
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
+
+            // Détection paramètre de recherche depuis l'URL si présent
             const urlParams = new URLSearchParams(window.location.search);
             const searchParam = urlParams.get('s');
             if (searchParam) {
