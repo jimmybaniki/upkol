@@ -3,99 +3,1111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publier Actualité - Rectorat UPKOL</title>
+    <title>Actualités | UPKOL - Université Pédagogique de Kolwezi</title>
+    <link rel="icon" href="favicon.png?v=2" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.upkol.academy/actualites.html">
+    <meta property="og:title" content="Actualités | UPKOL">
+    <meta property="og:description" content="Découvrez les actualités, activités du Recteur, résultats académiques, recherches et événements de l'Université Pédagogique de Kolwezi.">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+        :root {
+            --primary: #FFD700; /* Jaune Or UPKOL */
+            --secondary: #121212; /* Noir Institutionnel */
+            --accent: #ffffff;
+            --bg-page: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #4B5563;
+            --border-color: #E5E7EB;
+        }
+
+        /* --- 1. MODE CLAIR (LIGHT MODE - DEFAUT) --- */
+        body.theme-light {
+            --bg-page: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #4B5563;
+            --border-color: #E5E7EB;
+        }
+
+        /* --- 2. MODE GRISÉ (GRAY MONOCHROME MODE) --- */
+        body.theme-gray {
+            --bg-page: #E2E8F0;
+            --bg-card: #F1F5F9;
+            --text-main: #1E293B;
+            --text-muted: #475569;
+            --border-color: #CBD5E1;
+            filter: grayscale(0.25);
+        }
+        body.theme-gray .bg-upkol-jaune { background-color: #94A3B8 !important; color: #0F172A !important; }
+        body.theme-gray .text-upkol-jaune { color: #475569 !important; }
+        body.theme-gray .bg-upkol-noir { background-color: #334155 !important; }
+
+        /* --- 3. MODE NUIT (DARK / NIGHT MODE) --- */
+        body.theme-night {
+            --bg-page: #0F172A;
+            --bg-card: #1E293B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            color-scheme: dark;
+        }
+        body.theme-night nav, 
+        body.theme-night .bg-white,
+        body.theme-night .dropdown-content { background-color: #1E293B !important; color: #F8FAFC !important; }
+        body.theme-night .text-gray-900,
+        body.theme-night .text-gray-800,
+        body.theme-night .text-gray-700 { color: #F1F5F9 !important; }
+        body.theme-night .text-gray-600,
+        body.theme-night .text-gray-500 { color: #94A3B8 !important; }
+        body.theme-night .bg-gray-50,
+        body.theme-night .bg-gray-100 { background-color: #334155 !important; color: #F8FAFC !important; }
+        body.theme-night .border-gray-100,
+        body.theme-night .border-gray-200 { border-color: #334155 !important; }
+
+        /* --- 4. MODE CONFORT ŒIL (WARM ANTI-BLUE LIGHT / SEPIA COMFORT) --- */
+        body.theme-comfort {
+            --bg-page: #F5EBD7;
+            --bg-card: #FCF6E8;
+            --text-main: #3D2C1D;
+            --text-muted: #6E5844;
+            --border-color: #E2D1B3;
+        }
+        body.theme-comfort { background-color: #F5EBD7 !important; color: #3D2C1D !important; }
+        body.theme-comfort nav, 
+        body.theme-comfort .bg-white,
+        body.theme-comfort .dropdown-content { background-color: #FCF6E8 !important; color: #3D2C1D !important; }
+        body.theme-comfort .text-gray-900,
+        body.theme-comfort .text-gray-800,
+        body.theme-comfort .text-gray-700 { color: #3D2C1D !important; }
+        body.theme-comfort .text-gray-600,
+        body.theme-comfort .text-gray-500 { color: #6E5844 !important; }
+        body.theme-comfort .bg-gray-50,
+        body.theme-comfort .bg-gray-100 { background-color: #EBD9B4 !important; color: #3D2C1D !important; }
+        body.theme-comfort .bg-upkol-jaune { background-color: #D97706 !important; color: #FFFFFF !important; }
+        body.theme-comfort .text-upkol-jaune { color: #D97706 !important; }
+        body.theme-comfort .bg-upkol-noir { background-color: #4A3525 !important; }
+        body.theme-comfort img { filter: sepia(0.2) contrast(0.95); }
+
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            scroll-behavior: smooth; 
+            overflow-x: hidden; 
+            background-color: var(--bg-page); 
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
+        .border-upkol-jaune { border-color: var(--primary); }
+        
+        /* Animations */
+        @keyframes slideFromTop {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideFromLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideFromRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .reveal-down { animation: slideFromTop 0.6s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.6s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.6s ease-out forwards; }
+
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Carousel swipable */
+        .carousel-track {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+            cursor: grab;
+        }
+        .carousel-track:active {
+            cursor: grabbing;
+        }
+
+        /* Styles galerie sidebar */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .photo-gallery a {
+            display: block;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            position: relative;
+            padding-bottom: 100%;
+        }
+        .photo-gallery img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .photo-gallery a:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Scrollbar sur mesure */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Animation filtre articles */
+        .article-card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            transition: all 0.4s ease-in-out;
+        }
+        .article-card.hidden-article {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        /* Boutons de changement de thème */
+        .theme-btn-active {
+            ring: 2px;
+            ring-color: #FFD700;
+            font-weight: 800 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
-<body class="p-4 lg:p-8">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
-            <div class="flex items-center space-x-4">
-                <a href="dashboard.html" class="w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-gray-600 hover:text-yellow-500 transition-colors">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <h1 class="text-2xl font-black uppercase text-gray-800">Publier une <span class="text-yellow-500">Actualité</span></h1>
+<body class="theme-light select-none">
+
+    <!-- TOP BAR (Bande Supérieure - Avec sélecteur de mode de confort visuel) -->
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div class="flex space-x-6">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
+                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
             </div>
-            <div class="hidden md:block text-right">
-                <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Espace Rectorat</p>
-                <p class="text-xs font-bold text-gray-600">UPKOL KOLWEZI</p>
+            
+            <!-- SÉLECTEUR DE MODE DE CONFORT VISUEL -->
+            <div class="flex items-center space-x-1 sm:space-x-2 bg-gray-900/80 p-1 rounded-full border border-gray-700">
+                <span class="text-[9px] uppercase font-bold text-gray-400 px-2 hidden sm:inline"><i class="fas fa-eye text-upkol-jaune mr-1"></i> Mode :</span>
+                
+                <button onclick="setTheme('light')" id="top-btn-light" title="Mode Clair Standard" class="theme-btn px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 hover:bg-gray-800 text-gray-300">
+                    <i class="fas fa-sun text-yellow-400"></i> <span class="hidden md:inline">Clair</span>
+                </button>
+                <button onclick="setTheme('gray')" id="top-btn-gray" title="Mode Grisé Adouci" class="theme-btn px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 hover:bg-gray-800 text-gray-300">
+                    <i class="fas fa-circle-half-stroke text-slate-400"></i> <span class="hidden md:inline">Grisé</span>
+                </button>
+                <button onclick="setTheme('night')" id="top-btn-night" title="Mode Nuit Sombre" class="theme-btn px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 hover:bg-gray-800 text-gray-300">
+                    <i class="fas fa-moon text-blue-300"></i> <span class="hidden md:inline">Nuit</span>
+                </button>
+                <button onclick="setTheme('comfort')" id="top-btn-comfort" title="Mode Confort Œil (Anti Lumière Bleue)" class="theme-btn px-2.5 py-1 rounded-full text-[10px] font-bold transition flex items-center gap-1 hover:bg-gray-800 text-gray-300">
+                    <i class="fas fa-glasses text-amber-400"></i> <span class="hidden md:inline">Confort Œil</span>
+                </button>
             </div>
-        </div>
-
-        <!-- Form Content -->
-        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <div class="bg-gray-900 p-6 text-white flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold">Nouvel Article / Annonce</h2>
-                    <p class="text-xs text-gray-400">Diffusion immédiate sur le site web et le portail étudiant</p>
-                </div>
-                <i class="fas fa-bullhorn text-yellow-500 text-3xl opacity-50"></i>
-            </div>
-
-            <form id="newsForm" class="p-8 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Titre de l'actualité *</label>
-                            <input type="text" id="newsTitle" required placeholder="Ex: Report de la rentrée académique" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-yellow-500 transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Catégorie</label>
-                            <select class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-yellow-500 transition-all cursor-pointer">
-                                <option>Avis Académique</option>
-                                <option>Événement</option>
-                                <option>Communiqué du Rectorat</option>
-                                <option>Recherche & Innovation</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Image de couverture</label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer group">
-                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 group-hover:text-yellow-500 mb-2"></i>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase">Cliquez pour ajouter une photo</p>
-                            <input type="file" class="hidden">
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Contenu de l'annonce *</label>
-                    <textarea rows="6" id="newsContent" required placeholder="Rédigez votre communiqué ici..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-yellow-500 transition-all"></textarea>
-                </div>
-
-                <div class="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
-                    <input type="checkbox" id="urgent" class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                    <label for="urgent" class="text-xs font-bold text-yellow-800 uppercase tracking-tighter">Marquer comme URGENT (Notification Push)</label>
-                </div>
-
-                <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="window.location.href='dashboard.html'" class="px-6 py-3 text-xs font-black uppercase text-gray-400 hover:text-gray-800 transition-colors">
-                        Annuler
-                    </button>
-                    <button type="submit" class="bg-gray-900 text-yellow-500 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-800 transition-all shadow-lg flex items-center">
-                        <i class="fas fa-paper-plane mr-2"></i> Publier l'article
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <script>
-        document.getElementById('newsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Publication...';
-            btn.disabled = true;
+    <!-- MAIN NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer reveal-left">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
+                    <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>UPKOL</span>';">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
+                </div>
+            </a>
 
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700 w-36 focus:w-56 transition-all duration-300">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                    </div>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="actualites.html" class="text-upkol-jaune border-b-2 border-upkol-jaune py-8 transition-colors">Actualités</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
+                        </a>
+                    </div>
+                </div>
+
+                <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                    <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                        <i class="fas fa-university text-[10px]"></i>
+                    </div>
+                    <span class="text-[10px] font-black text-gray-500 hover:text-upkol-noir">PORTAIL</span>
+                </a>
+                
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-upkol-noir hover:text-white transition transform hover:scale-105 shadow-md">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-upkol-jaune">Actualités</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            
+            <!-- Sélecteur de mode dans le menu mobile -->
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex flex-col gap-2">
+                <span class="text-xs font-black uppercase text-gray-600 flex items-center gap-2">
+                    <i class="fas fa-glasses text-amber-500"></i> Mode de confort visuel :
+                </span>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <button onclick="setTheme('light')" class="px-3 py-2 bg-white rounded-lg border text-xs font-bold flex items-center justify-center gap-2">☀️ Clair</button>
+                    <button onclick="setTheme('gray')" class="px-3 py-2 bg-white rounded-lg border text-xs font-bold flex items-center justify-center gap-2">🩶 Grisé</button>
+                    <button onclick="setTheme('night')" class="px-3 py-2 bg-white rounded-lg border text-xs font-bold flex items-center justify-center gap-2">🌙 Nuit</button>
+                    <button onclick="setTheme('comfort')" class="px-3 py-2 bg-white rounded-lg border text-xs font-bold flex items-center justify-center gap-2">👁️ Confort Œil</button>
+                </div>
+            </div>
+
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune bg-yellow-50">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- NEWS HEADER -->
+    <header class="bg-upkol-noir text-white py-12 md:py-16 relative overflow-hidden">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-upkol-jaune opacity-10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500 opacity-10 blur-3xl"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center reveal-down">
+            <h1 class="text-3xl md:text-5xl font-black uppercase mb-3 tracking-tight">Le Fil d'<span class="text-upkol-jaune">Actualités</span></h1>
+            <p class="text-gray-400 font-bold text-xs md:text-sm tracking-widest uppercase mb-4 max-w-2xl mx-auto">Activités du Recteur, résultats académiques, recherches et événements majeurs de l'UPKOL.</p>
+            <div class="w-20 h-1 bg-upkol-jaune mx-auto rounded-full"></div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        
+        <!-- SECTION À LA UNE : CARROUSEL SWIPABLE -->
+        <section class="mb-14 reveal-left">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-8 bg-upkol-jaune rounded-full"></div>
+                    <h2 class="text-2xl font-black uppercase tracking-tight">À la une</h2>
+                    <span class="text-xs bg-gray-200 text-gray-700 font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                        <i class="fas fa-hand-pointer text-upkol-noir"></i> Glissez à gauche / droite
+                    </span>
+                </div>
+
+                <!-- Navigation Flèches Carrousel -->
+                <div class="flex space-x-2">
+                    <button onclick="prevSlide()" class="w-10 h-10 rounded-full bg-white border border-gray-200 shadow hover:bg-upkol-jaune hover:border-upkol-jaune transition flex items-center justify-center font-bold text-black focus:outline-none" aria-label="Article précédent">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextSlide()" class="w-10 h-10 rounded-full bg-white border border-gray-200 shadow hover:bg-upkol-jaune hover:border-upkol-jaune transition flex items-center justify-center font-bold text-black focus:outline-none" aria-label="Article suivant">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- CONTENEUR DU CARROUSEL -->
+            <div id="carousel-viewport" class="relative overflow-hidden rounded-3xl shadow-2xl border border-gray-100 bg-white">
+                <div id="carousel-track" class="carousel-track">
+                    
+                    <!-- SLIDE 1 (EN TÊTE) : RENTRÉE ACADÉMIQUE 2026 - 2027 & INSCRIPTIONS -->
+                    <div class="w-full flex-shrink-0 flex flex-col md:flex-row bg-white">
+                        <div class="md:w-1/2 relative overflow-hidden h-80 md:h-[450px] group cursor-pointer" onclick="openLightbox('https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg', 'Rentrée Académique 2026 - 2027 UPKOL')">
+                            <img src="https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg" alt="Rentrée Académique 2026-2027 UPKOL" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-1">
+                                <i class="fas fa-star text-black"></i> EN TÊTE • INSCRIPTIONS
+                            </div>
+                            <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="bg-black bg-opacity-75 text-white text-xs font-bold px-4 py-2 rounded-full border border-yellow-400 flex items-center gap-2">
+                                    <i class="fas fa-search-plus"></i> Cliquer pour agrandir l'image
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-between bg-gradient-to-br from-white via-gray-50 to-amber-50">
+                            <div>
+                                <div class="flex items-center text-xs text-amber-700 font-bold mb-4 space-x-4">
+                                    <span class="bg-amber-100 text-amber-900 px-3 py-1 rounded-full"><i class="far fa-calendar-check mr-1 text-amber-600"></i> Année Académique 2026 - 2027</span>
+                                    <span><i class="fas fa-map-marker-alt text-upkol-jaune mr-1"></i> Campus UPKOL</span>
+                                </div>
+
+                                <h3 class="text-2xl md:text-3xl font-black mb-4 uppercase leading-tight text-gray-900 hover:text-amber-600 transition-colors">
+                                    Ouverture Officielle des Inscriptions pour la Rentrée Académique 2026 - 2027
+                                </h3>
+
+                                <p class="text-gray-600 text-sm md:text-base mb-6 leading-relaxed">
+                                    L'Université Pédagogique de Kolwezi (UPKOL) annonce le lancement officiel des inscriptions pour la nouvelle année académique 2026 - 2027. Rejoignez une institution d'excellence vouée à l'innovation, à la recherche et à la formation de l'élite de demain au Lualaba.
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-200">
+                                <a href="inscription.html" class="inline-flex items-center bg-upkol-jaune text-black font-black px-8 py-3.5 rounded-full hover:bg-upkol-noir hover:text-white transition-all transform hover:-translate-y-1 shadow-lg text-sm uppercase tracking-wider">
+                                    <i class="fas fa-user-plus mr-2"></i> S'inscrire Maintenant
+                                </a>
+                                <button onclick="openLightbox('https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg', 'Rentrée Académique 2026 - 2027 UPKOL')" class="inline-flex items-center bg-white border-2 border-gray-900 text-gray-900 font-bold px-6 py-3 rounded-full hover:bg-gray-900 hover:text-white transition-colors text-xs uppercase tracking-widest">
+                                    <i class="fas fa-expand mr-2"></i> Voir l'affiche
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SLIDE 2 : CEREMONIE DE COLLATION DES GRADES ACADEMIQUES -->
+                    <div class="w-full flex-shrink-0 flex flex-col md:flex-row bg-white">
+                        <div class="md:w-1/2 relative overflow-hidden h-80 md:h-[450px] group cursor-pointer" onclick="openLightbox('https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg', 'Collation des Grades')">
+                            <img src="https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg" alt="Collation des grades" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                            <div class="absolute top-4 left-4 bg-upkol-noir text-upkol-jaune text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg border border-upkol-jaune">
+                                <i class="fas fa-graduation-cap mr-1"></i> Événement Majeur
+                            </div>
+                            <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="bg-black bg-opacity-75 text-white text-xs font-bold px-4 py-2 rounded-full border border-yellow-400 flex items-center gap-2">
+                                    <i class="fas fa-search-plus"></i> Cliquer pour agrandir
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center text-xs text-gray-500 font-bold mb-4 space-x-4">
+                                    <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> 25 Octobre 2025</span>
+                                    <span><i class="fas fa-map-marker-alt text-upkol-jaune mr-1"></i> Campus Principal</span>
+                                </div>
+                                <h3 class="text-2xl md:text-3xl font-black mb-4 uppercase leading-tight hover:text-upkol-jaune transition-colors">
+                                    Cérémonie Solennelle de Collation des Grades Académiques
+                                </h3>
+                                <p class="text-gray-600 text-sm md:text-base mb-6 leading-relaxed">
+                                    Revivez en images les moments forts de la cérémonie de clôture de l'année académique et de la remise des diplômes aux lauréats de l'Université Pédagogique de Kolwezi.
+                                </p>
+                            </div>
+
+                            <div>
+                                <button onclick="document.getElementById('galerie-collation').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center bg-upkol-noir text-white font-bold px-8 py-3.5 rounded-full hover:bg-upkol-jaune hover:text-black transition-all shadow-md text-xs uppercase tracking-widest">
+                                    <i class="fas fa-images mr-2"></i> Voir la galerie photos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CARROUSEL INDICATEURS / DOTS -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+                    <button onclick="goToSlide(0)" class="carousel-dot w-8 h-2.5 rounded-full bg-upkol-jaune transition-all shadow" aria-label="Slide 1"></button>
+                    <button onclick="goToSlide(1)" class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all shadow" aria-label="Slide 2"></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION RECHERCHE ET FILTRES D'ACTUALITÉS -->
+        <section class="mb-10 bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-gray-100 reveal-down">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                <div>
+                    <h3 class="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                        <i class="fas fa-filter text-upkol-jaune"></i> Filtrer les Actualités
+                    </h3>
+                    <p class="text-xs text-gray-500 font-bold mt-1">Sélectionnez une catégorie ou tapez un mot-clé pour affiner les articles.</p>
+                </div>
+
+                <!-- BARRE DE RECHERCHE D'ARTICLES PAR MOT-CLÉ -->
+                <div class="relative w-full md:w-80">
+                    <input type="text" id="news-search-input" onkeyup="filterNews()" placeholder="Rechercher un article..." 
+                           class="w-full bg-gray-50 border border-gray-200 pl-11 pr-4 py-3 rounded-full text-xs font-bold text-gray-800 outline-none focus:border-upkol-jaune focus:bg-white transition-all shadow-sm">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                    <button id="clear-search-btn" onclick="clearNewsSearch()" class="hidden absolute right-3 top-3 text-gray-400 hover:text-black text-xs font-bold bg-gray-200 w-5 h-5 rounded-full flex items-center justify-center">
+                        &times;
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOUTONS FILTRES PAR CATÉGORIE -->
+            <div class="flex flex-wrap gap-2 md:gap-3" id="category-filters">
+                <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-filter-btn active-cat-btn bg-upkol-noir text-upkol-jaune font-black px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2">
+                    <i class="fas fa-layer-group"></i> Tous <span id="count-all" class="bg-upkol-jaune text-black px-2 py-0.5 rounded-full text-[10px] font-black">5</span>
+                </button>
+                <button onclick="setCategoryFilter('recteur')" data-cat="recteur" class="cat-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    <i class="fas fa-user-tie text-upkol-jaune"></i> Activités du Recteur <span id="count-recteur" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">1</span>
+                </button>
+                <button onclick="setCategoryFilter('resultat')" data-cat="resultat" class="cat-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-amber-500"></i> Résultats Académiques <span id="count-resultat" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">1</span>
+                </button>
+                <button onclick="setCategoryFilter('recherche')" data-cat="recherche" class="cat-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    <i class="fas fa-microscope text-blue-500"></i> Publication des Recherches <span id="count-recherche" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">1</span>
+                </button>
+                <button onclick="setCategoryFilter('evenement')" data-cat="evenement" class="cat-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    <i class="fas fa-calendar-star text-purple-500"></i> Événements <span id="count-evenement" class="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">2</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- MISE EN PAGE 2 COLONNES : Galerie Photos (Gauche) & Actualités Filtrables (Droite) -->
+        <div class="flex flex-col lg:flex-row gap-8 items-start mb-12">
+            
+            <!-- COLONNE GAUCHE : Galerie Photo Sidebar "Sticky" -->
+            <aside class="w-full lg:w-1/3 lg:sticky lg:top-28 reveal-left">
+                <div id="galerie-collation" class="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-upkol-jaune opacity-10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+                    
+                    <h4 class="text-lg font-black mb-6 flex items-center tracking-tight uppercase relative z-10"><i class="fas fa-camera-retro text-upkol-jaune mr-3 text-xl"></i> En images</h4>
+                    
+                    <div class="photo-gallery max-h-[650px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/hJkhGJY0/Whats-App-Image-2026-10-02-at-5-59-54-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/hJkhGJY0/Whats-App-Image-2026-10-02-at-5-59-54-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/vCG6XGyn/Whats-App-Image-2026-10-02-at-5-59-55-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/vCG6XGyn/Whats-App-Image-2026-10-02-at-5-59-55-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/60JkgfQS/Whats-App-Image-2026-10-02-at-5-59-55-PM-2.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/60JkgfQS/Whats-App-Image-2026-10-02-at-5-59-55-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/Mkmpvpnp/Whats-App-Image-2026-10-02-at-5-59-55-PM-3.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/Mkmpvpnp/Whats-App-Image-2026-10-02-at-5-59-55-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/tfhHS92/Whats-App-Image-2026-10-02-at-5-59-55-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/tfhHS92/Whats-App-Image-2026-10-02-at-5-59-55-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/fdTQ9ZHC/Whats-App-Image-2026-10-02-at-5-59-56-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/fdTQ9ZHC/Whats-App-Image-2026-10-02-at-5-59-56-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/1GZfg9Dr/Whats-App-Image-2026-10-02-at-5-59-56-PM-2.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/1GZfg9Dr/Whats-App-Image-2026-10-02-at-5-59-56-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/J1NmRwk/Whats-App-Image-2026-10-02-at-5-59-56-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/J1NmRwk/Whats-App-Image-2026-10-02-at-5-59-56-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/8DbSvHnX/Whats-App-Image-2026-10-02-at-5-59-57-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/8DbSvHnX/Whats-App-Image-2026-10-02-at-5-59-57-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/ynS79RQj/Whats-App-Image-2026-10-02-at-5-59-57-PM-2.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/ynS79RQj/Whats-App-Image-2026-10-02-at-5-59-57-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/gGWXvjV/Whats-App-Image-2026-10-02-at-5-59-57-PM-3.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/gGWXvjV/Whats-App-Image-2026-10-02-at-5-59-57-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/WpYZXzTp/Whats-App-Image-2026-10-02-at-5-59-57-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/WpYZXzTp/Whats-App-Image-2026-10-02-at-5-59-57-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/hbvwK2n/Whats-App-Image-2026-10-02-at-5-59-58-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/hbvwK2n/Whats-App-Image-2026-10-02-at-5-59-58-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/gbtBsTWp/Whats-App-Image-2026-10-02-at-5-59-58-PM-2.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/gbtBsTWp/Whats-App-Image-2026-10-02-at-5-59-58-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/mrNFmGxv/Whats-App-Image-2026-10-02-at-5-59-58-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/mrNFmGxv/Whats-App-Image-2026-10-02-at-5-59-58-PM.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/F44kBB8L/Whats-App-Image-2026-10-02-at-5-59-59-PM-1.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/F44kBB8L/Whats-App-Image-2026-10-02-at-5-59-59-PM-1.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/n8fcZbF5/Whats-App-Image-2026-10-02-at-5-59-59-PM-2.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/n8fcZbF5/Whats-App-Image-2026-10-02-at-5-59-59-PM-2.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/s98N88Yj/Whats-App-Image-2026-10-02-at-5-59-59-PM-3.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/s98N88Yj/Whats-App-Image-2026-10-02-at-5-59-59-PM-3.jpg" alt="Photo cérémonie"></a>
+                        <a href="javascript:void(0)" onclick="openLightbox('https://i.ibb.co/cKYfQ6ym/Whats-App-Image-2026-10-02-at-5-59-59-PM.jpg', 'Galerie Cérémonie')"><img src="https://i.ibb.co/cKYfQ6ym/Whats-App-Image-2026-10-02-at-5-59-59-PM.jpg" alt="Photo cérémonie"></a>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- COLONNE DROITE : Liste Dynamique des Articles Filtrables -->
+            <div class="w-full lg:w-2/3 flex flex-col space-y-8" id="articles-container">
+
+                <!-- ARTICLE 1 : INSCRIPTION & RENTRÉE (Catégorie : evenement) -->
+                <article class="article-card rounded-3xl overflow-hidden shadow-xl border flex flex-col transition-all hover:shadow-2xl" 
+                         data-category="evenement" 
+                         data-keywords="rentrée inscriptions 2026 2027 officiel communique académique admission">
+                    
+                    <div class="relative h-80 md:h-[450px] overflow-hidden group cursor-pointer" 
+                         onclick="openLightbox('https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg', 'Affiche Officielle - Rentrée Académique UPKOL 2026-2027')">
+                        
+                        <img src="https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg" 
+                             alt="Annonce Rentrée Académique 2026-2027 UPKOL" 
+                             class="w-full h-full object-contain bg-gray-900 group-hover:scale-105 transition-transform duration-700">
+                        
+                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-md flex items-center gap-2">
+                            <i class="fas fa-bullhorn"></i> INSCRIPTIONS & RENTRÉE
+                        </div>
+
+                        <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="bg-black bg-opacity-80 text-white font-bold text-sm px-6 py-3 rounded-full border border-yellow-400 flex items-center gap-2 shadow-2xl">
+                                <i class="fas fa-search-plus text-upkol-jaune"></i> Cliquer pour voir l'image en grand
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-10 flex flex-col flex-grow">
+                        <div class="flex items-center text-xs opacity-75 font-bold mb-4 space-x-4">
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> Année Académique 2026 - 2027</span>
+                            <span><i class="fas fa-university text-upkol-jaune mr-1"></i> Toutes les Facultés</span>
+                        </div>
+
+                        <h2 class="text-2xl md:text-3xl font-black mb-4 leading-tight uppercase hover:text-upkol-jaune transition-colors">
+                            <a href="inscription.html">Communiqué Officiel : Ouverture des Inscriptions pour l'Année Académique 2026 - 2027</a>
+                        </h2>
+
+                        <p class="opacity-90 text-sm md:text-base leading-relaxed mb-6">
+                            Le Comité de Gestion de l’Université Pédagogique de Kolwezi (UPKOL) annonce l'ouverture officielle de la campagne d'inscriptions pour l'année académique <strong>2026 - 2027</strong>. Formations de qualité en Pédagogie, Informatique, Économie, Droit et Sciences Humaines.
+                        </p>
+
+                        <div class="pt-6 border-t border-gray-200/40 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
+                            <a href="inscription.html" class="w-full sm:w-auto bg-upkol-jaune text-black font-black px-8 py-4 rounded-full hover:bg-upkol-noir hover:text-white transition-all transform hover:-translate-y-1 text-center text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-3">
+                                <span>Accéder aux Inscriptions</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+
+                            <button onclick="openLightbox('https://i.ibb.co/NnQV3hTg/Whats-App-Image-2026-09-08-at-2-24-28-PM.jpg', 'Affiche Officielle Rentrée 2026-2027')" class="font-bold text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors flex items-center gap-2 py-2">
+                                <i class="fas fa-expand-alt text-base"></i> Agrandir le communiqué
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- ARTICLE 2 : ACTIVITÉS DU RECTEUR (Catégorie : recteur) -->
+                <article class="article-card rounded-3xl overflow-hidden shadow-xl border flex flex-col transition-all hover:shadow-2xl" 
+                         data-category="recteur" 
+                         data-keywords="recteur comite gestion audience visite partenariat universite kolwezi leadership">
+                    
+                    <div class="relative h-72 md:h-[380px] overflow-hidden group cursor-pointer" 
+                         onclick="openLightbox('https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg', 'Audience et Rencontre avec le Recteur de l\'UPKOL')">
+                        
+                        <img src="https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg" 
+                             alt="Activités du Recteur UPKOL" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        
+                        <div class="absolute top-4 left-4 bg-upkol-noir text-upkol-jaune border border-upkol-jaune text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-md flex items-center gap-2">
+                            <i class="fas fa-user-tie"></i> ACTIVITÉS DU RECTEUR
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-10 flex flex-col flex-grow">
+                        <div class="flex items-center text-xs opacity-75 font-bold mb-4 space-x-4">
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> 18 Février 2026</span>
+                            <span><i class="fas fa-building text-upkol-jaune mr-1"></i> Rectorat UPKOL</span>
+                        </div>
+
+                        <h2 class="text-xl md:text-2xl font-black mb-4 leading-tight uppercase hover:text-upkol-jaune transition-colors">
+                            Audience accordée par le Recteur de l'UPKOL aux délégations académiques et partenaires socio-économiques
+                        </h2>
+
+                        <p class="opacity-90 text-sm md:text-base leading-relaxed mb-6">
+                            Dans le cadre du renforcement du réseau universitaire et de la modernisation des équipements de recherche, le Recteur de l'Université Pédagogique de Kolwezi a présidé une importante séance de travail avec les acteurs clés du secteur minier et éducatif du Lualaba.
+                        </p>
+
+                        <div class="pt-6 border-t border-gray-200/40 flex items-center justify-between mt-auto">
+                            <span class="text-xs font-bold opacity-70 uppercase">Communiqué de la Presse Rectorale</span>
+                            <button onclick="openLightbox('https://i.ibb.co/3yqbYzf5/Whats-App-Image-2026-10-02-at-5-59-54-PM.jpg', 'Visite du Recteur')" class="font-black text-xs uppercase tracking-widest hover:text-upkol-jaune transition-colors flex items-center gap-2">
+                                <i class="fas fa-image"></i> Voir la photo
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- ARTICLE 3 : RÉSULTATS ACADÉMIQUES (Catégorie : resultat) -->
+                <article class="article-card rounded-3xl overflow-hidden shadow-xl border flex flex-col transition-all hover:shadow-2xl" 
+                         data-category="resultat" 
+                         data-keywords="resultats examens deliberation cotes session faculte etudiants diplome notes">
+                    
+                    <div class="p-8 md:p-10 flex flex-col flex-grow">
+                        <div class="flex items-center text-xs text-amber-700 font-bold mb-4 space-x-4">
+                            <span class="bg-amber-100 text-amber-900 px-3 py-1 rounded-full"><i class="fas fa-chart-line mr-1"></i> Affichage Officiel</span>
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> Février 2026</span>
+                        </div>
+
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="bg-amber-500 text-white text-[10px] font-black px-3 py-1 rounded-md uppercase">RÉSULTATS ACADÉMIQUES</span>
+                        </div>
+
+                        <h2 class="text-xl md:text-2xl font-black mb-4 leading-tight uppercase hover:text-upkol-jaune transition-colors">
+                            Publication des Résultats des Évaluations de la Première Session Académique
+                        </h2>
+
+                        <p class="opacity-90 text-sm md:text-base leading-relaxed mb-6">
+                            Le Secrétariat Général Académique de l'UPKOL informe les étudiants de toutes les facultés (Pédagogie, Informatique, Sciences Économiques) que les grilles de délibération et les cotes de la première session sont désormais consultables sur le portail numérique étudiant.
+                        </p>
+
+                        <div class="bg-yellow-50/80 border-l-4 border-upkol-jaune p-4 rounded-r-xl mb-6 text-xs text-gray-800 font-medium">
+                            <i class="fas fa-info-circle text-amber-600 mr-2"></i> Munissez-vous de votre matricule d'étudiant pour vérifier votre relevé de notes en ligne sur votre espace dédié.
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-200/40 flex items-center justify-between mt-auto">
+                            <a href="dashboard.html" class="bg-upkol-noir text-white font-bold px-6 py-3 rounded-full hover:bg-upkol-jaune hover:text-black transition-all text-xs uppercase tracking-wider flex items-center gap-2">
+                                <i class="fas fa-user-graduate"></i> Consulter mon résultat sur le portail
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- ARTICLE 4 : PUBLICATION DES RECHERCHES ACADÉMIQUES (Catégorie : recherche) -->
+                <article class="article-card rounded-3xl overflow-hidden shadow-xl border flex flex-col transition-all hover:shadow-2xl" 
+                         data-category="recherche" 
+                         data-keywords="recherche publication scientifique revue pedagogie lualaba professeurs article laboratoire">
+                    
+                    <div class="p-8 md:p-10 flex flex-col flex-grow">
+                        <div class="flex items-center text-xs text-blue-700 font-bold mb-4 space-x-4">
+                            <span class="bg-blue-100 text-blue-900 px-3 py-1 rounded-full"><i class="fas fa-flask mr-1"></i> Centre de Recherche UPKOL</span>
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> Janvier 2026</span>
+                        </div>
+
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-md uppercase">PUBLICATIONS ACADÉMIQUES</span>
+                        </div>
+
+                        <h2 class="text-xl md:text-2xl font-black mb-4 leading-tight uppercase hover:text-upkol-jaune transition-colors">
+                            Parution du nouveau numéro de la Revue Scientifique & Pédagogique de Kolwezi (RSPK)
+                        </h2>
+
+                        <p class="opacity-90 text-sm md:text-base leading-relaxed mb-6">
+                            Le Conseil Scientifique de l'Université Pédagogique de Kolwezi annonce la parution officielle du Vol. 8 de sa revue académique trimestrielle. Ce numéro aborde la digitalisation des méthodes d'enseignement et l'impact de l'IA sur la didactique moderne.
+                        </p>
+
+                        <div class="pt-6 border-t border-gray-200/40 flex items-center justify-between mt-auto">
+                            <a href="recherche.html" class="bg-blue-50 text-blue-900 font-bold px-6 py-3 rounded-full hover:bg-blue-600 hover:text-white transition-all text-xs uppercase tracking-wider flex items-center gap-2 border border-blue-200">
+                                <i class="fas fa-book-reader"></i> Parcourir les travaux de recherche
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- ARTICLE 5 : ÉVÉNEMENTS (Catégorie : evenement) -->
+                <article class="article-card rounded-3xl overflow-hidden shadow-xl border flex flex-col transition-all hover:shadow-2xl" 
+                         data-category="evenement" 
+                         data-keywords="evenement collation grades ceremonie lauréats diplomes fete campus festivité">
+                    
+                    <div class="relative h-72 md:h-[380px] overflow-hidden group cursor-pointer" 
+                         onclick="openLightbox('https://i.ibb.co/hJkhGJY0/Whats-App-Image-2026-10-02-at-5-59-54-PM-1.jpg', 'Cérémonie solennelle de remise des diplômes')">
+                        
+                        <img src="https://i.ibb.co/hJkhGJY0/Whats-App-Image-2026-10-02-at-5-59-54-PM-1.jpg" 
+                             alt="Cérémonie Collation des grades" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        
+                        <div class="absolute top-4 left-4 bg-purple-600 text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-md flex items-center gap-2">
+                            <i class="fas fa-award"></i> ÉVÉNEMENT MAJEUR
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-10 flex flex-col flex-grow">
+                        <div class="flex items-center text-xs opacity-75 font-bold mb-4 space-x-4">
+                            <span><i class="far fa-calendar-alt text-upkol-jaune mr-1"></i> Octobre 2025</span>
+                            <span><i class="fas fa-users text-upkol-jaune mr-1"></i> Communauté Universitaire</span>
+                        </div>
+
+                        <h2 class="text-xl md:text-2xl font-black mb-4 leading-tight uppercase hover:text-upkol-jaune transition-colors">
+                            Retour sur la Grande Cérémonie de Collation des Grades Académiques
+                        </h2>
+
+                        <p class="opacity-90 text-sm md:text-base leading-relaxed mb-6">
+                            L'UPKOL a célébré la réussite de ses nouveaux diplômés lors d'une cérémonie grandiose réunissant les autorités provinciales du Lualaba, le corps professoral et les familles des lauréats.
+                        </p>
+
+                        <div class="pt-6 border-t border-gray-200/40 flex items-center justify-between mt-auto">
+                            <button onclick="document.getElementById('galerie-collation').scrollIntoView({behavior: 'smooth'})" class="text-purple-700 font-black text-xs uppercase tracking-widest hover:text-purple-900 transition-colors flex items-center gap-2">
+                                <i class="fas fa-images"></i> Découvrir l'album photo complet
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- MESSAGE SI AUCUN RÉSULTAT TROUVÉ -->
+                <div id="no-results-msg" class="hidden bg-white p-12 rounded-3xl border border-gray-100 text-center shadow-md">
+                    <div class="w-16 h-16 bg-yellow-100 text-upkol-noir rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-black">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="text-xl font-black uppercase mb-2">Aucun article trouvé</h3>
+                    <p class="text-xs text-gray-500 font-bold mb-6">Aucune actualité ne correspond à vos critères de recherche ou à la catégorie sélectionnée.</p>
+                    <button onclick="resetFilters()" class="bg-upkol-jaune text-black font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-wider hover:bg-upkol-noir hover:text-white transition-all">
+                        Réinitialiser tous les filtres
+                    </button>
+                </div>
+
+            </div> <!-- FIN COLONNE DROITE -->
+
+        </div> <!-- FIN DU CONTENEUR DOUBLE COLONNE -->
+
+    </main>
+
+    <!-- WIDGET FLOTTANT ACCÈS RAPIDE CONFORT ŒIL / THÈMES -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <div class="relative group">
+            <button id="floating-theme-trigger" class="w-12 h-12 bg-upkol-noir text-upkol-jaune border-2 border-upkol-jaune rounded-full shadow-2xl flex items-center justify-center text-xl transition-transform hover:scale-110 active:scale-95" title="Changer le confort visuel">
+                <i class="fas fa-glasses"></i>
+            </button>
+            <div class="absolute bottom-14 right-0 hidden group-hover:flex flex-col bg-upkol-noir text-white p-3 rounded-2xl shadow-2xl border border-gray-800 min-w-[170px] space-y-2 text-xs font-bold animate__animated animate__fadeInUp animate__faster">
+                <div class="text-[9px] text-gray-400 uppercase tracking-widest px-2 border-b border-gray-800 pb-1 mb-1">Confort Visuel</div>
+                <button onclick="setTheme('light')" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-left transition"><i class="fas fa-sun text-yellow-400"></i> Mode Clair</button>
+                <button onclick="setTheme('gray')" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-left transition"><i class="fas fa-circle-half-stroke text-slate-400"></i> Mode Grisé</button>
+                <button onclick="setTheme('night')" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-left transition"><i class="fas fa-moon text-blue-300"></i> Mode Nuit</button>
+                <button onclick="setTheme('comfort')" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-left transition"><i class="fas fa-glasses text-amber-400"></i> Confort Œil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX MODAL (Visionneuse d'images) -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black bg-opacity-95 hidden flex flex-col items-center justify-center opacity-0 transition-opacity duration-300 p-4" onclick="if(event.target === this) closeLightbox()">
+        
+        <!-- Bouton Fermer -->
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white hover:text-upkol-jaune text-4xl focus:outline-none z-50 transition-colors w-12 h-12 bg-gray-900 bg-opacity-80 rounded-full flex items-center justify-center shadow-lg border border-gray-700" title="Fermer (Échap)">
+            &times;
+        </button>
+
+        <!-- Titre/Légende en haut -->
+        <div id="lightbox-caption" class="text-white font-bold text-sm md:text-base mb-4 tracking-wider text-center max-w-xl"></div>
+
+        <!-- Image plein écran -->
+        <div class="relative max-h-[85vh] max-w-[95vw] flex items-center justify-center">
+            <img id="lightbox-img" src="" alt="Aperçu grand format" class="max-h-[85vh] max-w-[95vw] object-contain rounded-xl shadow-2xl transition-transform duration-300 scale-95 border-2 border-yellow-400">
+        </div>
+
+        <!-- Action directe depuis le modal -->
+        <div class="mt-6 flex gap-4">
+            <a href="inscription.html" class="bg-upkol-jaune text-black font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-wider hover:bg-white transition">
+                <i class="fas fa-user-plus mr-2"></i> Remplir le formulaire d'inscription
+            </a>
+            <button onclick="closeLightbox()" class="bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider hover:bg-gray-700 transition">
+                Fermer
+            </button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-16 px-6 border-t-[12px] border-upkol-jaune mt-12">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
+            <div>
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université Pédagogique de Kolwezi au cœur du Lualaba. Dédiée à l'excellence et à l'innovation dans l'enseignement supérieur.</p>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens Rapides</h5>
+                <ul class="space-y-3 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="inscription.html" class="hover:text-white transition-colors uppercase text-upkol-jaune">Inscriptions 2026-2027</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Réseaux Sociaux</h5>
+                <div class="flex flex-wrap gap-3">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@universitepedagogiquedekolwezi?si=qBv6wuj59NXBS6ZZ" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://whatsapp.com/channel/0029VbDBBON29752VGwZVX34" target="_blank" rel="noopener noreferrer" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div>
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Contact & Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold mb-2"><i class="fas fa-map-marker-alt mr-2 text-upkol-jaune"></i> Kolwezi, Lualaba<br>R.D. Congo</p>
+                <p class="text-xs text-gray-400 font-bold"><i class="fas fa-envelope mr-2 text-upkol-jaune"></i> contact@upkol.org</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-16 pt-6 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span class="mb-2 md:mb-0">&copy; 2026 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <span>Formation. Recherche. Excellence.</span>
+        </div>
+    </footer>
+
+    <script>
+        /* --- GESTION DU MODE CONFORT ŒIL & THÈMES DE PAGE --- */
+        const availableThemes = ['light', 'gray', 'night', 'comfort'];
+
+        function setTheme(themeName) {
+            if (!availableThemes.includes(themeName)) themeName = 'light';
+            
+            // Retrait de tous les thèmes
+            document.body.classList.remove('theme-light', 'theme-gray', 'theme-night', 'theme-comfort');
+            document.body.classList.add(`theme-${themeName}`);
+
+            // Enregistrement de la préférence
+            localStorage.setItem('upkol_visual_theme', themeName);
+
+            // Mise à jour de l'apparence des boutons de sélection
+            availableThemes.forEach(t => {
+                const btn = document.getElementById(`top-btn-${t}`);
+                if (btn) {
+                    if (t === themeName) {
+                        btn.classList.add('bg-upkol-jaune', 'text-black', 'theme-btn-active');
+                        btn.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    } else {
+                        btn.classList.remove('bg-upkol-jaune', 'text-black', 'theme-btn-active');
+                        btn.classList.add('hover:bg-gray-800', 'text-gray-300');
+                    }
+                }
+            });
+
+            // Mise à jour de l'icône du bouton flottant
+            const triggerBtn = document.getElementById('floating-theme-trigger');
+            if (triggerBtn) {
+                if (themeName === 'night') {
+                    triggerBtn.innerHTML = '<i class="fas fa-moon text-blue-300"></i>';
+                } else if (themeName === 'comfort') {
+                    triggerBtn.innerHTML = '<i class="fas fa-glasses text-amber-400"></i>';
+                } else if (themeName === 'gray') {
+                    triggerBtn.innerHTML = '<i class="fas fa-circle-half-stroke text-slate-300"></i>';
+                } else {
+                    triggerBtn.innerHTML = '<i class="fas fa-sun text-yellow-400"></i>';
+                }
+            }
+        }
+
+        // Chargement du thème sauvegardé au démarrage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('upkol_visual_theme') || 'light';
+            setTheme(savedTheme);
+        });
+
+        // Menu Mobile & Recherche
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== "") {
+                const newsSearchInput = document.getElementById('news-search-input');
+                if (newsSearchInput) {
+                    newsSearchInput.value = query;
+                    filterNews();
+                    newsSearchInput.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+
+        /* --- SYSTÈME DE FILTRAGE DES ACTUALITÉS --- */
+        let currentCategory = 'all';
+
+        function setCategoryFilter(category) {
+            currentCategory = category;
+
+            const filterButtons = document.querySelectorAll('.cat-filter-btn');
+            filterButtons.forEach(btn => {
+                const btnCat = btn.getAttribute('data-cat');
+                if (btnCat === category) {
+                    btn.classList.add('bg-upkol-noir', 'text-upkol-jaune', 'font-black', 'shadow-md');
+                    btn.classList.remove('bg-gray-100', 'text-gray-700');
+                } else {
+                    btn.classList.remove('bg-upkol-noir', 'text-upkol-jaune', 'font-black', 'shadow-md');
+                    btn.classList.add('bg-gray-100', 'text-gray-700');
+                }
+            });
+
+            filterNews();
+        }
+
+        function filterNews() {
+            const searchInput = document.getElementById('news-search-input');
+            const clearBtn = document.getElementById('clear-search-btn');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            
+            if (clearBtn) {
+                if (searchTerm.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+
+            const articles = document.querySelectorAll('.article-card');
+            let visibleCount = 0;
+
+            articles.forEach(article => {
+                const articleCategory = article.getAttribute('data-category');
+                const articleKeywords = (article.getAttribute('data-keywords') || '').toLowerCase();
+                const articleText = article.innerText.toLowerCase();
+
+                const matchesCategory = (currentCategory === 'all' || articleCategory === currentCategory);
+                const matchesSearch = (searchTerm === '' || articleKeywords.includes(searchTerm) || articleText.includes(searchTerm));
+
+                if (matchesCategory && matchesSearch) {
+                    article.classList.remove('hidden-article');
+                    visibleCount++;
+                } else {
+                    article.classList.add('hidden-article');
+                }
+            });
+
+            const noResultsMsg = document.getElementById('no-results-msg');
+            if (noResultsMsg) {
+                if (visibleCount === 0) {
+                    noResultsMsg.classList.remove('hidden');
+                } else {
+                    noResultsMsg.classList.add('hidden');
+                }
+            }
+        }
+
+        function clearNewsSearch() {
+            const searchInput = document.getElementById('news-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+                filterNews();
+            }
+        }
+
+        function resetFilters() {
+            clearNewsSearch();
+            setCategoryFilter('all');
+        }
+
+        /* --- CARROUSEL SWIPABLE À LA UNE --- */
+        let currentSlideIndex = 0;
+        const totalSlides = 2;
+        const track = document.getElementById('carousel-track');
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        function updateCarouselPosition() {
+            if (!track) return;
+            track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+            
+            dots.forEach((dot, index) => {
+                if (index === currentSlideIndex) {
+                    dot.classList.remove('w-2.5', 'bg-gray-300');
+                    dot.classList.add('w-8', 'bg-upkol-jaune');
+                } else {
+                    dot.classList.remove('w-8', 'bg-upkol-jaune');
+                    dot.classList.add('w-2.5', 'bg-gray-300');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
+            updateCarouselPosition();
+        }
+
+        function prevSlide() {
+            currentSlideIndex = (currentSlideIndex - 1 + totalSlides) % totalSlides;
+            updateCarouselPosition();
+        }
+
+        function goToSlide(index) {
+            currentSlideIndex = index;
+            updateCarouselPosition();
+        }
+
+        // Support du GESTE TACTILE (SWIPE) et du Glisser-Déposer de la souris
+        let startX = 0;
+        let isDragging = false;
+
+        const viewport = document.getElementById('carousel-viewport');
+
+        if (viewport) {
+            viewport.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+
+            viewport.addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                handleSwipe(startX, endX);
+            }, { passive: true });
+
+            viewport.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                isDragging = true;
+            });
+
+            viewport.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+                const endX = e.clientX;
+                handleSwipe(startX, endX);
+                isDragging = false;
+            });
+
+            viewport.addEventListener('mouseleave', () => {
+                isDragging = false;
+            });
+        }
+
+        function handleSwipe(start, end) {
+            const threshold = 40;
+            if (start - end > threshold) {
+                nextSlide();
+            } else if (end - start > threshold) {
+                prevSlide();
+            }
+        }
+
+        /* --- LIGHTBOX MODAL EN PLEIN ÉCRAN --- */
+        function openLightbox(imageSrc, captionText = '') {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            
+            lightboxImg.src = imageSrc;
+            lightboxCaption.textContent = captionText;
+            
+            lightbox.classList.remove('hidden');
+            
+            void lightbox.offsetWidth;
+            
+            lightbox.classList.remove('opacity-0');
+            lightboxImg.classList.remove('scale-95');
+            lightboxImg.classList.add('scale-100');
+            
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightbox.classList.add('opacity-0');
+            lightboxImg.classList.remove('scale-100');
+            lightboxImg.classList.add('scale-95');
+            
             setTimeout(() => {
-                alert('Actualité publiée avec succès sur toutes les plateformes UPKOL !');
-                window.location.href = 'dashboard.html';
-            }, 1500);
+                lightbox.classList.add('hidden');
+                lightboxImg.src = '';
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('s');
+            if (searchParam) {
+                const searchInput = document.getElementById('news-search-input');
+                if (searchInput) {
+                    searchInput.value = searchParam;
+                    filterNews();
+                }
+            }
         });
     </script>
 </body>
