@@ -39,6 +39,53 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script>
+        // Theme Management
+        function applyTheme(theme) {
+            const body = document.body;
+            // Remove all theme classes first
+            body.classList.remove('theme-light', 'theme-dark', 'theme-gray', 'theme-eye-comfort');
+            
+            // Apply the selected theme class if it's not the default (light)
+            if (theme !== 'light') {
+                body.classList.add(`theme-${theme}`);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('userTheme', theme);
+            
+            // Update mobile theme icon if needed
+            updateMobileThemeIcon(theme);
+        }
+
+        function updateMobileThemeIcon(theme) {
+            const icon = document.getElementById('mobile-theme-icon');
+            if (!icon) return;
+            
+            icon.className = ''; // Reset classes
+            switch(theme) {
+                case 'dark': icon.className = 'fas fa-moon'; break;
+                case 'gray': icon.className = 'fas fa-adjust'; break;
+                case 'eye-comfort': icon.className = 'fas fa-eye'; break;
+                default: icon.className = 'fas fa-sun'; break;
+            }
+        }
+
+        function cycleMobileTheme() {
+            const currentTheme = localStorage.getItem('userTheme') || 'light';
+            const themes = ['light', 'dark', 'gray', 'eye-comfort'];
+            const currentIndex = themes.indexOf(currentTheme);
+            const nextTheme = themes[(currentIndex + 1) % themes.length];
+            applyTheme(nextTheme);
+        }
+
+        // Initialize theme on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('userTheme') || 'light';
+            applyTheme(savedTheme);
+            updateAuthUI();
+        });
+
+
         // Fonction pour décoder le JWT de Google sans bibliothèque externe
         function decodeJwtResponse(token) {
             var base64Url = token.split('.')[1];
@@ -174,13 +221,88 @@
             --primary: #FFD700; /* Jaune Or UPKOL */
             --secondary: #121212; /* Noir Institutionnel */
             --accent: #ffffff;
+            --bg-main: #ffffff;
+            --text-main: #111827; /* gray-900 */
+            --bg-nav: #ffffff;
+            --bg-card: #f9fafb; /* gray-50 */
+            --text-muted: #4b5563; /* gray-600 */
+            --border-color: #f3f4f6; /* gray-100 */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Themes --- */
+        /* Dark Theme */
+        body.theme-dark {
+            --bg-main: #1a202c;
+            --text-main: #e2e8f0;
+            --bg-nav: #2d3748;
+            --bg-card: #2d3748;
+            --text-muted: #a0aec0;
+            --border-color: #4a5568;
+            --shadow-color: rgba(0, 0, 0, 0.5);
         }
         
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        /* Gray Theme (High Contrast/Monochrome-ish) */
+        body.theme-gray {
+            --bg-main: #e5e7eb; /* gray-200 */
+            --text-main: #1f2937; /* gray-800 */
+            --bg-nav: #d1d5db; /* gray-300 */
+            --bg-card: #f3f4f6; /* gray-100 */
+            --text-muted: #374151; /* gray-700 */
+            --border-color: #9ca3af; /* gray-400 */
+            filter: grayscale(80%); /* Adds a strong grayish tint to everything */
+        }
 
-        .bg-upkol-jaune { background-color: var(--primary); }
-        .text-upkol-jaune { color: var(--primary); }
-        .bg-upkol-noir { background-color: var(--secondary); }
+        /* Eye Comfort Theme (Sepia/Warm) */
+        body.theme-eye-comfort {
+            --bg-main: #fbf0d9; /* Warm off-white */
+            --text-main: #5f4b32; /* Soft brown text */
+            --bg-nav: #f4e4c1;
+            --bg-card: #fdf6e3;
+            --text-muted: #795e26;
+            --border-color: #e6d4b8;
+            /* No direct filter here to keep images natural, just changing bg/text colors */
+        }
+        
+        /* Apply Theme Variables */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth; 
+            overflow-x: hidden; 
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
+        }
+
+        nav, .dropdown-content, #mobile-menu, #mobile-search-bar {
+            background-color: var(--bg-nav) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .bg-gray-50, .bg-white, .bg-slate-50 {
+            background-color: var(--bg-card) !important;
+        }
+
+        .text-gray-900, .text-gray-800, .text-slate-800 {
+            color: var(--text-main) !important;
+        }
+
+        .text-gray-600, .text-gray-500, .text-gray-700 {
+            color: var(--text-muted) !important;
+        }
+        
+        .border-gray-100, .border-gray-50, .border-gray-200 {
+             border-color: var(--border-color) !important;
+        }
+
+        /* Ensure specific elements stay true to their brand colors regardless of theme */
+        .bg-upkol-jaune { background-color: var(--primary) !important; }
+        .text-upkol-jaune { color: var(--primary) !important; }
+        .bg-upkol-noir { background-color: var(--secondary) !important; color: white !important;}
+        .bg-upkol-noir .text-gray-500 { color: #9ca3af !important; } /* Fix footer/topbar text in dark contexts */
+
+        /* --- End Themes --- */
+
         
         .hero-section {
             background-color: #121212;
@@ -210,7 +332,10 @@
         .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
         .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
 
-        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+        .nav-dropdown:hover .dropdown-content, .theme-dropdown-container:hover .theme-dropdown-content { 
+            display: block; 
+            animation: fadeIn 0.3s ease; 
+        }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.6s ease-in-out; }
@@ -222,11 +347,12 @@
 
         .card-faculte {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color);
         }
         .card-faculte:hover {
             border-color: var(--primary);
             transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
         }
 
         .search-container input:focus {
@@ -260,7 +386,7 @@
          data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
-    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+    <nav class="sticky top-0 z-50 shadow-md transition-all duration-300 relative">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <!-- Logo -->
             <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="showTab('home')">
@@ -287,11 +413,11 @@
 
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
-                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
-                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
-                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
-                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
-                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    <div class="dropdown-content hidden absolute left-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
                     </div>
                 </div>
 
@@ -303,25 +429,47 @@
                 <!-- Section Enseignements -->
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
-                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
-                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                    <div class="dropdown-content hidden absolute right-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl z-50">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
                         </a>
-                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
                         </a>
-                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
                         </a>
-                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
                             <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
                         </a>
                     </div>
                 </div>
 
+                <!-- Theme Switcher Dropdown (Desktop) -->
+                <div class="relative theme-dropdown-container py-8 z-50">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors cursor-pointer text-lg">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    <div class="theme-dropdown-content hidden absolute right-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[200px] py-2 rounded-b-xl">
+                        <div class="px-4 py-2 text-[10px] text-gray-500 font-bold border-b border-gray-100">MODE D'AFFICHAGE</div>
+                        <button onclick="applyTheme('light')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-sun mr-3 w-4 text-center"></i> Mode Clair
+                        </button>
+                        <button onclick="applyTheme('dark')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-moon mr-3 w-4 text-center"></i> Mode Sombre (Nuit)
+                        </button>
+                        <button onclick="applyTheme('gray')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-adjust mr-3 w-4 text-center"></i> Mode Gris
+                        </button>
+                        <button onclick="applyTheme('eye-comfort')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-eye mr-3 w-4 text-center"></i> Confort des Yeux
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Creative Portal Entry -->
                 <div class="relative group">
-                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                    <a href="dashboard.html" class="flex items-center space-x-2 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
                         <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
                             <i class="fas fa-university text-[10px]"></i>
                         </div>
@@ -342,8 +490,8 @@
                 <!-- Informations utilisateur et bouton de déconnexion (initialement cachés) -->
                 <div id="logged-in-user-info" class="hidden items-center space-x-4">
                     <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
-                    <div class="flex flex-col text-sm font-bold text-gray-700">
-                        <span>Bienvenue</span>
+                    <div class="flex flex-col text-sm font-bold">
+                        <span class="text-gray-500">Bienvenue</span>
                         <span id="display-user-name" class="text-upkol-jaune"></span>
                     </div>
                     <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
@@ -357,7 +505,12 @@
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <div class="lg:hidden flex items-center space-x-3">
+            <div class="lg:hidden flex items-center space-x-4">
+                <!-- Mobile Theme Toggle Button -->
+                <button onclick="cycleMobileTheme()" class="text-lg hover:text-upkol-jaune transition-colors">
+                    <i id="mobile-theme-icon" class="fas fa-sun"></i>
+                </button>
+
                 <div id="mobile-google-signin-button-container">
                     <div class="g_id_signin" 
                         data-type="icon" 
@@ -367,8 +520,8 @@
                 </div>
                 <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
                     <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
-                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
-                        <span>Bienvenue</span>
+                    <div class="flex flex-col text-[10px] font-bold leading-tight">
+                        <span class="text-gray-500">Bienvenue</span>
                         <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
                     </div>
                     <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
@@ -380,17 +533,29 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="#" onclick="showTab('home'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            
+            <!-- Mobile Theme Options within menu for better accessibility -->
+            <div class="px-6 py-4 border-b border-gray-50 flex flex-col space-y-3">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Mode d'affichage</span>
+                <div class="flex justify-between">
+                    <button onclick="applyTheme('light'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Clair"><i class="fas fa-sun"></i></button>
+                    <button onclick="applyTheme('dark'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Sombre"><i class="fas fa-moon"></i></button>
+                    <button onclick="applyTheme('gray'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Gris"><i class="fas fa-adjust"></i></button>
+                    <button onclick="applyTheme('eye-comfort'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Confort des Yeux"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+
             <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
         <!-- Mobile Search Bar -->
-        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full p-4 shadow-md z-40">
             <div class="flex">
                 <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
                 <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
@@ -444,17 +609,17 @@
         <!-- Access Cards -->
         <section class="py-20 px-6 max-w-7xl mx-auto">
             <div class="grid md:grid-cols-3 gap-6">
-                <a href="comment-reussir.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="comment-reussir.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-graduation-cap text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">Comment réussir ?</h3>
                     <p class="text-sm text-gray-600">Guide méthodologique complet pour votre parcours universitaire.</p>
                 </a>
-                <a href="e-learning.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="e-learning.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-laptop-house text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">E-Learning</h3>
                     <p class="text-sm text-gray-600">Accédez à vos cours et ressources numériques en un clic.</p>
                 </a>
-                <a href="recherche.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="recherche.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-book-reader text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">Recherche</h3>
                     <p class="text-sm text-gray-600">Explorez nos dernières publications et projets scientifiques.</p>
@@ -863,8 +1028,6 @@
                 closeFacultyModal();
             }
         }
-
-        document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
 </body>
 </html>
