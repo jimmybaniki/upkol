@@ -31,62 +31,11 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Bibliothèque pour les animations au défilement -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script>
-        // Theme Management
-        function applyTheme(theme) {
-            const body = document.body;
-            // Remove all theme classes first
-            body.classList.remove('theme-light', 'theme-dark', 'theme-gray', 'theme-eye-comfort');
-            
-            // Apply the selected theme class if it's not the default (light)
-            if (theme !== 'light') {
-                body.classList.add(`theme-${theme}`);
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('userTheme', theme);
-            
-            // Update mobile theme icon if needed
-            updateMobileThemeIcon(theme);
-        }
-
-        function updateMobileThemeIcon(theme) {
-            const icon = document.getElementById('mobile-theme-icon');
-            if (!icon) return;
-            
-            icon.className = ''; // Reset classes
-            switch(theme) {
-                case 'dark': icon.className = 'fas fa-moon'; break;
-                case 'gray': icon.className = 'fas fa-adjust'; break;
-                case 'eye-comfort': icon.className = 'fas fa-eye'; break;
-                default: icon.className = 'fas fa-sun'; break;
-            }
-        }
-
-        function cycleMobileTheme() {
-            const currentTheme = localStorage.getItem('userTheme') || 'light';
-            const themes = ['light', 'dark', 'gray', 'eye-comfort'];
-            const currentIndex = themes.indexOf(currentTheme);
-            const nextTheme = themes[(currentIndex + 1) % themes.length];
-            applyTheme(nextTheme);
-        }
-
-        // Initialize theme on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('userTheme') || 'light';
-            applyTheme(savedTheme);
-            updateAuthUI();
-        });
-
-
-        // Fonction pour décoder le JWT de Google sans bibliothèque externe
         function decodeJwtResponse(token) {
             var base64Url = token.split('.')[1];
             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -96,7 +45,6 @@
             return JSON.parse(jsonPayload);
         }
 
-        // Fonction pour gérer la déconnexion
         function signOut() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userId');
@@ -110,7 +58,6 @@
             window.location.href = 'index.html';
         }
 
-        // Fonction pour mettre à jour l'interface utilisateur d'authentification
         function updateAuthUI() {
             const userEmail = localStorage.getItem('userEmail');
             const userName = localStorage.getItem('userName');
@@ -221,88 +168,13 @@
             --primary: #FFD700; /* Jaune Or UPKOL */
             --secondary: #121212; /* Noir Institutionnel */
             --accent: #ffffff;
-            --bg-main: #ffffff;
-            --text-main: #111827; /* gray-900 */
-            --bg-nav: #ffffff;
-            --bg-card: #f9fafb; /* gray-50 */
-            --text-muted: #4b5563; /* gray-600 */
-            --border-color: #f3f4f6; /* gray-100 */
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* --- Themes --- */
-        /* Dark Theme */
-        body.theme-dark {
-            --bg-main: #1a202c;
-            --text-main: #e2e8f0;
-            --bg-nav: #2d3748;
-            --bg-card: #2d3748;
-            --text-muted: #a0aec0;
-            --border-color: #4a5568;
-            --shadow-color: rgba(0, 0, 0, 0.5);
         }
         
-        /* Gray Theme (High Contrast/Monochrome-ish) */
-        body.theme-gray {
-            --bg-main: #e5e7eb; /* gray-200 */
-            --text-main: #1f2937; /* gray-800 */
-            --bg-nav: #d1d5db; /* gray-300 */
-            --bg-card: #f3f4f6; /* gray-100 */
-            --text-muted: #374151; /* gray-700 */
-            --border-color: #9ca3af; /* gray-400 */
-            filter: grayscale(80%); /* Adds a strong grayish tint to everything */
-        }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
 
-        /* Eye Comfort Theme (Sepia/Warm) */
-        body.theme-eye-comfort {
-            --bg-main: #fbf0d9; /* Warm off-white */
-            --text-main: #5f4b32; /* Soft brown text */
-            --bg-nav: #f4e4c1;
-            --bg-card: #fdf6e3;
-            --text-muted: #795e26;
-            --border-color: #e6d4b8;
-            /* No direct filter here to keep images natural, just changing bg/text colors */
-        }
-        
-        /* Apply Theme Variables */
-        body { 
-            font-family: 'Inter', sans-serif; 
-            scroll-behavior: smooth; 
-            overflow-x: hidden; 
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            transition: background-color 0.3s ease, color 0.3s ease, filter 0.3s ease;
-        }
-
-        nav, .dropdown-content, #mobile-menu, #mobile-search-bar {
-            background-color: var(--bg-nav) !important;
-            border-color: var(--border-color) !important;
-        }
-
-        .bg-gray-50, .bg-white, .bg-slate-50 {
-            background-color: var(--bg-card) !important;
-        }
-
-        .text-gray-900, .text-gray-800, .text-slate-800 {
-            color: var(--text-main) !important;
-        }
-
-        .text-gray-600, .text-gray-500, .text-gray-700 {
-            color: var(--text-muted) !important;
-        }
-        
-        .border-gray-100, .border-gray-50, .border-gray-200 {
-             border-color: var(--border-color) !important;
-        }
-
-        /* Ensure specific elements stay true to their brand colors regardless of theme */
-        .bg-upkol-jaune { background-color: var(--primary) !important; }
-        .text-upkol-jaune { color: var(--primary) !important; }
-        .bg-upkol-noir { background-color: var(--secondary) !important; color: white !important;}
-        .bg-upkol-noir .text-gray-500 { color: #9ca3af !important; } /* Fix footer/topbar text in dark contexts */
-
-        /* --- End Themes --- */
-
+        .bg-upkol-jaune { background-color: var(--primary); }
+        .text-upkol-jaune { color: var(--primary); }
+        .bg-upkol-noir { background-color: var(--secondary); }
         
         .hero-section {
             background-color: #121212;
@@ -332,10 +204,7 @@
         .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
         .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
 
-        .nav-dropdown:hover .dropdown-content, .theme-dropdown-container:hover .theme-dropdown-content { 
-            display: block; 
-            animation: fadeIn 0.3s ease; 
-        }
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.6s ease-in-out; }
@@ -347,12 +216,11 @@
 
         .card-faculte {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color);
         }
         .card-faculte:hover {
             border-color: var(--primary);
             transform: translateY(-10px);
-            box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         .search-container input:focus {
@@ -363,6 +231,28 @@
             transition: width 0.4s ease, border-color 0.4s ease;
             width: 150px;
         }
+
+        /* --- GESTION DES THÈMES --- */
+        
+        /* 1. Mode Nuit */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu, body.theme-night #faculty-modal .bg-white { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        
+        /* 2. Mode Gris (Low contrast) */
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu, body.theme-gray #faculty-modal .bg-white { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        /* 3. Mode Confort des yeux (Sépia / Chaud) */
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu, body.theme-comfort #faculty-modal .bg-white { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -386,7 +276,7 @@
          data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
-    <nav class="sticky top-0 z-50 shadow-md transition-all duration-300 relative">
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <!-- Logo -->
             <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="showTab('home')">
@@ -413,63 +303,38 @@
 
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
-                    <div class="dropdown-content hidden absolute left-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
-                        <a href="presentation.html" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
-                        <a href="#" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Les Organes</a>
-                        <a href="e-learning_info.html" class="block px-6 py-3 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
-                        <a href="#" class="block px-6 py-3 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
                     </div>
                 </div>
 
                 <button onclick="showTab('facultes')" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</button>
                 
-                <!-- Lien Actualités mis à jour -->
                 <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
 
-                <!-- Section Enseignements -->
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
-                    <div class="dropdown-content hidden absolute right-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl z-50">
-                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
                         </a>
-                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
                         </a>
-                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
                             <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
                         </a>
-                        <a href="dashboard.html" class="flex items-center px-6 py-3 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
                             <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
                         </a>
                     </div>
                 </div>
 
-                <!-- Theme Switcher Dropdown (Desktop) -->
-                <div class="relative theme-dropdown-container py-8 z-50">
-                    <button class="flex items-center hover:text-upkol-jaune transition-colors cursor-pointer text-lg">
-                        <i class="fas fa-palette"></i>
-                    </button>
-                    <div class="theme-dropdown-content hidden absolute right-0 top-full shadow-2xl border-t-4 border-upkol-jaune min-w-[200px] py-2 rounded-b-xl">
-                        <div class="px-4 py-2 text-[10px] text-gray-500 font-bold border-b border-gray-100">MODE D'AFFICHAGE</div>
-                        <button onclick="applyTheme('light')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-sun mr-3 w-4 text-center"></i> Mode Clair
-                        </button>
-                        <button onclick="applyTheme('dark')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-moon mr-3 w-4 text-center"></i> Mode Sombre (Nuit)
-                        </button>
-                        <button onclick="applyTheme('gray')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-adjust mr-3 w-4 text-center"></i> Mode Gris
-                        </button>
-                        <button onclick="applyTheme('eye-comfort')" class="w-full text-left flex items-center px-6 py-3 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-eye mr-3 w-4 text-center"></i> Confort des Yeux
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Creative Portal Entry -->
                 <div class="relative group">
-                    <a href="dashboard.html" class="flex items-center space-x-2 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
                         <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
                             <i class="fas fa-university text-[10px]"></i>
                         </div>
@@ -477,7 +342,6 @@
                     </a>
                 </div>
                 
-                <!-- Bouton de connexion Google -->
                 <div id="google-signin-button-container">
                     <div class="g_id_signin"
                         data-type="icon"
@@ -487,11 +351,10 @@
                     </div>
                 </div>
 
-                <!-- Informations utilisateur et bouton de déconnexion (initialement cachés) -->
                 <div id="logged-in-user-info" class="hidden items-center space-x-4">
                     <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
-                    <div class="flex flex-col text-sm font-bold">
-                        <span class="text-gray-500">Bienvenue</span>
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
                         <span id="display-user-name" class="text-upkol-jaune"></span>
                     </div>
                     <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
@@ -505,12 +368,7 @@
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <div class="lg:hidden flex items-center space-x-4">
-                <!-- Mobile Theme Toggle Button -->
-                <button onclick="cycleMobileTheme()" class="text-lg hover:text-upkol-jaune transition-colors">
-                    <i id="mobile-theme-icon" class="fas fa-sun"></i>
-                </button>
-
+            <div class="lg:hidden flex items-center space-x-3">
                 <div id="mobile-google-signin-button-container">
                     <div class="g_id_signin" 
                         data-type="icon" 
@@ -520,8 +378,8 @@
                 </div>
                 <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
                     <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
-                    <div class="flex flex-col text-[10px] font-bold leading-tight">
-                        <span class="text-gray-500">Bienvenue</span>
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
                         <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
                     </div>
                     <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
@@ -532,36 +390,38 @@
             </div>
         </div>
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+        <!-- Mobile Menu avec Actualités -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="#" onclick="showTab('home'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
             <a href="#" onclick="showTab('facultes'); toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-            
-            <!-- Mobile Theme Options within menu for better accessibility -->
-            <div class="px-6 py-4 border-b border-gray-50 flex flex-col space-y-3">
-                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Mode d'affichage</span>
-                <div class="flex justify-between">
-                    <button onclick="applyTheme('light'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Clair"><i class="fas fa-sun"></i></button>
-                    <button onclick="applyTheme('dark'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Sombre"><i class="fas fa-moon"></i></button>
-                    <button onclick="applyTheme('gray'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Mode Gris"><i class="fas fa-adjust"></i></button>
-                    <button onclick="applyTheme('eye-comfort'); toggleMobileMenu()" class="p-2 rounded hover:bg-gray-100" title="Confort des Yeux"><i class="fas fa-eye"></i></button>
-                </div>
-            </div>
-
             <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
         <!-- Mobile Search Bar -->
-        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full p-4 shadow-md z-40">
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
             <div class="flex">
                 <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
                 <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
             </div>
         </div>
     </nav>
+
+    <!-- THEME SWITCHER (Mode Clair, Gris, Nuit, Confort) -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" title="Mode Clair" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" title="Mode Gris" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" title="Mode Nuit" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" title="Mode Confort des Yeux" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
+        </div>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
 
     <!-- 1. ACCUEIL -->
     <main id="home" class="tab-content active">
@@ -609,17 +469,17 @@
         <!-- Access Cards -->
         <section class="py-20 px-6 max-w-7xl mx-auto">
             <div class="grid md:grid-cols-3 gap-6">
-                <a href="comment-reussir.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="comment-reussir.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-graduation-cap text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">Comment réussir ?</h3>
                     <p class="text-sm text-gray-600">Guide méthodologique complet pour votre parcours universitaire.</p>
                 </a>
-                <a href="e-learning.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="e-learning.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-laptop-house text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">E-Learning</h3>
                     <p class="text-sm text-gray-600">Accédez à vos cours et ressources numériques en un clic.</p>
                 </a>
-                <a href="recherche.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
+                <a href="recherche.html" class="bg-gray-50 p-8 rounded-2xl border-l-8 border-upkol-noir hover:bg-white hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-2 group">
                     <i class="fas fa-book-reader text-3xl mb-4 text-upkol-jaune group-hover:scale-110 transition-transform inline-block"></i>
                     <h3 class="font-black text-xl mb-2">Recherche</h3>
                     <p class="text-sm text-gray-600">Explorez nos dernières publications et projets scientifiques.</p>
@@ -862,7 +722,6 @@
             </div>
 
             <div class="space-y-4">
-                <!-- FAQ Item 1 -->
                 <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
                     <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-base md:text-lg text-slate-800 focus:outline-none">
                         <span>Comment s'inscrire à l'Université Pédagogique de Kolwezi (UPKOL) ?</span>
@@ -873,7 +732,6 @@
                     </div>
                 </div>
 
-                <!-- FAQ Item 2 -->
                 <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
                     <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-base md:text-lg text-slate-800 focus:outline-none">
                         <span>Quels sont les documents requis pour constituer son dossier d'inscription ?</span>
@@ -884,7 +742,6 @@
                     </div>
                 </div>
 
-                <!-- FAQ Item 3 -->
                 <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
                     <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-base md:text-lg text-slate-800 focus:outline-none">
                         <span>Quelles sont les facultés et filières proposées par l'UPKOL ?</span>
@@ -895,7 +752,6 @@
                     </div>
                 </div>
 
-                <!-- FAQ Item 4 -->
                 <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
                     <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-base md:text-lg text-slate-800 focus:outline-none">
                         <span>Comment accéder aux cours en ligne et aux ressources de e-learning ?</span>
@@ -921,13 +777,11 @@
                 <ul class="space-y-4 text-xs font-bold text-gray-400">
                     <li><a href="#" onclick="showTab('home')" class="hover:text-white transition-colors uppercase">Accueil</a></li>
                     <li><a href="#" onclick="showTab('facultes')" class="hover:text-white transition-colors uppercase">Facultés</a></li>
-                    <!-- Lien Actualités mis à jour -->
                     <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
                 </ul>
             </div>
             <div class="reveal-down" style="animation-delay: 0.4s">
                 <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
-                <!-- Réseaux Sociaux mis à jour selon vos liens -->
                 <div class="flex flex-wrap gap-3">
                     <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" title="Facebook" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
                     <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" title="LinkedIn" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
@@ -953,10 +807,45 @@
     </footer>
 
     <script>
+        // Supabase Init
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Note: _supabase defined in head handles the action, we can keep this for other calls if needed
 
+        // --- GESTION DES THÈMES ---
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        }
+
+        function setTheme(theme) {
+            // Nettoyage des classes de thème sur le body
+            document.body.classList.remove('theme-light', 'theme-gray', 'theme-night', 'theme-comfort');
+            
+            // Retrait de la surbrillance de tous les boutons
+            const btnIds = ['btn-theme-light', 'btn-theme-gray', 'btn-theme-night', 'btn-theme-comfort'];
+            btnIds.forEach(id => {
+                document.getElementById(id).classList.remove('active-theme');
+            });
+
+            // Application du thème et surbrillance du bouton actif
+            if (theme !== 'light') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            document.getElementById(`btn-theme-${theme}`).classList.add('active-theme');
+
+            // Sauvegarde dans le navigateur
+            localStorage.setItem('upkol-theme', theme);
+            toggleThemeMenu(); // Ferme le menu
+        }
+
+        // --- NAVIGATION & UI ---
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -982,11 +871,13 @@
         function handleSearch(inputId) {
             const query = document.getElementById(inputId).value;
             if (query.trim() !== "") {
-                alert("Recherche en cours pour : " + query);
+                // Remplacement de l'alerte bloquante par un log console (bonne pratique Web)
+                console.log("Recherche en cours pour : " + query);
+                // On pourrait aussi afficher un message sur l'interface
             }
         }
 
-        // Fonctions pour gérer le Pop-up des filières
+        // --- POP-UP DES FILIÈRES ---
         function openFacultyModal(title, badge, imgUrl, description, options, duration, doyen) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-badge').innerText = badge;
@@ -1012,7 +903,7 @@
             modal.classList.add('hidden');
         }
 
-        // Gestion de l'affichage dynamique de la FAQ (accordéon)
+        // --- FAQ ---
         function toggleFaq(btn) {
             const answer = btn.nextElementSibling;
             const icon = btn.querySelector('i');
@@ -1021,13 +912,22 @@
             icon.classList.toggle('rotate-180');
         }
 
-        // Fermer le modale en cliquant en dehors
+        // --- EVENTS GLOBAUX ---
         window.onclick = function(event) {
             const modal = document.getElementById('faculty-modal');
             if (event.target == modal) {
                 closeFacultyModal();
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mise à jour de l'UI Google
+            updateAuthUI();
+            
+            // Chargement du thème sauvegardé
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
+        });
     </script>
 </body>
 </html>
