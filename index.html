@@ -37,6 +37,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <script>
         // Fonction pour décoder le JWT de Google sans bibliothèque externe
         function decodeJwtResponse(token) {
@@ -167,6 +168,7 @@
                 .catch(error => console.error("Erreur lors de la transmission ou de la mise à jour Supabase :", error));
         }
     </script>
+    
     <style>
         :root {
             --primary: #FFD700; /* Jaune Or UPKOL */
@@ -295,7 +297,8 @@
 
                 <button onclick="showTab('facultes')" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</button>
                 
-                <button onclick="showTab('actualites')" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</button>
+                <!-- Lien Actualités mis à jour -->
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
 
                 <!-- Section Enseignements -->
                 <div class="relative nav-dropdown py-8">
@@ -348,10 +351,9 @@
                     </button>
                 </div>
 
-
                 <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
                 S'INSCRIRE
-            </a>
+                </a>
             </div>
 
             <!-- Mobile Menu Toggle -->
@@ -754,14 +756,20 @@
                 <ul class="space-y-4 text-xs font-bold text-gray-400">
                     <li><a href="#" onclick="showTab('home')" class="hover:text-white transition-colors uppercase">Accueil</a></li>
                     <li><a href="#" onclick="showTab('facultes')" class="hover:text-white transition-colors uppercase">Facultés</a></li>
-                    <li><a href="#" onclick="showTab('actualites')" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                    <!-- Lien Actualités mis à jour -->
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
                 </ul>
             </div>
             <div class="reveal-down" style="animation-delay: 0.4s">
                 <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
-                <div class="flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                <!-- Réseaux Sociaux mis à jour selon vos liens -->
+                <div class="flex flex-wrap gap-3">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" title="Facebook" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" title="LinkedIn" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" title="Instagram" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" title="TikTok" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@universitepedagogiquedekolwezi?si=qBv6wuj59NXBS6ZZ" target="_blank" title="YouTube" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-youtube"></i></a>
+                    <a href="https://whatsapp.com/channel/0029VbDBBON29752VGwZVX34" target="_blank" title="Chaîne WhatsApp" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
             <div class="reveal-right">
@@ -859,4 +867,4 @@
         document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
 </body>
-    </html>
+</html>
