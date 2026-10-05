@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche - UPKOL</title><link rel="icon" href="favicon.png?v=2" type="image/png">
+    <title>Recherche Scientifique - UPKOL</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
 
     <!-- Open Graph / Facebook -->
@@ -25,6 +25,139 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Scripts Supabase & Google Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        function decodeJwtResponse(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function signOut() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPicture');
+
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            
+            window.location.reload();
+        }
+
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            const userPicture = localStorage.getItem('userPicture');
+            
+            const desktopSignInContainer = document.getElementById('google-signin-button-container');
+            const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
+            const desktopDisplayName = document.getElementById('display-user-name');
+            const desktopDisplayPicture = document.getElementById('display-user-picture');
+
+            if (userEmail) {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'none';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'flex';
+                if (desktopDisplayName) desktopDisplayName.innerText = userName || '';
+                if (desktopDisplayPicture) {
+                    desktopDisplayPicture.src = userPicture || '';
+                    desktopDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'block';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
+            }
+
+            const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
+            const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
+            const mobileDisplayName = document.getElementById('mobile-display-user-name');
+            const mobileDisplayPicture = document.getElementById('mobile-display-user-picture');
+
+            if (userEmail) {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'none';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'flex';
+                if (mobileDisplayName) mobileDisplayName.innerText = userName || '';
+                if (mobileDisplayPicture) {
+                    mobileDisplayPicture.src = userPicture || '';
+                    mobileDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'block';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'none';
+            }
+        }
+
+        function logAction(email, userId, action, details) {
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('action_logs').insert([{
+                user_id: userId,
+                user_email: email,
+                action_type: action,
+                details: details
+            }]).then(response => {
+                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+
+            const userData = {
+                id: responsePayload.sub,
+                nom_complet: responsePayload.name,
+                prenom: responsePayload.given_name,
+                email: responsePayload.email,
+                picture: responsePayload.picture,
+                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
+                action: "Connexion",
+                details: "Authentification via Google Identity Services"
+            };
+
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('profiles').select('id').eq('email', userData.email).single()
+                .then(async ({ data: existingUser }) => {
+                    if (existingUser) {
+                        await _supabase.from('profiles').update({
+                            name: userData.nom_complet,
+                            picture: userData.picture,
+                            last_login: new Date().toISOString()
+                        }).eq('id', existingUser.id);
+                    } else {
+                        await _supabase.from('profiles').insert([{
+                            id: userData.id,
+                            name: userData.nom_complet,
+                            email: userData.email,
+                            picture: userData.picture,
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        }]);
+                    }
+                    localStorage.setItem('userEmail', userData.email);
+                    localStorage.setItem('userId', userData.id);
+                    localStorage.setItem('userName', userData.nom_complet);
+                    localStorage.setItem('userPicture', userData.picture);
+                    updateAuthUI();
+                    logAction(userData.email, userData.id, userData.action, userData.details);
+                })
+                .catch(error => console.error("Erreur lors de la transmission ou de la mise à jour Supabase :", error));
+        }
+    </script>
+    
     <style>
         :root {
             --primary: #FFD700;
@@ -32,7 +165,7 @@
             --accent: #ffffff;
         }
 
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
 
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
@@ -52,6 +185,22 @@
         .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
         .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
         .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+        
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .search-container input:focus {
+            width: 250px;
+            border-color: var(--primary);
+        }
+        .search-container input {
+            transition: width 0.4s ease, border-color 0.4s ease;
+            width: 150px;
+        }
 
         .research-card {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -60,6 +209,28 @@
             transform: translateY(-10px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
+
+        /* --- GESTION DES THÈMES --- */
+        
+        /* 1. Mode Nuit */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        
+        /* 2. Mode Gris (Low contrast) */
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        /* 3. Mode Confort des yeux (Sépia / Chaud) */
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -67,9 +238,9 @@
     <!-- TOP BAR -->
     <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex space-x-6">
-                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
-                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            <div class="flex flex-wrap gap-4 items-center">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</span>
+                <a href="mailto:upkolwezi@gmail.com" class="flex items-center hover:text-upkol-jaune transition-colors"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> upkolwezi@gmail.com</a>
             </div>
             <div class="hidden md:flex space-x-4">
                 <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
@@ -78,9 +249,15 @@
     </div>
 
     <!-- MAIN NAVIGATION -->
+    <div id="g_id_onload"
+         data-client_id="396005366251-5jl94257ahdgn21j0e5r3iiiajje0fc3.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
     <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer reveal-left">
                 <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
                     <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
                 </div>
@@ -88,29 +265,140 @@
                     <h1 class="text-xl font-black leading-none tracking-tighter">UPKOL</h1>
                     <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
                 </div>
-            </div>
+            </a>
 
+            <!-- Desktop Menu & Search -->
             <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
-                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
-                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
-                <a href="index.html#actualites" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</a>
-                <a href="index.html#inscription" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
-                    S'INSCRIRE
+                
+                <!-- Search Bar -->
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    </div>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 text-upkol-jaune"></i> RECHERCHES
+                        </a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                            <i class="fas fa-university text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
+                    </a>
+                </div>
+                
+                <div id="google-signin-button-container">
+                    <div class="g_id_signin"
+                        data-type="icon"
+                        data-shape="circle"
+                        data-theme="outline"
+                        data-size="large">
+                    </div>
+                </div>
+
+                <div id="logged-in-user-info" class="hidden items-center space-x-4">
+                    <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
+                        Déconnexion
+                    </button>
+                </div>
+
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
+                S'INSCRIRE
                 </a>
             </div>
 
-            <div class="lg:hidden flex items-center space-x-5">
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <div id="mobile-google-signin-button-container">
+                    <div class="g_id_signin" 
+                        data-type="icon" 
+                        data-shape="circle" 
+                        data-theme="outline">
+                    </div>
+                </div>
+                <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
+                    </div>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
                 <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
             </div>
         </div>
 
+        <!-- Mobile Menu avec Actualités -->
         <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
-            <a href="index.html" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
-            <a href="index.html#facultes" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
-            <a href="index.html#actualites" onclick="toggleMobileMenu()" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
-            <a href="index.html#inscription" onclick="toggleMobileMenu()" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
+            <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
+            </div>
         </div>
     </nav>
+
+    <!-- THEME SWITCHER -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" title="Mode Clair" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" title="Mode Gris" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" title="Mode Nuit" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" title="Mode Confort des Yeux" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
+        </div>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
 
     <!-- HERO SECTION -->
     <section class="hero-section h-[60vh] flex items-center px-6 overflow-hidden">
@@ -170,9 +458,9 @@
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Mines et Géologie -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-left">
                     <i class="fas fa-mountain text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Mines & Géologie</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Mines & Géologie</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Recherche sur l'exploitation durable des ressources minières, la géologie régionale et les techniques d'extraction innovantes.
                     </p>
@@ -182,9 +470,9 @@
                 </div>
 
                 <!-- Santé Publique -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-down">
                     <i class="fas fa-heartbeat text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Santé Publique</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Santé Publique</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Études épidémiologiques, recherche sur les maladies tropicales et développement de protocoles de soins adaptés.
                     </p>
@@ -194,9 +482,9 @@
                 </div>
 
                 <!-- Agriculture Durable -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-right">
                     <i class="fas fa-seedling text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Agriculture Durable</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Agriculture Durable</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Développement de techniques agricoles adaptées au climat local et préservation de la biodiversité régionale.
                     </p>
@@ -206,9 +494,9 @@
                 </div>
 
                 <!-- Économie Régionale -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-left">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-left">
                     <i class="fas fa-chart-bar text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Économie Régionale</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Économie Régionale</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Analyse des dynamiques économiques locales, développement des PME et stratégies de croissance inclusive.
                     </p>
@@ -218,9 +506,9 @@
                 </div>
 
                 <!-- Éducation et Formation -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-down">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-down">
                     <i class="fas fa-graduation-cap text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Éducation & Formation</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Éducation & Formation</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Recherche pédagogique, développement de méthodes d'enseignement innovantes et évaluation des apprentissages.
                     </p>
@@ -230,9 +518,9 @@
                 </div>
 
                 <!-- Environnement -->
-                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune hover:shadow-2xl transition-all reveal-right">
+                <div class="research-card bg-white p-8 rounded-2xl border-l-8 border-upkol-jaune reveal-right">
                     <i class="fas fa-leaf text-4xl mb-6 text-upkol-jaune"></i>
-                    <h3 class="font-black text-xl mb-4 uppercase">Environnement</h3>
+                    <h3 class="font-black text-xl mb-4 uppercase text-gray-900">Environnement</h3>
                     <p class="text-gray-600 leading-relaxed">
                         Études sur l'impact environnemental des activités minières et stratégies de préservation de l'écosystème.
                     </p>
@@ -258,7 +546,7 @@
                     <span class="bg-upkol-jaune text-black px-3 py-1 rounded-full text-xs font-black uppercase mr-3">2024</span>
                     <span class="text-gray-500 text-sm font-bold">Revue Scientifique</span>
                 </div>
-                <h3 class="font-black text-xl mb-4">Impact des pratiques minières sur la biodiversité locale</h3>
+                <h3 class="font-black text-xl mb-4 text-gray-900">Impact des pratiques minières sur la biodiversité locale</h3>
                 <p class="text-gray-600 leading-relaxed mb-6">
                     Étude approfondie sur les effets des activités extractives sur l'écosystème du Lualaba et propositions de mesures de mitigation.
                 </p>
@@ -277,7 +565,7 @@
                     <span class="bg-upkol-jaune text-black px-3 py-1 rounded-full text-xs font-black uppercase mr-3">2024</span>
                     <span class="text-gray-500 text-sm font-bold">Journal Médical</span>
                 </div>
-                <h3 class="font-black text-xl mb-4">Prévalence des maladies tropicales dans la région du Lualaba</h3>
+                <h3 class="font-black text-xl mb-4 text-gray-900">Prévalence des maladies tropicales dans la région du Lualaba</h3>
                 <p class="text-gray-600 leading-relaxed mb-6">
                     Analyse épidémiologique sur cinq ans révélant les tendances et facteurs de risque des pathologies endémiques.
                 </p>
@@ -296,7 +584,7 @@
                     <span class="bg-upkol-jaune text-black px-3 py-1 rounded-full text-xs font-black uppercase mr-3">2023</span>
                     <span class="text-gray-500 text-sm font-bold">Revue Économique</span>
                 </div>
-                <h3 class="font-black text-xl mb-4">Développement des PME dans les zones minières</h3>
+                <h3 class="font-black text-xl mb-4 text-gray-900">Développement des PME dans les zones minières</h3>
                 <p class="text-gray-600 leading-relaxed mb-6">
                     Étude de cas sur les opportunités économiques créées par l'industrie minière et stratégies de développement local.
                 </p>
@@ -315,7 +603,7 @@
                     <span class="bg-upkol-jaune text-black px-3 py-1 rounded-full text-xs font-black uppercase mr-3">2023</span>
                     <span class="text-gray-500 text-sm font-bold">Revue Pédagogique</span>
                 </div>
-                <h3 class="font-black text-xl mb-4">Méthodes d'enseignement innovantes en sciences</h3>
+                <h3 class="font-black text-xl mb-4 text-gray-900">Méthodes d'enseignement innovantes en sciences</h3>
                 <p class="text-gray-600 leading-relaxed mb-6">
                     Recherche sur l'efficacité des approches pédagogiques modernes dans l'enseignement des sciences exactes.
                 </p>
@@ -331,7 +619,7 @@
         </div>
 
         <div class="text-center mt-12">
-            <button class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-white transition-all shadow-xl">
+            <button class="bg-upkol-jaune text-black px-8 py-4 font-bold rounded-lg hover:bg-black hover:text-white transition-all shadow-xl border border-transparent">
                 VOIR TOUTES LES PUBLICATIONS <i class="fas fa-arrow-right ml-2"></i>
             </button>
         </div>
@@ -436,7 +724,7 @@
 
         <div class="grid md:grid-cols-4 gap-8">
             <div class="text-center reveal-left">
-                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
                     <span class="text-2xl font-black text-gray-600">UNESCO</span>
                 </div>
                 <h3 class="font-black text-lg mb-2">UNESCO</h3>
@@ -444,7 +732,7 @@
             </div>
 
             <div class="text-center reveal-down">
-                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
                     <span class="text-2xl font-black text-gray-600">WHO</span>
                 </div>
                 <h3 class="font-black text-lg mb-2">OMS</h3>
@@ -452,7 +740,7 @@
             </div>
 
             <div class="text-center reveal-right">
-                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
                     <span class="text-2xl font-black text-gray-600">EU</span>
                 </div>
                 <h3 class="font-black text-lg mb-2">Union Européenne</h3>
@@ -460,7 +748,7 @@
             </div>
 
             <div class="text-center reveal-left">
-                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
                     <span class="text-2xl font-black text-gray-600">UNICEF</span>
                 </div>
                 <h3 class="font-black text-lg mb-2">UNICEF</h3>
@@ -499,14 +787,18 @@
                 <ul class="space-y-4 text-xs font-bold text-gray-400">
                     <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
                     <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés</a></li>
-                    <li><a href="index.html#actualites" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
                 </ul>
             </div>
             <div class="reveal-down" style="animation-delay: 0.4s">
                 <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
-                <div class="flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                <div class="flex flex-wrap gap-3">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" title="Facebook" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" title="LinkedIn" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" title="Instagram" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" title="TikTok" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@universitepedagogiquedekolwezi?si=qBv6wuj59NXBS6ZZ" target="_blank" title="YouTube" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-youtube"></i></a>
+                    <a href="https://whatsapp.com/channel/0029VbDBBON29752VGwZVX34" target="_blank" title="Chaîne WhatsApp" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
             <div class="reveal-right">
@@ -525,6 +817,25 @@
     </footer>
 
     <script>
+        // --- GESTION DE LA RECHERCHE ---
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            if (searchBar.classList.contains('hidden')) {
+                searchBar.classList.remove('hidden');
+            } else {
+                searchBar.classList.add('hidden');
+            }
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== '') {
+                alert("Recherche pour : " + query);
+                // Implémentez ici la redirection vers votre système de recherche interne
+            }
+        }
+
+        // --- GESTION DU MENU MOBILE ---
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             if (menu.classList.contains('hidden')) {
@@ -536,6 +847,51 @@
             }
         }
 
+        // --- GESTION DES THÈMES ---
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        }
+
+        function setTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-gray', 'theme-night', 'theme-comfort');
+            
+            const btnIds = ['btn-theme-light', 'btn-theme-gray', 'btn-theme-night', 'btn-theme-comfort'];
+            btnIds.forEach(id => {
+                const btn = document.getElementById(id);
+                if(btn) btn.classList.remove('active-theme');
+            });
+
+            if (theme !== 'light') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            
+            const activeBtn = document.getElementById(`btn-theme-${theme}`);
+            if(activeBtn) activeBtn.classList.add('active-theme');
+
+            localStorage.setItem('upkol-theme', theme);
+            
+            const menu = document.getElementById('theme-menu');
+            if(menu && !menu.classList.contains('hidden')) {
+                toggleThemeMenu();
+            }
+        }
+
+        // --- INITIALISATION AU CHARGEMENT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
+        });
+
+        // --- ANIMATIONS D'OBSERVATION ---
         const observerOptions = { threshold: 0.1 };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -546,9 +902,9 @@
             });
         }, observerOptions);
 
-        document.querySelectorAll('.research-card, .group').forEach(card => {
-            card.style.opacity = "0";
-            observer.observe(card);
+        document.querySelectorAll('.research-card, .reveal-left, .reveal-right, .reveal-down').forEach(el => {
+            // L'opacité initiale est gérée par les keyframes, mais on peut forcer le déclenchement
+            // si on souhaite réutiliser la logique d'animate.css par dessus.
         });
     </script>
 </body>
