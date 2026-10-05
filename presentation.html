@@ -3,33 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>À Propos - UPKOL</title>
+    <title>À Propos - UPKOL | Université Pédagogique de Kolwezi</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.upkol.academy/presentation.html">
     <meta property="og:title" content="Présentation de l'UPKOL">
     <meta property="og:description" content="Découvrez l'histoire, la mission et les facultés de l'Université Pédagogique de Kolwezi.">
     <meta property="og:image" content="logo.png">
-    
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Présentation de l'UPKOL">
+    <meta name="twitter:description" content="Découvrez l'histoire et la mission de l'Université Pédagogique de Kolwezi.">
+    <meta name="twitter:image" content="logo.png">
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SPRV7W7BYV"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-SPRV7W7BYV');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SPRV7W7BYV');
     </script>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
-    <!-- Supabase Client & Google Identity Services (Importés de l'index) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script>
-        // Fonctions d'authentification importées
         function decodeJwtResponse(token) {
             var base64Url = token.split('.')[1];
             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -48,6 +53,7 @@
             if (google.accounts.id) {
                 google.accounts.id.disableAutoSelect();
             }
+            
             window.location.reload();
         }
 
@@ -93,128 +99,81 @@
             }
         }
 
-        function logAction(email, userId, action, details) {
-            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
-            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-            _supabase.from('action_logs').insert([{
-                user_id: userId,
-                user_email: email,
-                action_type: action,
-                details: details
-            }]).then(response => {
-                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
-            });
-        }
-
         function handleCredentialResponse(response) {
             const responsePayload = decodeJwtResponse(response.credential);
-            const userData = {
-                id: responsePayload.sub,
-                nom_complet: responsePayload.name,
-                email: responsePayload.email,
-                picture: responsePayload.picture,
-                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
-                action: "Connexion",
-                details: "Authentification via Google Identity Services"
-            };
-
-            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
-            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-            _supabase.from('profiles').select('id').eq('email', userData.email).single()
-                .then(async ({ data: existingUser }) => {
-                    if (existingUser) {
-                        await _supabase.from('profiles').update({
-                            name: userData.nom_complet,
-                            picture: userData.picture,
-                            last_login: new Date().toISOString()
-                        }).eq('id', existingUser.id);
-                    } else {
-                        await _supabase.from('profiles').insert([{
-                            id: userData.id,
-                            name: userData.nom_complet,
-                            email: userData.email,
-                            picture: userData.picture,
-                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
-                            created_at: new Date().toISOString(),
-                            last_login: new Date().toISOString()
-                        }]);
-                    }
-                    localStorage.setItem('userEmail', userData.email);
-                    localStorage.setItem('userId', userData.id);
-                    localStorage.setItem('userName', userData.nom_complet);
-                    localStorage.setItem('userPicture', userData.picture);
-                    updateAuthUI();
-                    logAction(userData.email, userData.id, userData.action, userData.details);
-                })
-                .catch(error => console.error("Erreur Supabase :", error));
-        }
-
-        // Toggles Mobile 
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu) menu.classList.toggle('hidden');
-        }
-        function toggleMobileSearch() {
-            const search = document.getElementById('mobile-search-bar');
-            if (search) search.classList.toggle('hidden');
-        }
-        function handleSearch(inputId) {
-            const val = document.getElementById(inputId).value;
-            if(val) window.location.href = 'index.html?q=' + encodeURIComponent(val);
+            localStorage.setItem('userEmail', responsePayload.email);
+            localStorage.setItem('userId', responsePayload.sub);
+            localStorage.setItem('userName', responsePayload.name);
+            localStorage.setItem('userPicture', responsePayload.picture);
+            updateAuthUI();
         }
     </script>
     
     <style>
-        /* MODE D'ÉCLAIRAGE MIS À JOUR - Thème identique à l'index */
         :root {
             --primary: #FFD700; /* Jaune Or UPKOL */
             --secondary: #121212; /* Noir Institutionnel */
             --accent: #ffffff;
         }
         
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
+
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
         .bg-upkol-noir { background-color: var(--secondary); }
-
-        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .hero-presentation {
+            background-color: #121212;
+            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                              url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll;
         }
 
-        @keyframes slideFromLeft {
-            from { transform: translateX(-100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        @keyframes slideFromRight {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
         .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
         .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
 
-        .search-container input:focus {
-            width: 250px;
-            border-color: var(--primary);
-        }
-        .search-container input {
-            transition: width 0.4s ease, border-color 0.4s ease;
-            width: 150px;
-        }
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-faculte { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card-faculte:hover { border-color: var(--primary); transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+
+        .search-container input:focus { width: 250px; border-color: var(--primary); }
+        .search-container input { transition: width 0.4s ease, border-color 0.4s ease; width: 150px; }
+
+        /* --- GESTION DES THÈMES --- */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu, body.theme-night #faculty-modal .bg-white { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        body.theme-night input, body.theme-night textarea { background-color: #2d2d2d !important; color: #fff !important; border-color: #444 !important; }
+        
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu, body.theme-gray #faculty-modal .bg-white { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu, body.theme-comfort #faculty-modal .bg-white { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        body.theme-comfort input, body.theme-comfort textarea { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-white text-gray-900">
 
     <!-- TOP BAR -->
-    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex flex-wrap gap-4 items-center">
                 <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</span>
@@ -248,85 +207,50 @@
             <!-- Desktop Menu & Search -->
             <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
                 
-                <!-- Search Bar -->
                 <div class="search-container relative mr-4">
-                    <input type="text" id="site-search" placeholder="Rechercher..." 
-                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <input type="text" id="site-search" placeholder="Rechercher..." class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
                     <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
 
-                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
-
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
                     <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
-                        <a href="presentation.html" class="block px-6 py-3 bg-gray-50 text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
                         <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
                         <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
                         <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
                     </div>
                 </div>
 
-                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
-                
-                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors">Actualités</a>
 
-                <!-- Section Enseignements -->
                 <div class="relative nav-dropdown py-8">
                     <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
                     <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
-                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
-                        </a>
-                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
-                        </a>
-                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
-                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
-                        </a>
-                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
-                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
-                        </a>
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all"><i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES</a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all"><i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING</a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all"><i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES</a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100"><i class="fas fa-user-shield mr-3"></i> ADMINISTRATION</a>
                     </div>
-                </div>
-
-                <!-- Creative Portal Entry -->
-                <div class="relative group">
-                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
-                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
-                            <i class="fas fa-university text-[10px]"></i>
-                        </div>
-                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
-                    </a>
                 </div>
                 
-                <!-- Bouton de connexion Google -->
                 <div id="google-signin-button-container">
-                    <div class="g_id_signin"
-                        data-type="icon"
-                        data-shape="circle"
-                        data-theme="outline"
-                        data-size="large">
-                    </div>
+                    <div class="g_id_signin" data-type="icon" data-shape="circle" data-theme="outline" data-size="large"></div>
                 </div>
 
-                <!-- Informations utilisateur et bouton de déconnexion -->
                 <div id="logged-in-user-info" class="hidden items-center space-x-4">
                     <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
                     <div class="flex flex-col text-sm font-bold text-gray-700">
                         <span>Bienvenue</span>
                         <span id="display-user-name" class="text-upkol-jaune"></span>
                     </div>
-                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
-                        Déconnexion
-                    </button>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">Déconnexion</button>
                 </div>
 
-                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-black hover:text-white transition transform hover:scale-105">
-                S'INSCRIRE
-                </a>
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">S'INSCRIRE</a>
             </div>
 
             <!-- Mobile Menu Toggle -->
@@ -340,9 +264,8 @@
                         <span>Bienvenue</span>
                         <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
                     </div>
-                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
-
                 <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
                 <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
             </div>
@@ -352,13 +275,14 @@
         <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
             <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
             <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-upkol-jaune">À Propos</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
             <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
-            <a href="index.html#facultes" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
             <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
             <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
         </div>
 
-        <!-- Mobile Search Bar -->
+        <!-- Mobile Search -->
         <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
             <div class="flex">
                 <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
@@ -367,301 +291,305 @@
         </div>
     </nav>
 
-    <header class="relative bg-upkol-noir text-white py-32 px-6 text-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80" alt="Bâtiment universitaire" class="absolute inset-0 w-full h-full object-cover opacity-40 filter brightness-90">
-        <div class="absolute inset-0 bg-gradient-to-t from-upkol-noir via-transparent to-black opacity-80"></div>
-        <div class="relative z-10 max-w-4xl mx-auto">
-            <h1 class="text-5xl md:text-7xl font-black mb-4 uppercase tracking-wide">À Propos de <span class="text-upkol-jaune">l'UPKOL</span></h1>
-            <p class="text-2xl md:text-3xl font-extrabold text-upkol-jaune drop-shadow-md">La formation, La Recherche et l'Excellence</p>
+    <!-- THEME SWITCHER -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
         </div>
-    </header>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
 
-    <section class="py-20 px-6 bg-white border-b border-gray-100">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
-            <div class="w-full md:w-1/3 flex justify-center">
-                <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full p-2 bg-gradient-to-tr from-upkol-jaune to-upkol-noir shadow-2xl">
-                    <img src="https://i.ibb.co/dswPMLd1/FB-IMG-1789473257790.jpg" alt="Prof John Ntoka Dilamono" class="w-full h-full object-cover rounded-full border-4 border-white">
+    <!-- MAIN CONTENT - À PROPOS -->
+    <main>
+        <!-- Hero -->
+        <header class="hero-presentation h-[50vh] md:h-[60vh] flex items-center px-6 relative">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black mb-4 uppercase tracking-wide text-white reveal-down">À Propos de <span class="text-upkol-jaune">l'UPKOL</span></h1>
+                <p class="text-xl md:text-3xl font-extrabold text-upkol-jaune drop-shadow-md reveal-up" style="animation-delay: 0.2s;">La Formation, La Recherche et l'Excellence</p>
+            </div>
+        </header>
+
+        <!-- Fondateur -->
+        <section class="py-20 px-6 bg-white border-b border-gray-100">
+            <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/3 flex justify-center reveal-left">
+                    <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full p-2 bg-gradient-to-tr from-upkol-jaune to-upkol-noir shadow-2xl">
+                        <img src="https://i.ibb.co/dswPMLd1/FB-IMG-1789473257790.jpg" alt="Prof John Ntoka Dilamono" class="w-full h-full object-cover rounded-full border-4 border-white">
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 text-center md:text-left reveal-right">
+                    <p class="text-upkol-jaune font-bold tracking-widest uppercase text-sm mb-2">Fondateur & Président du Conseil d'Administration</p>
+                    <h2 class="text-4xl font-black uppercase mb-4 text-gray-900">Prof. John <span class="text-upkol-jaune">Ntoka Dilamono</span></h2>
+                    <div class="w-20 h-1 bg-upkol-noir mx-auto md:mx-0 mb-6"></div>
+                    <p class="text-gray-600 leading-relaxed text-lg mb-6">
+                        Visionnaire et passionné par l'éducation, le Professeur John Ntoka Dilamono a fondé l'Université Pédagogique de Kolwezi avec la conviction profonde que l'excellence académique est le moteur du développement. Sous son leadership en tant que Président du Conseil d'Administration, l'UPKOL s'efforce de former une nouvelle génération de leaders et de professionnels compétents pour la province du Lualaba et la R.D. Congo.
+                    </p>
+                    <blockquote class="italic text-gray-500 border-l-4 border-upkol-jaune pl-4 py-2">
+                        "L'éducation n'est pas seulement l'apprentissage de faits, mais l'entraînement de l'esprit à penser."
+                    </blockquote>
                 </div>
             </div>
-            <div class="w-full md:w-2/3 text-center md:text-left">
-                <p class="text-upkol-jaune font-bold tracking-widest uppercase text-sm mb-2">Fondateur & Président du Conseil d'Administration</p>
-                <h2 class="text-4xl font-black uppercase mb-4 text-slate-800">Prof. John <span class="text-upkol-jaune">Ntoka Dilamono</span></h2>
-                <div class="w-20 h-1 bg-upkol-noir mx-auto md:mx-0 mb-6"></div>
-                <p class="text-gray-600 leading-relaxed text-lg mb-6">
-                    Visionnaire et passionné par l'éducation, le Professeur John Ntoka Dilamono a fondé l'Université Pédagogique de Kolwezi avec la conviction profonde que l'excellence académique est le moteur du développement. Sous son leadership en tant que Président du Conseil d'Administration, l'UPKOL s'efforce de former une nouvelle génération de leaders et de professionnels compétents pour la province du Lualaba et la R.D. Congo.
-                </p>
-                <blockquote class="italic text-gray-500 border-l-4 border-upkol-jaune pl-4 py-2">
-                    "L'éducation n'est pas seulement l'apprentissage de faits, mais l'entraînement de l'esprit à penser."
-                </blockquote>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="py-24 px-6 max-w-7xl mx-auto">
-        <div class="grid md:grid-cols-2 gap-12">
-            <div>
-                <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Histoire</h2>
-                <p class="text-gray-600 leading-relaxed mb-4">
-                    Créée en R.D. Congo le 21 mai 2013, l'Université Pédagogique de Kolwezi (UPKOL) est une institution d'utilité publique dépendante des services de l'État.
-                </p>
-                <p class="text-gray-600 leading-relaxed">
-                    Elle jouit de la personnalité juridique et se conforme aux dispositions statutaires pour assurer une éducation de qualité dans la province du Lualaba.
-                </p>
-                <div class="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <p class="text-xs font-bold text-gray-500 uppercase mb-2">Arrêté Ministériel :</p>
-                    <p class="italic text-sm">N°099/MINESU/CAB.MIN/SMM/JPK/LMM /2017 du 28 juillet 2017</p>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Mission</h2>
-                <p class="text-gray-600 leading-relaxed mb-6">
-                    Assurer la formation des cadres de conception dans les domaines les plus divers de la vie nationale.
-                </p>
-                <ul class="space-y-4 mb-8">
-                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Éclosion d'idées neuves et développement professionnel.</span></li>
-                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Diplômes de graduat, licence et agrégation.</span></li>
-                    <li class="flex items-start"><i class="fas fa-check text-upkol-jaune mt-1 mr-3"></i> <span>Recherche fondamentale et appliquée orientée vers les solutions locales.</span></li>
-                </ul>
-                <div class="rounded-2xl overflow-hidden shadow-xl">
-                    <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80" alt="Étudiants" class="w-full h-48 object-cover">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-20 px-6 bg-gray-50">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-black uppercase mb-4">Nos <span class="text-upkol-jaune">Facultés & Filières</span></h2>
-                <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Cliquez sur une filière pour découvrir tous les détails</p>
-                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- 1. Psychologie -->
-                <div onclick="openModal('Psychologie & Sc. de l\'Éducation', 'Formation complète pour devenir des cadres supérieurs en psychologie clinique, scolaire et en sciences de l\'éducation.', '2ème et 3ème cycles (Graduat, Licence et Master)', ['Psychologie Scolaire', 'Orientation Professionnelle', 'Didactique Générale', 'Administration Scolaire'], 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80" alt="Psychologie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Pédagogie</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Psychologie & Sc. de l'Éducation</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation des cadres en psychologie et sciences de l'éducation pour le développement humain.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
+        <!-- Histoire & Mission -->
+        <section class="py-24 px-6 max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12">
+                <div class="reveal-down" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Histoire</h2>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        Créée en R.D. Congo le 21 mai 2013, l'Université Pédagogique de Kolwezi (UPKOL) est une institution d'utilité publique dépendante des services de l'État.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        Elle jouit de la personnalité juridique et se conforme aux dispositions statutaires pour assurer une éducation de qualité dans la province du Lualaba.
+                    </p>
+                    <div class="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <p class="text-xs font-bold text-gray-500 uppercase mb-2">Arrêté Ministériel :</p>
+                        <p class="italic font-medium">N°099/MINESU/CAB.MIN/SMM/JPK/LMM /2017 du 28 juillet 2017</p>
                     </div>
                 </div>
-
-                <!-- 2. Informatique -->
-                <div onclick="openModal('Sciences Informatiques', 'Maîtrise des technologies de l\'information, programmation avancée, administration des réseaux et sécurité informatique.', 'Graduat & Licence (Babcock / LMD)', ['Génie Logiciel', 'Réseaux & Télécommunications', 'Sécurité Informatique', 'Bases de Données Avancées'], 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80" alt="Informatique" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Technologie</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences Informatiques</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Expertise en gestion et réseaux informatiques pour répondre aux défis numériques.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-
-                <!-- 3. Santé -->
-                <div onclick="openModal('Sciences de la Santé', 'Cursus rigoureux axé sur la santé communautaire, les soins infirmiers avancés, la nutrition et la pédiatrie.', 'Graduat et Licence professionnelle', ['Soins Infirmiers', 'Santé Publique', 'Nutrition et Diététique', 'Pédiatrie'], 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80" alt="Santé" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Santé</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences de la Santé</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation en pédiatrie, nutrition et santé publique pour améliorer le bien-être.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-
-                <!-- 4. Économie & Gestion -->
-                <div onclick="openModal('Sciences Économiques & Gestion', 'Préparation des gestionnaires d\'entreprise, économistes et spécialistes en administration des affaires et développement.', 'Cycles complets LMD', ['Gestion financière', 'Comptabilité et Audit', 'Économie Internationale', 'Management des Organisations'], 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Économie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Économie</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sc. Économiques & Gestion</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Maîtrise des sciences commerciales, administratives et développement rural.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-
-                <!-- 5. Droit -->
-                <div onclick="openModal('Droit', 'Étude approfondie du droit public, droit privé et judiciaire, formant les juristes et conseillers de demain.', 'Graduat et Licence en Droit', ['Droit Privé et Judiciaire', 'Droit Public', 'Droit Économique et Social', 'Procédure Légale'], 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" alt="Droit" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Droit</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Droit</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Expertise en droit privé, public et sciences économiques et sociales.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-
-                <!-- 6. Sciences -->
-                <div onclick="openModal('Sciences', 'Filière scientifique axée sur la chimie, la géologie minière et les sciences exactes adaptées aux ressources du Lualaba.', 'Licence et Master spécialisés', ['Géologie Minière', 'Chimie Appliquée', 'Mathématiques et Physique', 'Environnement'], 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80" alt="Sciences" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Sciences</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Chimie, géologie et disciplines connexes pour la recherche fondamentale.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-
-                <!-- 7. Sciences Agronomiques -->
-                <div onclick="openModal('Sciences Agronomiques', 'Formation technique et scientifique pour optimiser la production agricole, l\'élevage et la gestion rurale.', 'Graduat et Licence Agronomique', ['Phytotechnie', 'Zootechnie', 'Économie et Sociologie Rurale', 'Gestion des Eaux et Forêts'], 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                    <div class="h-48 bg-gray-200 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80" alt="Agronomie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Agronomie</div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences Agronomiques</h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation en phytotechnie, zootechnie et économie agricole.</p>
-                        <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">Voir les détails <i class="fas fa-arrow-right ml-2"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-24 px-6 bg-slate-100">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-black uppercase mb-4">Fil des <span class="text-upkol-jaune">Actualités</span></h2>
-                <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Espace communautaire ouvert pour publier et évaluer les actualités</p>
-                <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
-            </div>
-
-            <!-- FORMULAIRE DE PUBLICATION -->
-            <div class="bg-white rounded-3xl p-8 shadow-xl mb-16 border border-gray-100">
-                <form id="newsForm" class="space-y-6">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Votre Nom ou Rôle</label>
-                        <input type="text" id="authorName" required placeholder="Ex: Dr. Kabeya / Étudiant en Informatique" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-upkol-jaune font-medium text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Description / Contenu de l'actualité</label>
-                        <textarea id="newsDesc" required rows="4" placeholder="Partagez les nouvelles, événements ou annonces..." class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-upkol-jaune font-medium text-sm"></textarea>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 1 (Obligatoire)</label>
-                            <input type="file" id="img1File" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-upkol-jaune file:text-black hover:file:bg-amber-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 2 (Optionnel)</label>
-                            <input type="file" id="img2File" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 3 (Optionnel)</label>
-                            <input type="file" id="img3File" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full py-4 bg-upkol-noir text-white font-black rounded-xl hover:bg-slate-800 transition-colors uppercase tracking-widest text-sm shadow-lg">Publier l'actualité</button>
-                </form>
-            </div>
-
-            <!-- CONTENEUR DES ACTUALITÉS PUBLIÉES -->
-            <div id="newsContainer" class="space-y-8">
-                <!-- Chargé dynamiquement depuis localStorage -->
-            </div>
-        </div>
-    </section>
-
-    <div id="filiereModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative animate__animated animate__fadeInUp">
-            <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-gray-100 text-slate-800 rounded-full flex items-center justify-center font-bold text-lg hover:bg-upkol-jaune transition-colors z-10"><i class="fas fa-times"></i></button>
-            <div id="modalImageContainer" class="h-64 relative">
-                <img id="modalImg" src="" alt="Filière" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
-                    <h3 id="modalTitle" class="text-2xl md:text-3xl font-black text-white uppercase"></h3>
-                </div>
-            </div>
-            <div class="p-8 space-y-6">
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-upkol-jaune mb-2">Description du programme</h4>
-                    <p id="modalDesc" class="text-gray-600 leading-relaxed text-sm md:text-base"></p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <div>
-                        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Grade délivré</span>
-                        <p id="modalGrade" class="font-black text-slate-800 text-sm"></p>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Débouchés & Options clés</h4>
-                    <ul id="modalOptions" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-bold text-slate-700">
-                        <!-- Rempli dynamiquement -->
+                <div class="reveal-down" style="animation-delay: 0.3s">
+                    <h2 class="text-3xl font-black uppercase mb-6 border-l-8 border-upkol-jaune pl-4">Notre Mission</h2>
+                    <p class="text-gray-600 leading-relaxed mb-6">
+                        Assurer la formation des cadres de conception dans les domaines les plus divers de la vie nationale.
+                    </p>
+                    <ul class="space-y-4 mb-8 text-gray-700 font-medium">
+                        <li class="flex items-start"><i class="fas fa-check-circle text-upkol-jaune mt-1 mr-3 text-lg"></i> <span>Éclosion d'idées neuves et développement professionnel.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-upkol-jaune mt-1 mr-3 text-lg"></i> <span>Diplômes de graduat, licence et agrégation.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-upkol-jaune mt-1 mr-3 text-lg"></i> <span>Recherche fondamentale et appliquée orientée vers les solutions locales.</span></li>
                     </ul>
+                    <div class="rounded-2xl overflow-hidden shadow-xl">
+                        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80" alt="Étudiants" class="w-full h-48 object-cover transform hover:scale-105 transition-transform duration-700">
+                    </div>
                 </div>
-                <div class="pt-4 border-t border-gray-100 flex justify-end">
-                    <a href="inscription.html" class="px-6 py-3 bg-upkol-jaune text-black font-black rounded-xl text-xs uppercase tracking-widest shadow-md hover:scale-105 transition-transform">S'inscrire à cette filière</a>
+            </div>
+        </section>
+
+        <!-- Facultés (Intégration du design) -->
+        <section class="py-20 px-6 bg-gray-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 reveal-down">
+                    <h2 class="text-4xl font-black uppercase mb-4">Nos <span class="text-upkol-jaune">Facultés & Filières</span></h2>
+                    <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Cliquez sur une filière pour afficher tous les détails</p>
+                    <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 1. Psychologie -->
+                    <div onclick="openFacultyModal('Psychologie & Sc. de l\'Éducation', 'Pédagogie', 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80', 'Formation complète pour devenir des cadres supérieurs en psychologie clinique, scolaire et en sciences de l\'éducation.', ['Psychologie Scolaire', 'Orientation Professionnelle', 'Didactique Générale', 'Administration Scolaire'], 'Graduat, Licence et Master', 'Prof. Dr. Marie Kabamba')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte">
+                        <div class="h-48 bg-gray-200 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=800&q=80" alt="Psychologie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Pédagogie</div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Psychologie & Sc. de l'Éducation</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed mb-6">Formation des cadres en psychologie et sciences de l'éducation pour le développement humain.</p>
+                            <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Informatique -->
+                    <div onclick="openFacultyModal('Sciences Informatiques', 'Technologie', 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80', 'Maîtrise des technologies de l\'information, programmation avancée, administration des réseaux et sécurité informatique.', ['Génie Logiciel', 'Réseaux & Télécommunications', 'Sécurité Informatique', 'Bases de Données'], 'Graduat & Licence', 'Prof. Ing. Jean-Paul Mwamba')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte">
+                        <div class="h-48 bg-gray-200 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80" alt="Informatique" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Technologie</div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sciences Informatiques</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed mb-6">Expertise en gestion et réseaux informatiques pour répondre aux défis numériques.</p>
+                            <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Économie -->
+                    <div onclick="openFacultyModal('Sc. Économiques & Gestion', 'Économie', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80', 'Préparation des gestionnaires d\'entreprise, économistes et spécialistes en administration des affaires et développement.', ['Gestion financière', 'Comptabilité et Audit', 'Économie Internationale', 'Management'], 'Cycles complets LMD', 'Prof. Alain Mutombo')" class="group overflow-hidden bg-white border border-gray-100 rounded-2xl hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte">
+                        <div class="h-48 bg-gray-200 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Économie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-4 left-4 bg-upkol-jaune text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Économie</div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="font-black text-lg mb-3 uppercase group-hover:text-upkol-jaune transition-colors">Sc. Économiques & Gestion</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed mb-6">Maîtrise des sciences commerciales, administratives et développement rural.</p>
+                            <span class="text-upkol-jaune font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform inline-block">Découvrir <i class="fas fa-arrow-right ml-2"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Formulaire d'Actualités -->
+        <section class="py-24 px-6">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16 reveal-down">
+                    <h2 class="text-4xl font-black uppercase mb-4">Fil des <span class="text-upkol-jaune">Actualités</span></h2>
+                    <p class="text-gray-500 font-bold text-sm tracking-widest uppercase mb-4">Espace communautaire ouvert pour publier des actualités</p>
+                    <div class="w-24 h-1 bg-upkol-jaune mx-auto"></div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 shadow-2xl mb-16 border border-gray-100 reveal-up">
+                    <form id="newsForm" class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Votre Nom ou Rôle</label>
+                            <input type="text" id="authorName" required placeholder="Ex: Dr. Kabeya / Étudiant en Informatique" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-upkol-jaune font-medium text-sm transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Description / Contenu de l'actualité</label>
+                            <textarea id="newsDesc" required rows="4" placeholder="Partagez les nouvelles, événements ou annonces..." class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-upkol-jaune font-medium text-sm transition-colors"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 1 (Obligatoire)</label>
+                                <input type="file" id="img1File" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-upkol-jaune file:text-black hover:file:bg-amber-400 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 2 (Optionnel)</label>
+                                <input type="file" id="img2File" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Photo 3 (Optionnel)</label>
+                                <input type="file" id="img3File" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 cursor-pointer">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-4 bg-upkol-noir text-white font-black rounded-xl hover:bg-upkol-jaune hover:text-black transition-colors uppercase tracking-widest text-sm shadow-lg transform hover:-translate-y-1">Publier l'actualité</button>
+                    </form>
+                </div>
+                <div id="newsContainer" class="space-y-8"></div>
+            </div>
+        </section>
+
+        <!-- Contacts -->
+        <section class="py-24 px-6 max-w-7xl mx-auto">
+            <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl reveal-up">
+                <div class="p-12 md:w-1/2">
+                    <h2 class="text-3xl font-black mb-8 uppercase">Adresses et <span class="text-upkol-jaune">Contacts</span></h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-map-marked-alt text-upkol-jaune text-2xl mr-4 mt-1"></i>
+                            <div>
+                                <p class="font-bold">Siège Social</p>
+                                <p class="text-gray-400">Num 1640, Avenue Kamina, Quartier Industriel</p>
+                                <p class="text-gray-400 text-sm">Commune de Manika, Ville de Kolwezi, RDC</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-phone-alt text-upkol-jaune text-2xl mr-4 mt-1"></i>
+                            <div>
+                                <p class="font-bold">Téléphone & SMS</p>
+                                <a href="tel:+243826838544" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">+243 826 838 544</a>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fab fa-whatsapp text-upkol-jaune text-2xl mr-4 mt-1"></i>
+                            <div>
+                                <p class="font-bold">WhatsApp</p>
+                                <a href="https://wa.me/243995162001" target="_blank" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">+243 995 162 001</a>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-envelope text-upkol-jaune text-2xl mr-4 mt-1"></i>
+                            <div>
+                                <p class="font-bold">Email Officiel</p>
+                                <a href="mailto:upkolwezi@gmail.com" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">upkolwezi@gmail.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 h-[400px] md:h-auto min-h-[300px]">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15655.44855476685!2d25.466549275143324!3d-10.727506289418375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19760773d3283f55%3A0xc6c42a22956c8672!2sKolwezi!5e0!3m2!1sfr!2scd!4v1715851457425!5m2!1sfr!2scd" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL DES FILIÈRES -->
+    <div id="faculty-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl transform transition-all animate__animated animate__fadeInUp">
+            <div class="relative h-64 bg-gray-900">
+                <img id="modal-img" src="" alt="Filière" class="w-full h-full object-cover opacity-90">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <button onclick="closeFacultyModal()" class="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white text-white hover:text-black rounded-full flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+                <div class="absolute bottom-6 left-6 right-6">
+                    <span id="modal-badge" class="bg-upkol-jaune text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Catégorie</span>
+                    <h3 id="modal-title" class="text-2xl md:text-3xl font-black text-white mt-2">Nom de la Filière</h3>
+                </div>
+            </div>
+            <div class="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div>
+                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-info-circle text-upkol-jaune mr-2"></i> Description Complète</h4>
+                    <p id="modal-description" class="text-gray-700 text-sm leading-relaxed">Description détaillée de la formation...</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    <div>
+                        <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-graduation-cap text-upkol-jaune mr-2"></i> Options / Orientations</h4>
+                        <ul id="modal-options" class="space-y-2 text-xs font-bold text-gray-800">
+                            <!-- Injections via JS -->
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1"><i class="fas fa-clock text-upkol-jaune mr-2"></i> Durée des Études</h4>
+                            <p id="modal-duration" class="text-xs font-bold text-gray-800">5 ans</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1"><i class="fas fa-user-tie text-upkol-jaune mr-2"></i> Doyen / Responsable</h4>
+                            <p id="modal-doyen" class="text-xs font-bold text-gray-800">Prof. Dr.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
+                    <a href="inscription.html" class="flex-1 bg-upkol-jaune text-black text-center py-4 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-black hover:text-white transition-all shadow-lg">
+                        S'inscrire à cette filière
+                    </a>
+                    <button onclick="closeFacultyModal()" class="px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all">
+                        Fermer
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <section class="py-24 px-6 max-w-7xl mx-auto">
-        <div class="bg-upkol-noir text-white rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
-            <div class="p-12 md:w-1/2">
-                <h2 class="text-3xl font-black mb-8 uppercase">Adresses et <span class="text-upkol-jaune">Contacts</span></h2>
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <i class="fas fa-map-marked-alt text-upkol-jaune text-2xl mr-4"></i>
-                        <div>
-                            <p class="font-bold">Siège Social</p>
-                            <p class="text-gray-400">Num 1640, Avenue kamina, Quartier industriel</p>
-                            <p class="text-gray-400 text-sm">Commune de Manika, Ville de Kolwezi, RDC</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-phone-alt text-upkol-jaune text-2xl mr-4"></i>
-                        <div>
-                            <p class="font-bold">Téléphone & SMS</p>
-                            <a href="tel:+243826838544" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">+243 826 838 544</a>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fab fa-whatsapp text-upkol-jaune text-2xl mr-4"></i>
-                        <div>
-                            <p class="font-bold">WhatsApp</p>
-                            <a href="https://wa.me/243995162001" target="_blank" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">+243 995 162 001</a>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-envelope text-upkol-jaune text-2xl mr-4"></i>
-                        <div>
-                            <p class="font-bold">Email Officiel</p>
-                            <a href="mailto:upkolwezi@gmail.com" class="text-gray-400 hover:text-upkol-jaune transition-colors inline-block font-medium">upkolwezi@gmail.com</a>
-                        </div>
-                    </div>
+    <!-- FOOTER -->
+    <footer class="bg-upkol-noir text-white py-20 px-6 border-t-[12px] border-upkol-jaune">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div class="reveal-left">
+                <h4 class="text-3xl font-black mb-6 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-500 text-sm leading-relaxed">Université de prestige au cœur du Lualaba. Dédiée à l'excellence et à l'innovation.</p>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.2s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Facultés</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                </ul>
+            </div>
+            <div class="reveal-down" style="animation-delay: 0.4s">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
+                <div class="flex flex-wrap gap-3">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@universitepedagogiquedekolwezi?si=qBv6wuj59NXBS6ZZ" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-youtube"></i></a>
+                    <a href="https://whatsapp.com/channel/0029VbDBBON29752VGwZVX34" target="_blank" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
-            <div class="md:w-1/2 h-[400px] md:h-auto min-h-[300px]">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15655.44855476685!2d25.466549275143324!3d-10.727506289418375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19760773d3283f55%3A0xc6c42a22956c8672!2sKolwezi!5e0!3m2!1sfr!2scd!4v1715851457425!5m2!1sfr!2scd" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="reveal-right">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Localisation</h5>
+                <p class="text-xs text-gray-400 font-bold">Kolwezi, Lualaba<br>République Démocratique du Congo</p>
             </div>
         </div>
-    </section>
-
-    <section class="py-24 text-center px-6 bg-white">
-        <h2 class="text-3xl font-black uppercase mb-6">Soyez les bienvenus à l'université de l'émergence !</h2>
-        <div class="flex justify-center space-x-4">
-            <a href="inscription.html" class="bg-upkol-jaune text-black px-10 py-5 font-black rounded-lg hover:bg-black hover:text-white transition-all uppercase shadow-lg">S'inscrire maintenant</a>
-        </div>
-    </section>
-
-    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
-            <p>© 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
-            <div class="flex space-x-6 mt-4 md:mt-0">
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-gray-900 flex justify-between items-center text-[10px] font-bold text-gray-600 uppercase">
+            <span>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</span>
+            <div class="flex space-x-6">
                 <span>Formation.</span>
                 <span>Recherche.</span>
                 <span>Excellence.</span>
@@ -669,202 +597,94 @@
         </div>
     </footer>
 
-    <div id="customConfirmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
-            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
-                <i class="fas fa-exclamation"></i>
-            </div>
-            <h3 class="font-black text-lg text-slate-800">Confirmation</h3>
-            <p id="confirmMessage" class="text-xs text-gray-600">Voulez-vous vraiment supprimer cette actualité ?</p>
-            <div class="flex space-x-3 pt-2">
-                <button id="confirmCancelBtn" class="flex-1 py-2.5 bg-gray-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-gray-200 transition-colors">Annuler</button>
-                <button id="confirmOkBtn" class="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs hover:bg-red-700 transition-colors">Supprimer</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- SCRIPTS UTILES (Thèmes, Navigation, Modal, Formulaires) -->
     <script>
-        // Gestion de l'UI Auth au chargement
-        document.addEventListener('DOMContentLoaded', () => {
-            updateAuthUI();
-            loadNews();
-        });
+        // --- GESTION DES THÈMES ---
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        }
 
-        // Gestion des Popups Filières
-        function openModal(title, desc, grade, options, img) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalDesc').innerText = desc;
-            document.getElementById('modalGrade').innerText = grade;
-            document.getElementById('modalImg').src = img;
+        function setTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-gray', 'theme-night', 'theme-comfort');
+            
+            const btnIds = ['btn-theme-light', 'btn-theme-gray', 'btn-theme-night', 'btn-theme-comfort'];
+            btnIds.forEach(id => { document.getElementById(id).classList.remove('active-theme'); });
 
-            const optionsList = document.getElementById('modalOptions');
+            if (theme !== 'light') document.body.classList.add(`theme-${theme}`);
+            document.getElementById(`btn-theme-${theme}`).classList.add('active-theme');
+
+            localStorage.setItem('upkol-theme', theme);
+            toggleThemeMenu();
+        }
+
+        // --- NAVIGATION MOBILE & RECHERCHE ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== "") {
+                console.log("Recherche en cours pour : " + query);
+                window.location.href = `index.html?search=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // --- POP-UP DES FILIÈRES ---
+        function openFacultyModal(title, badge, imgUrl, description, options, duration, doyen) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-badge').innerText = badge;
+            document.getElementById('modal-img').src = imgUrl;
+            document.getElementById('modal-description').innerText = description;
+            document.getElementById('modal-duration').innerText = duration;
+            document.getElementById('modal-doyen').innerText = doyen;
+
+            const optionsList = document.getElementById('modal-options');
             optionsList.innerHTML = '';
             options.forEach(opt => {
-                optionsList.innerHTML += `<li class="flex items-center"><i class="fas fa-check text-upkol-jaune mr-2"></i> ${opt}</li>`;
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check-circle text-upkol-jaune mr-2"></i> ${opt}`;
+                optionsList.appendChild(li);
             });
 
-            document.getElementById('filiereModal').classList.remove('hidden');
+            document.getElementById('faculty-modal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('filiereModal').classList.add('hidden');
+        function closeFacultyModal() {
+            document.getElementById('faculty-modal').classList.add('hidden');
         }
 
+        // --- EVENT LISTENERS GLOBAUX ---
         window.onclick = function(event) {
-            const modal = document.getElementById('filiereModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            const modal = document.getElementById('faculty-modal');
+            if (event.target == modal) { closeFacultyModal(); }
         }
 
-        // Helper pour convertir un fichier en Base64
-        function convertFileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function showCustomConfirm(callback) {
-            const modal = document.getElementById('customConfirmModal');
-            modal.classList.remove('hidden');
-            
-            const okBtn = document.getElementById('confirmOkBtn');
-            const cancelBtn = document.getElementById('confirmCancelBtn');
-
-            const newOkBtn = okBtn.cloneNode(true);
-            const newCancelBtn = cancelBtn.cloneNode(true);
-            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
-            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
-            newOkBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                callback(true);
-            });
-
-            newCancelBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                callback(false);
-            });
-        }
-
-        // Gestion des Actualités
-        const form = document.getElementById('newsForm');
-        form.addEventListener('submit', async (e) => {
+        document.getElementById('newsForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            const author = document.getElementById('authorName').value;
-            const desc = document.getElementById('newsDesc').value;
-
-            const file1 = document.getElementById('img1File').files[0];
-            const file2 = document.getElementById('img2File').files[0];
-            const file3 = document.getElementById('img3File').files[0];
-
-            let images = [];
-            try {
-                if (file1) images.push(await convertFileToBase64(file1));
-                if (file2) images.push(await convertFileToBase64(file2));
-                if (file3) images.push(await convertFileToBase64(file3));
-            } catch (err) {
-                console.error("Erreur de lecture des fichiers", err);
-            }
-
-            const newPost = {
-                id: Date.now(),
-                author,
-                desc,
-                images,
-                date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
-                stars: 0
-            };
-
-            let posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
-            posts.unshift(newPost);
-            localStorage.setItem('upkol_news', JSON.stringify(posts));
-
-            form.reset();
-            loadNews();
+            alert("Votre publication a été soumise avec succès ! (Simulation pour l'UI)");
+            this.reset();
         });
 
-        function loadNews() {
-            const container = document.getElementById('newsContainer');
-            const posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
-
-            if (posts.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-300">
-                    <i class="fas fa-newspaper text-4xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-400 font-bold uppercase text-xs tracking-widest">Aucune actualité publiée pour le moment. Soyez le premier !</p>
-                </div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            posts.forEach(post => {
-                let imgGridHTML = '';
-                if (post.images.length === 1) {
-                    imgGridHTML = `<div class="mb-4 rounded-2xl overflow-hidden h-72"><img src="${post.images[0]}" class="w-full h-full object-cover"></div>`;
-                } else if (post.images.length === 2) {
-                    imgGridHTML = `<div class="grid grid-cols-2 gap-2 mb-4 rounded-2xl overflow-hidden h-64">
-                        <img src="${post.images[0]}" class="w-full h-full object-cover">
-                        <img src="${post.images[1]}" class="w-full h-full object-cover">
-                    </div>`;
-                } else if (post.images.length >= 3) {
-                    imgGridHTML = `<div class="grid grid-cols-3 gap-2 mb-4 rounded-2xl overflow-hidden h-64">
-                        <img src="${post.images[0]}" class="w-full h-full object-cover">
-                        <img src="${post.images[1]}" class="w-full h-full object-cover">
-                        <img src="${post.images[2]}" class="w-full h-full object-cover">
-                    </div>`;
-                }
-
-                container.innerHTML += `<article class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate__animated animate__fadeIn">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-upkol-jaune text-black font-black flex items-center justify-center rounded-full text-lg shadow-inner">
-                                ${post.author.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4 class="font-black text-slate-800 text-sm md:text-base">${post.author}</h4>
-                                <p class="text-xs text-gray-400 font-medium">${post.date}</p>
-                            </div>
-                        </div>
-                        <button onclick="deletePost(${post.id})" class="text-gray-300 hover:text-red-500 transition-colors text-xs" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                    <p class="text-gray-700 leading-relaxed text-sm md:text-base mb-6">${post.desc}</p>
-                    ${imgGridHTML}
-                    <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-                        <div class="flex items-center space-x-1">
-                            <button onclick="ratePost(${post.id})" class="text-amber-400 hover:scale-125 transition-transform text-xl focus:outline-none"><i class="fas fa-star"></i></button>
-                            <span class="font-black text-sm text-slate-700 ml-2">${post.stars} étoile(s)</span>
-                        </div>
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Publication vérifiée UPKOL</span>
-                    </div>
-                </article>`;
-            });
-        }
-
-        function ratePost(id) {
-            let posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
-            posts = posts.map(p => {
-                if (p.id === id) {
-                    p.stars = (p.stars || 0) + 1;
-                }
-                return p;
-            });
-            localStorage.setItem('upkol_news', JSON.stringify(posts));
-            loadNews();
-        }
-
-        function deletePost(id) {
-            showCustomConfirm((confirmed) => {
-                if (confirmed) {
-                    let posts = JSON.parse(localStorage.getItem('upkol_news')) || [];
-                    posts = posts.filter(p => p.id !== id);
-                    localStorage.setItem('upkol_news', JSON.stringify(posts));
-                    loadNews();
-                }
-            });
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
+        });
     </script>
 </body>
 </html>
