@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - UPKOL</title><link rel="icon" href="favicon.png?v=2" type="image/png">
+    <title>Inscription | UPKOL - Université Pédagogique de Kolwezi</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.upkol.academy/inscription.html">
+    <meta property="og:title" content="Inscription - UPKOL | Université Pédagogique de Kolwezi">
+    <meta property="og:description" content="Pré-inscrivez-vous en ligne à l'UPKOL pour l'année académique. Rejoignez l'excellence pédagogique au Lualaba.">
+    <meta property="og:image" content="logo.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Inscription - UPKOL">
+    <meta name="twitter:description" content="Rejoignez le pôle académique de référence au Lualaba.">
+    <meta name="twitter:image" content="logo.png">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SPRV7W7BYV"></script>
@@ -12,7 +25,6 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-    
       gtag('config', 'G-SPRV7W7BYV');
     </script>
 
@@ -34,38 +46,237 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        function decodeJwtResponse(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function signOut() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPicture');
+
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            
+            window.location.href = 'inscription.html';
+        }
+
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            const userPicture = localStorage.getItem('userPicture');
+            
+            const desktopSignInContainer = document.getElementById('google-signin-button-container');
+            const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
+            const desktopDisplayName = document.getElementById('display-user-name');
+            const desktopDisplayPicture = document.getElementById('display-user-picture');
+
+            if (userEmail) {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'none';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'flex';
+                if (desktopDisplayName) desktopDisplayName.innerText = userName || '';
+                if (desktopDisplayPicture) {
+                    desktopDisplayPicture.src = userPicture || '';
+                    desktopDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'block';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
+            }
+
+            const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
+            const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
+            const mobileDisplayName = document.getElementById('mobile-display-user-name');
+            const mobileDisplayPicture = document.getElementById('mobile-display-user-picture');
+
+            if (userEmail) {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'none';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'flex';
+                if (mobileDisplayName) mobileDisplayName.innerText = userName || '';
+                if (mobileDisplayPicture) {
+                    mobileDisplayPicture.src = userPicture || '';
+                    mobileDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'block';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'none';
+            }
+        }
+
+        function logAction(email, userId, action, details) {
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('action_logs').insert([{
+                user_id: userId,
+                user_email: email,
+                action_type: action,
+                details: details
+            }]).then(response => {
+                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+
+            const userData = {
+                id: responsePayload.sub,
+                nom_complet: responsePayload.name,
+                prenom: responsePayload.given_name,
+                email: responsePayload.email,
+                picture: responsePayload.picture,
+                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
+                action: "Connexion",
+                details: "Authentification via Google Identity Services (Page Inscription)"
+            };
+
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('profiles').select('id').eq('email', userData.email).single()
+                .then(async ({ data: existingUser }) => {
+                    if (existingUser) {
+                        await _supabase.from('profiles').update({
+                            name: userData.nom_complet,
+                            picture: userData.picture,
+                            last_login: new Date().toISOString()
+                        }).eq('id', existingUser.id);
+                    } else {
+                        await _supabase.from('profiles').insert([{
+                            id: userData.id,
+                            name: userData.nom_complet,
+                            email: userData.email,
+                            picture: userData.picture,
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        }]);
+                    }
+                    localStorage.setItem('userEmail', userData.email);
+                    localStorage.setItem('userId', userData.id);
+                    localStorage.setItem('userName', userData.nom_complet);
+                    localStorage.setItem('userPicture', userData.picture);
+                    updateAuthUI();
+                    logAction(userData.email, userData.id, userData.action, userData.details);
+                })
+                .catch(error => console.error("Erreur Supabase Auth :", error));
+        }
+    </script>
+    
     <style>
-        :root { --primary: #FFD700; --secondary: #121212; }
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        :root {
+            --primary: #FFD700;
+            --secondary: #121212;
+            --accent: #ffffff;
+        }
+        
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
+
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
         .bg-upkol-noir { background-color: var(--secondary); }
+        
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+            background-color: #121212;
+            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
                         url('https://images.unsplash.com/photo-1523240715639-993731804f8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
         }
+
+        @keyframes slideFromTop {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideFromLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideFromRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
+        .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
+        .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
+
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .search-container input:focus {
+            width: 250px;
+            border-color: var(--primary);
+        }
+        .search-container input {
+            transition: width 0.4s ease, border-color 0.4s ease;
+            width: 150px;
+        }
+
+        /* --- GESTION DES THÈMES --- */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu, body.theme-night #confirmationSummaryModal .bg-white { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800, body.theme-night .text-slate-900 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
-<body>
+<body class="bg-white text-gray-900">
 
     <!-- TOP BAR -->
-    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800">
+    <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex space-x-6">
-                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
-                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            <div class="flex flex-wrap gap-4 items-center">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</span>
+                <a href="mailto:upkolwezi@gmail.com" class="flex items-center hover:text-upkol-jaune transition-colors"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> upkolwezi@gmail.com</a>
             </div>
-            <div class="hidden md:flex space-x-4 italic text-gray-500">Excellence Pédagogique au Lualaba</div>
+            <div class="hidden md:flex space-x-4">
+                <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
+            </div>
         </div>
     </div>
 
-    <!-- NAV -->
-    <nav class="sticky top-0 z-50 bg-white shadow-md h-20 flex items-center px-6">
-        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-3">
-                <div class="w-12 h-12 flex items-center justify-center">
+    <!-- MAIN NAVIGATION -->
+    <div id="g_id_onload"
+         data-client_id="396005366251-5jl94257ahdgn21j0e5r3iiiajje0fc3.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-3 cursor-pointer reveal-left">
+                <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
                     <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
                 </div>
                 <div>
@@ -73,75 +284,210 @@
                     <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Univ. Pédagogique de Kolwezi</p>
                 </div>
             </a>
-            <div class="hidden md:flex space-x-8 text-[11px] font-bold uppercase tracking-widest">
-                <a href="index.html" class="hover:text-upkol-jaune">Accueil</a>
-                <a href="presentation.html" class="hover:text-upkol-jaune">À Propos</a>
-                <a href="index.html#facultes" class="hover:text-upkol-jaune">Facultés</a>
-                <a href="inscription.html" class="text-upkol-jaune">S'inscrire</a>
+
+            <!-- Desktop Menu & Search -->
+            <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
+                
+                <!-- Search Bar -->
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    </div>
+                </div>
+
+                <a href="index.html#facultes" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3 opacity-50"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
+                        </a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                            <i class="fas fa-university text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
+                    </a>
+                </div>
+                
+                <div id="google-signin-button-container">
+                    <div class="g_id_signin"
+                        data-type="icon"
+                        data-shape="circle"
+                        data-theme="outline"
+                        data-size="large">
+                    </div>
+                </div>
+
+                <div id="logged-in-user-info" class="hidden items-center space-x-4">
+                    <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
+                        Déconnexion
+                    </button>
+                </div>
+
+                <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-upkol-noir hover:text-white transition transform hover:scale-105 shadow-md">
+                    S'INSCRIRE
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <div id="mobile-google-signin-button-container">
+                    <div class="g_id_signin" 
+                        data-type="icon" 
+                        data-shape="circle" 
+                        data-theme="outline">
+                    </div>
+                </div>
+                <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
+                    </div>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
+                <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
+            <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Bibliothèques</a>
+            <a href="index.html#facultes" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
             </div>
         </div>
     </nav>
 
-    <!-- HERO -->
-    <header class="hero-section py-24 text-center text-white">
-        <div class="max-w-4xl mx-auto px-6">
-            <h1 class="text-5xl md:text-7xl font-black uppercase mb-4 animate__animated animate__fadeInDown">S'inscrire à <span class="text-upkol-jaune">l'UPKOL</span></h1>
-            <p class="text-xl text-gray-300 animate__animated animate__fadeInUp">Rejoignez le pôle d'excellence académique du Lualaba pour l'année académique 2026-2027.</p>
+    <!-- THEME SWITCHER (Mode Clair, Gris, Nuit, Confort) -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" title="Mode Clair" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" title="Mode Gris" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" title="Mode Nuit" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" title="Mode Confort des Yeux" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
+        </div>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
+
+    <!-- HERO SECTION -->
+    <header class="hero-section py-20 md:py-28 text-center text-white relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <div class="w-20 h-1 bg-upkol-jaune mx-auto mb-6 reveal-down"></div>
+            <h1 class="text-4xl md:text-6xl font-black uppercase mb-4 reveal-left">S'inscrire à <span class="text-upkol-jaune">l'UPKOL</span></h1>
+            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto reveal-right font-medium">Rejoignez le pôle d'excellence académique du Lualaba pour la nouvelle année académique.</p>
         </div>
     </header>
 
-    <!-- REGISTRATION FORM -->
-    <section class="py-20 px-6">
+    <!-- REGISTRATION FORM SECTION -->
+    <section class="py-16 md:py-20 px-6">
         <div class="max-w-4xl mx-auto">
             <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-                <div class="bg-upkol-noir p-8 text-white">
-                    <h2 class="text-2xl font-black uppercase tracking-tighter">Formulaire de pré-inscription</h2>
-                    <p class="text-gray-400 text-sm mt-2">Veuillez remplir soigneusement tous les champs ci-dessous.</p>
+                <div class="bg-upkol-noir p-8 md:p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-xs font-black text-upkol-jaune uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">Pré-inscription en ligne</span>
+                        <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mt-2">Formulaire de pré-inscription</h2>
+                        <p class="text-gray-400 text-xs md:text-sm mt-1">Veuillez remplir soigneusement tous les champs ci-dessous.</p>
+                    </div>
+                    <div class="w-12 h-12 bg-upkol-jaune/20 rounded-2xl flex items-center justify-center text-upkol-jaune text-xl flex-shrink-0">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
                 </div>
                 
                 <form id="registrationForm" class="p-8 md:p-12 space-y-8">
-                    <!-- Identité -->
+                    <!-- 1. Identité -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">1</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black shadow-md">1</span>
                             Informations Personnelles
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Nom Complet</label>
-                                <input type="text" id="fullName" required placeholder="Ex: Jean Mukendi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="text" id="fullName" required placeholder="Ex: Jean Mukendi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Lieu de naissance</label>
-                                <input type="text" id="birthPlace" required placeholder="Ex: Kolwezi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="text" id="birthPlace" required placeholder="Ex: Kolwezi" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Date de naissance</label>
-                                <input type="date" id="birthDate" required class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="date" id="birthDate" required class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Email de contact</label>
-                                <input type="email" id="email" required placeholder="votre@email.com" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="email" id="email" required placeholder="votre@email.com" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Numéro de Téléphone</label>
-                                <input type="tel" id="phone" required placeholder="+243 ..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="tel" id="phone" required placeholder="+243 ..." class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                         </div>
                     </div>
 
                     <hr class="border-gray-100">
 
-                    <!-- Choix Académique -->
+                    <!-- 2. Choix Académique -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">2</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black shadow-md">2</span>
                             Choix de la Filière
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Faculté</label>
-                                <select required id="facultySelect" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
+                                <select required id="facultySelect" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all cursor-pointer">
                                     <option value="" disabled selected>Sélectionnez une faculté</option>
                                     <option>Psychologie et Sciences de l'Éducation</option>
                                     <option>Sciences Informatiques</option>
@@ -156,7 +502,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Niveau d'étude souhaité</label>
-                                <select required id="academicLevel" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all cursor-pointer">
+                                <select required id="academicLevel" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all cursor-pointer">
                                     <option>Licence 1 (LMD)</option>
                                     <option>Licence 2 (LMD)</option>
                                     <option>Licence 3 (LMD)</option>
@@ -168,35 +514,35 @@
 
                     <hr class="border-gray-100">
 
-                    <!-- Parcours -->
+                    <!-- 3. Parcours -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-6 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">3</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black shadow-md">3</span>
                             Parcours Scolaire
                         </h3>
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">École de provenance</label>
-                                <input type="text" id="previousSchool" required placeholder="Ex: Institut de la Mine" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="text" id="previousSchool" required placeholder="Ex: Institut de la Mine" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Pourcentage obtenu au diplôme d'état</label>
-                                <input type="number" id="percentage" required placeholder="Ex: 65" min="50" max="100" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-upkol-jaune transition-all">
+                                <input type="number" id="percentage" required placeholder="Ex: 65" min="50" max="100" class="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm focus:outline-none focus:border-upkol-jaune transition-all">
                             </div>
                         </div>
                     </div>
 
                     <hr class="border-gray-100">
 
-                    <!-- Documents demandés -->
+                    <!-- 4. Documents demandés -->
                     <div>
                         <h3 class="text-upkol-jaune font-black text-xs uppercase tracking-widest mb-4 flex items-center">
-                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black">4</span>
+                            <span class="w-8 h-8 bg-upkol-jaune text-black rounded-full flex items-center justify-center mr-3 font-black shadow-md">4</span>
                             Documents requis pour le dossier
                         </h3>
                         
                         <!-- Note alternative de passage physique au bureau -->
-                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-2xl mb-6">
+                        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-2xl mb-6 shadow-sm">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
                                     <i class="fas fa-info-circle text-amber-600 mt-1"></i>
@@ -222,37 +568,37 @@
                         <div id="fileInputsContainer" class="grid md:grid-cols-2 gap-6 transition-all duration-300">
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Curriculum Vitae (CV) <span class="text-red-500 font-bold">*</span></label>
-                                <input type="file" id="cvFile" accept=".pdf,.doc,.docx" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <input type="file" id="cvFile" accept=".pdf,.doc,.docx" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-none focus:border-upkol-jaune" required>
                                 <p class="text-[9px] text-gray-400 mt-1">Format PDF, DOC ou DOCX accepté</p>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Diplôme d'État ou Équivalent <span class="text-red-500 font-bold">*</span></label>
-                                <input type="file" id="diplomaFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <input type="file" id="diplomaFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-none focus:border-upkol-jaune" required>
                                 <p class="text-[9px] text-gray-400 mt-1">Format PDF ou image scannée accepté</p>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Photo d'identité <span class="text-red-500 font-bold">*</span></label>
-                                <input type="file" id="photoFile" accept="image/*" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <input type="file" id="photoFile" accept="image/*" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-none focus:border-upkol-jaune" required>
                                 <p class="text-[9px] text-gray-400 mt-1">Format image (PNG, JPG) de préférence de face</p>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase text-gray-500 mb-2">Certificat d'Aptitude Physique <span class="text-red-500 font-bold">*</span></label>
-                                <input type="file" id="medicalFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-upkol-jaune" required>
+                                <input type="file" id="medicalFile" accept=".pdf,.png,.jpg,.jpeg" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-xs focus:outline-none focus:border-upkol-jaune" required>
                                 <p class="text-[9px] text-gray-400 mt-1">Délivré par un médecin agréé</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="pt-6">
-                        <!-- Bouton Déclencheur : Préparer la confirmation -->
-                        <button type="button" onclick="prepareConfirmationSummary()" class="w-full bg-upkol-jaune text-black font-black py-5 rounded-2xl hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-[1.02] uppercase tracking-widest shadow-xl">
-                            Vérifier mes informations <i class="fas fa-search ml-2"></i>
+                        <!-- Bouton Déclencheur -->
+                        <button type="button" onclick="prepareConfirmationSummary()" class="w-full bg-upkol-jaune text-black font-black py-5 rounded-2xl hover:bg-upkol-noir hover:text-white transition-all transform hover:scale-[1.01] uppercase tracking-widest shadow-xl flex items-center justify-center">
+                            <span>Vérifier mes informations</span> <i class="fas fa-search ml-2"></i>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- TABLEAU DE CONFIRMATION DES INFORMATIONS (CACHÉ PAR DÉFAUT) -->
+            <!-- TABLEAU DE CONFIRMATION DES INFORMATIONS (MODAL) -->
             <div id="confirmationSummaryModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden animate__animated animate__fadeIn">
                 <div class="bg-white rounded-[2rem] shadow-2xl p-6 md:p-8 max-w-2xl w-full border border-slate-100 max-h-[90vh] overflow-y-auto">
                     
@@ -290,7 +636,7 @@
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Choix de Faculté</td>
-                                    <td id="summaryFaculty" class="px-4 py-2.5 font-black text-upkol-jaune bg-upkol-noir rounded px-2 py-0.5 inline-block"></td>
+                                    <td id="summaryFaculty" class="px-4 py-2.5 text-slate-900 font-bold"></td>
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-2.5 font-bold uppercase text-gray-500 text-[10px]">Niveau d'étude</td>
@@ -311,7 +657,7 @@
                     <!-- Message d'explication d'e-mail -->
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl text-xs text-blue-800 leading-relaxed font-bold mb-6">
                         <i class="fas fa-envelope-open-text text-blue-600 mr-2"></i>
-                        Une fois votre candidature soumise avec succès, un e-mail officiel de confirmation vous sera envoyé à l'adresse renseignée ci-dessus (<span id="summaryEmailSpan" class="underline"></span>) pour vous notifier de l'étude de votre dossier, puis de votre acceptation ou refus par le Rectorat.
+                        Une fois votre candidature soumise avec succès, un e-mail officiel de confirmation vous sera envoyé à l'adresse renseignée (<span id="summaryEmailSpan" class="underline"></span>) pour vous notifier de l'étude de votre dossier.
                     </div>
 
                     <div class="flex space-x-3">
@@ -325,7 +671,7 @@
                 </div>
             </div>
 
-            <!-- Message de Réussite Finale (Caché au départ) -->
+            <!-- Message de Réussite Finale -->
             <div id="successMessageOverlay" class="fixed inset-0 bg-upkol-noir/95 backdrop-blur-md z-[150] flex items-center justify-center p-4 hidden">
                 <div class="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 max-w-xl w-full text-center border-4 border-upkol-jaune animate__animated animate__zoomIn">
                     <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -339,7 +685,7 @@
                     
                     <p class="text-sm text-slate-700 font-medium leading-relaxed mb-6">
                         Merci d'avoir choisi l'UPKOL.  
-                        <strong>Un email vous sera transmis après traitement de votre dossier par le service académique et signature du Recteur</strong> pour confirmer votre admission définitive ou le refus de votre candidature.
+                        <strong>Un email vous sera transmitted après traitement de votre dossier par le service académique et signature du Recteur</strong> pour confirmer votre admission définitive ou le suivi de votre candidature.
                     </p>
 
                     <div class="bg-yellow-50 p-4 rounded-2xl text-xs text-slate-800 leading-relaxed font-bold border border-upkol-jaune/20 mb-8 text-left">
@@ -355,22 +701,27 @@
 
             <!-- Information cards -->
             <div class="grid md:grid-cols-2 gap-8 mt-12">
-                <div class="bg-blue-50 p-8 rounded-3xl border-l-4 border-blue-500">
-                    <h4 class="font-black uppercase text-sm mb-3">Documents à préparer</h4>
-                    <ul class="text-xs space-y-2 text-gray-600 font-bold">
-                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Copie du Diplôme d'État ou équivalent</li>
-                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Bulletins des 5ème et 6ème humanités</li>
-                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> Attestation de naissance et de bonne vie et mœurs</li>
-                        <li><i class="fas fa-check-circle text-blue-500 mr-2"></i> 4 photos passeport récentes</li>
+                <div class="bg-gray-50 p-8 rounded-3xl border-l-8 border-upkol-jaune shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-black uppercase text-sm mb-4 text-gray-800 flex items-center"><i class="fas fa-folder-open text-upkol-jaune mr-3 text-lg"></i> Documents à préparer</h4>
+                    <ul class="text-xs space-y-3 text-gray-600 font-semibold">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> Copie du Diplôme d'État ou équivalent</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> Bulletins des 5ème et 6ème humanités</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> Attestation de naissance et de bonne conduite</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i> 4 photos passeport récentes</li>
                     </ul>
                 </div>
-                <div class="bg-yellow-50 p-8 rounded-3xl border-l-4 border-upkol-jaune">
-                    <h4 class="font-black uppercase text-sm mb-3">Besoin d'aide ?</h4>
-                    <p class="text-xs text-gray-600 font-bold leading-relaxed">
-                        Le service des inscriptions est ouvert du lundi au vendredi de 08h00 à 15h30 au siège administratif.
+                <div class="bg-gray-50 p-8 rounded-3xl border-l-8 border-upkol-noir shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-black uppercase text-sm mb-4 text-gray-800 flex items-center"><i class="fas fa-headset text-upkol-jaune mr-3 text-lg"></i> Besoin d'assistance ?</h4>
+                    <p class="text-xs text-gray-600 font-medium leading-relaxed">
+                        Le service des inscriptions vous accueille du lundi au vendredi de 08h00 à 15h30 au siège administratif de Kolwezi.
                     </p>
-                    <div class="mt-4 flex items-center text-sm font-black">
-                        <i class="fas fa-phone-alt mr-2 text-upkol-jaune"></i> +243 826 838 544
+                    <div class="mt-6 flex flex-wrap items-center gap-4 text-xs font-black">
+                        <a href="tel:+243826838544" class="bg-upkol-jaune text-black px-4 py-2 rounded-xl hover:bg-black hover:text-white transition-colors">
+                            <i class="fas fa-phone-alt mr-2"></i> +243 826 838 544
+                        </a>
+                        <a href="https://wa.me/243995162001" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-colors">
+                            <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                        </a>
                     </div>
                 </div>
             </div>
@@ -378,60 +729,95 @@
     </section>
 
     <!-- FAQ SECTION -->
-    <section class="py-20 px-6 bg-gray-50">
+    <section class="py-20 px-6 bg-slate-50 border-t border-gray-200">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-black uppercase mb-4">Foire Aux <span class="text-upkol-jaune">Questions</span></h2>
+                <span class="text-xs font-black text-upkol-jaune uppercase tracking-widest bg-upkol-noir px-4 py-1.5 rounded-full inline-block mb-3">Aide & Réponses</span>
+                <h2 class="text-3xl md:text-4xl font-black uppercase mb-4 text-slate-800">Foire Aux <span class="text-upkol-jaune">Questions</span></h2>
                 <div class="w-20 h-1 bg-upkol-jaune mx-auto"></div>
             </div>
 
             <div class="space-y-4">
                 <!-- Question 1 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
-                        <span class="font-bold text-sm uppercase">Comment se déroule le processus d'inscription ?</span>
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-sm md:text-base text-slate-800 focus:outline-none">
+                        <span>Comment se déroule le processus d'inscription ?</span>
                         <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
                     </button>
-                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
-                        Le processus commence par cette pré-inscription en ligne. Une fois soumise, vous recevrez un mail de confirmation. Vous devrez ensuite vous présenter au campus avec vos documents physiques originaux pour la validation finale par le secrétariat.
+                    <div class="faq-answer hidden mt-4 text-xs md:text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4 font-medium">
+                        Le processus commence par cette pré-inscription en ligne. Une fois soumise, vous recevrez un e-mail de confirmation. Vous devrez ensuite vous présenter au campus avec vos documents physiques originaux pour la validation finale par le secrétariat.
                     </div>
                 </div>
 
                 <!-- Question 2 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
-                        <span class="font-bold text-sm uppercase">Quels sont les frais de scolarité ?</span>
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-sm md:text-base text-slate-800 focus:outline-none">
+                        <span>Quels sont les frais de scolarité ?</span>
                         <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
                     </button>
-                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
-                        Les frais varient selon la faculté et le cycle choisi. Pour obtenir la grille tarifaire complète de l'année 2024-2025, veuillez contacter le service de comptabilité via le numéro de téléphone indiqué ou vous rendre directement au guichet d'information du campus.
+                    <div class="faq-answer hidden mt-4 text-xs md:text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4 font-medium">
+                        Les frais varient selon la faculté et le cycle choisi. Pour obtenir la grille tarifaire complète de l'année académique en cours, veuillez contacter le service de comptabilité via nos numéros officiels ou vous rendre directement au guichet du campus.
                     </div>
                 </div>
 
                 <!-- Question 3 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button class="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors faq-toggle">
-                        <span class="font-bold text-sm uppercase">Puis-je changer de filière après l'inscription ?</span>
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 transition-all">
+                    <button onclick="toggleFaq(this)" class="w-full flex justify-between items-center text-left font-black text-sm md:text-base text-slate-800 focus:outline-none">
+                        <span>Puis-je changer de filière après l'inscription ?</span>
                         <i class="fas fa-chevron-down text-upkol-jaune transition-transform duration-300"></i>
                     </button>
-                    <div class="faq-content hidden p-6 pt-0 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-50">
+                    <div class="faq-answer hidden mt-4 text-xs md:text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4 font-medium">
                         Oui, il est possible de demander un changement de filière durant les deux premières semaines suivant la rentrée académique, sous réserve de places disponibles dans la filière souhaitée et de l'accord du Secrétariat Général Académique.
                     </div>
                 </div>
             </div>
             
-            <p class="text-center text-xs text-gray-400 mt-10">Vous avez une autre question ? <a href="mailto:contact@upkol.org" class="text-upkol-jaune font-bold underline">Contactez-nous</a></p>
+            <p class="text-center text-xs text-gray-500 font-medium mt-10">Vous avez une autre question ? <a href="mailto:upkolwezi@gmail.com" class="text-upkol-jaune font-bold underline hover:text-black">Contactez-nous</a></p>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="bg-upkol-noir text-white py-12 px-6 border-t-8 border-upkol-jaune mt-20">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
-            <p>&copy; 2024 UPKOL - TOUS DROITS RÉSERVÉS</p>
-            <div class="flex space-x-6 mt-4 md:mt-0">
-                <span>Formation.</span>
-                <span>Recherche.</span>
-                <span>Excellence.</span>
+    <!-- FOOTER INSTITUTIONNEL -->
+    <footer class="bg-upkol-noir text-white py-16 px-6 border-t-[12px] border-upkol-jaune">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
+            <div class="reveal-left">
+                <h4 class="text-3xl font-black mb-4 uppercase">UP<span class="text-upkol-jaune">KOL</span></h4>
+                <p class="text-gray-400 text-xs leading-relaxed font-medium">Université de prestige au cœur du Lualaba. Dédiée à l'excellence académique, à la recherche scientifique et à l'innovation.</p>
+                <div class="mt-6 text-xs text-gray-500 space-y-1">
+                    <p><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</p>
+                    <p><i class="fas fa-envelope text-upkol-jaune mr-2"></i> upkolwezi@gmail.com</p>
+                </div>
+            </div>
+
+            <div class="reveal-down">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Navigation</h5>
+                <ul class="space-y-3 text-xs font-bold text-gray-400">
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
+                    <li><a href="presentation.html" class="hover:text-white transition-colors uppercase">Présentation</a></li>
+                    <li><a href="index.html#facultes" class="hover:text-white transition-colors uppercase">Facultés & Filières</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
+                    <li><a href="inscription.html" class="hover:text-white transition-colors uppercase text-upkol-jaune">S'inscrire</a></li>
+                </ul>
+            </div>
+
+            <div class="reveal-down">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Ressources</h5>
+                <ul class="space-y-3 text-xs font-bold text-gray-400">
+                    <li><a href="bibliotheque.html" class="hover:text-white transition-colors uppercase">Bibliothèque Numérique</a></li>
+                    <li><a href="e-learning.html" class="hover:text-white transition-colors uppercase">Plateforme E-Learning</a></li>
+                    <li><a href="recherche.html" class="hover:text-white transition-colors uppercase">Projets de Recherche</a></li>
+                    <li><a href="dashboard.html" class="hover:text-white transition-colors uppercase">Portail Administrateur</a></li>
+                </ul>
+            </div>
+
+            <div class="reveal-right">
+                <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Suivez-nous</h5>
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" title="Facebook" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" title="LinkedIn" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" title="Instagram" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" title="TikTok" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-tiktok"></i></a>
+                </div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">&copy; 2026 UPKOL. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -439,22 +825,86 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- SCRIPTS ET LOGIQUE JS -->
     <script>
-        // Init Supabase Client
+        // Initialisation Supabase Client
         const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Toast Notification System
+        // Gestion du Menu Mobile
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value.trim();
+            if (query) {
+                alert('Recherche de : ' + query);
+            }
+        }
+
+        // Gestion des Thèmes
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function setTheme(themeName) {
+            document.body.classList.remove('theme-night', 'theme-gray', 'theme-comfort');
+            
+            document.querySelectorAll('#theme-menu button').forEach(btn => btn.classList.remove('active-theme'));
+            
+            if (themeName !== 'light') {
+                document.body.classList.add('theme-' + themeName);
+            }
+            
+            const activeBtn = document.getElementById('btn-theme-' + themeName);
+            if (activeBtn) activeBtn.classList.add('active-theme');
+            
+            localStorage.setItem('upkol-theme', themeName);
+        }
+
+        // Chargement du thème enregistré
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
+            updateAuthUI();
+        });
+
+        // FAQ Accordion Toggle Function
+        function toggleFaq(button) {
+            const answer = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            const isHidden = answer.classList.contains('hidden');
+
+            document.querySelectorAll('.faq-answer').forEach(ans => ans.classList.add('hidden'));
+            document.querySelectorAll('button i.fa-chevron-down').forEach(i => i.classList.remove('rotate-180'));
+
+            if (isHidden) {
+                answer.classList.remove('hidden');
+                if (icon) icon.classList.add('rotate-180');
+            }
+        }
+
+        // Systeme de Toast Notification
         function showCustomToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
-            const bgColor = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-600');
+            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
             const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
 
-            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[280px] max-w-[90vw]`;
-            toast.innerHTML = `<i class="fas ${icon} text-lg"></i> <span class="text-xs font-bold">${message}</span>`;
+            toast.className = `${bgColor} text-white px-5 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-full opacity-0 flex items-center space-x-3 pointer-events-auto min-w-[280px] max-w-[90vw]`;
+            toast.innerHTML = `<i class="fas ${icon} text-xl"></i> <span class="text-xs font-bold">${message}</span>`;
             
             container.appendChild(toast);
             
@@ -465,21 +915,21 @@
             }, 4500);
         }
 
-        // Action de modification de l'obligation de téléversement si passage au bureau coché
+        // Modification des exigences de fichiers selon le mode choisi
         function toggleFileInputsRequirement() {
             const checkbox = document.getElementById('physicalSubmissionCheckbox');
             const container = document.getElementById('fileInputsContainer');
             const fileInputs = container.querySelectorAll('input[type="file"]');
             
             if (checkbox.checked) {
-                container.classList.add('opacity-50');
+                container.classList.add('opacity-40');
                 fileInputs.forEach(input => {
                     input.required = false;
                     input.disabled = true;
-                    input.value = ""; // Vider les fichiers pour éviter la confusion
+                    input.value = "";
                 });
             } else {
-                container.classList.remove('opacity-50');
+                container.classList.remove('opacity-40');
                 fileInputs.forEach(input => {
                     input.required = true;
                     input.disabled = false;
@@ -487,32 +937,26 @@
             }
         }
 
-        // NOUVELLE FONCTION : UPLOAD VERS SUPABASE STORAGE
+        // Upload des fichiers dans Supabase Storage
         async function uploadFileToSupabase(file, folderPath) {
             if (!file) return null;
 
-            // NOM DU BUCKET : À ajuster si vous l'avez nommé autrement dans Supabase
             const BUCKET_NAME = 'documents_candidats'; 
             
-            // Génération d'un nom de fichier unique et sans espaces pour Supabase
             const fileExt = file.name.split('.').pop();
             const uniqueId = Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             const fileName = `${folderPath}/${uniqueId}.${fileExt}`;
 
             try {
-                // 1. Uploader le fichier dans le Bucket
                 const { data, error } = await _supabase.storage
                     .from(BUCKET_NAME)
                     .upload(fileName, file, {
                         cacheControl: '3600',
-                        upsert: false // Ne pas écraser s'il existe déjà
+                        upsert: false
                     });
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
-                // 2. Récupérer l'URL publique pour l'insérer dans la base de données
                 const { data: publicUrlData } = _supabase.storage
                     .from(BUCKET_NAME)
                     .getPublicUrl(fileName);
@@ -520,12 +964,12 @@
                 return publicUrlData.publicUrl;
 
             } catch (error) {
-                console.error("Erreur lors de l'upload du fichier dans le Storage:", error.message);
-                throw new Error(`Le fichier ${file.name} n'a pas pu être enregistré.`);
+                console.error("Erreur Upload Storage:", error.message);
+                throw new Error(`Erreur lors du téléversement de ${file.name}.`);
             }
         }
 
-        // Validation primaire et affichage de la confirmation récapitulative
+        // Validation et préparation du récapitulatif
         function prepareConfirmationSummary() {
             const form = document.getElementById('registrationForm');
             if (!form.reportValidity()) {
@@ -533,7 +977,6 @@
                 return;
             }
 
-            // Alimenter les valeurs du tableau récapitulatif
             document.getElementById('summaryName').innerText = document.getElementById('fullName').value;
             document.getElementById('summaryBirth').innerText = `${document.getElementById('birthPlace').value}, le ${document.getElementById('birthDate').value}`;
             document.getElementById('summaryEmail').innerText = document.getElementById('email').value;
@@ -545,10 +988,9 @@
 
             const isPhysical = document.getElementById('physicalSubmissionCheckbox').checked;
             document.getElementById('summaryDocs').innerText = isPhysical 
-                ? "Dépôt physique prévu ultérieurement au bureau" 
-                : "Documents prêts à être téléversés de manière sécurisée";
+                ? "Dépôt physique prévu au bureau d'inscription" 
+                : "Documents prêts à être téléversés en ligne";
 
-            // Ouvrir la pop-up de confirmation
             document.getElementById('confirmationSummaryModal').classList.remove('hidden');
         }
 
@@ -556,11 +998,11 @@
             document.getElementById('confirmationSummaryModal').classList.add('hidden');
         }
 
-        // Soumission finale asynchrone vers Supabase
+        // Soumission finale vers Supabase
         async function submitRegistration() {
             const btn = document.getElementById('confirmSubmitBtn');
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Téléversement et Traitement...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Traitement en cours...';
             btn.disabled = true;
 
             const isPhysical = document.getElementById('physicalSubmissionCheckbox').checked;
@@ -572,11 +1014,9 @@
                 let photoUrl = null;
                 let medicalUrl = null;
 
-                // Création d'un dossier formaté proprement pour l'étudiant dans le Bucket
                 const folderName = candidateName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').toLowerCase();
 
                 if (!isPhysical) {
-                    // Upload successif dans les sous-dossiers
                     cvUrl = await uploadFileToSupabase(document.getElementById('cvFile').files[0], `${folderName}/cv`);
                     diplomaUrl = await uploadFileToSupabase(document.getElementById('diplomaFile').files[0], `${folderName}/diplomes`);
                     photoUrl = await uploadFileToSupabase(document.getElementById('photoFile').files[0], `${folderName}/photos`);
@@ -593,51 +1033,30 @@
                     academic_level: document.getElementById('academicLevel').value,
                     previous_school: document.getElementById('previousSchool').value,
                     percentage: parseInt(document.getElementById('percentage').value) || 0,
-                    status: 'en_attente', // Statut initial en attente de traitement rectorat
+                    status: 'en_attente',
                     depot_physique_prevu: isPhysical,
-                    cv_file: cvUrl,         // URLs sécurisées
+                    cv_file: cvUrl,
                     diplome_file: diplomaUrl,
                     photo_file: photoUrl,
                     certificat_medical_file: medicalUrl
                 };
 
-                // Enregistrement des données textuelles dans la base de données
                 const { data, error } = await _supabase
                     .from('candidatures')
                     .insert([registrationData]);
 
                 if (error) throw error;
 
-                // Masquer le récapitulatif
                 closeConfirmationSummary();
-
-                // Afficher le message d'acceptation et de vérification d'email
                 document.getElementById('successMessageOverlay').classList.remove('hidden');
 
             } catch (error) {
-                console.error("Erreur globale d'insertion:", error.message);
+                console.error("Erreur insertion candidature:", error.message);
                 showCustomToast("Erreur lors de l'envoi : " + error.message, "error");
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
         }
-
-        // FAQ Accordion Logic
-        document.querySelectorAll('.faq-toggle').forEach(button => {
-            button.addEventListener('click', () => {
-                const content = button.nextElementSibling;
-                const icon = button.querySelector('i');
-                const isHidden = content.classList.contains('hidden');
-                
-                document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
-                document.querySelectorAll('.faq-toggle i').forEach(i => i.classList.remove('rotate-180'));
-
-                if (isHidden) {
-                    content.classList.remove('hidden');
-                    icon.classList.add('rotate-180');
-                }
-            });
-        });
     </script>
 </body>
 </html>
