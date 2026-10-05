@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliothèque - UPKOL</title><link rel="icon" href="favicon.png?v=2" type="image/png">
+    <title>Bibliothèque Numérique - UPKOL</title>
     <link rel="icon" href="favicon.png?v=2" type="image/png">
 
     <!-- Open Graph / Facebook -->
@@ -15,43 +15,201 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Auth Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        function decodeJwtResponse(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function signOut() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPicture');
+
+            if (google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            
+            window.location.reload();
+        }
+
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            const userPicture = localStorage.getItem('userPicture');
+            
+            const desktopSignInContainer = document.getElementById('google-signin-button-container');
+            const desktopLoggedInInfo = document.getElementById('logged-in-user-info');
+            const desktopDisplayName = document.getElementById('display-user-name');
+            const desktopDisplayPicture = document.getElementById('display-user-picture');
+
+            if (userEmail) {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'none';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'flex';
+                if (desktopDisplayName) desktopDisplayName.innerText = userName || '';
+                if (desktopDisplayPicture) {
+                    desktopDisplayPicture.src = userPicture || '';
+                    desktopDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (desktopSignInContainer) desktopSignInContainer.style.display = 'block';
+                if (desktopLoggedInInfo) desktopLoggedInInfo.style.display = 'none';
+            }
+
+            const mobileSignInContainer = document.getElementById('mobile-google-signin-button-container');
+            const mobileLoggedInInfo = document.getElementById('mobile-logged-in-user-info');
+            const mobileDisplayName = document.getElementById('mobile-display-user-name');
+            const mobileDisplayPicture = document.getElementById('mobile-display-user-picture');
+
+            if (userEmail) {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'none';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'flex';
+                if (mobileDisplayName) mobileDisplayName.innerText = userName || '';
+                if (mobileDisplayPicture) {
+                    mobileDisplayPicture.src = userPicture || '';
+                    mobileDisplayPicture.style.display = userPicture ? 'block' : 'none';
+                }
+            } else {
+                if (mobileSignInContainer) mobileSignInContainer.style.display = 'block';
+                if (mobileLoggedInInfo) mobileLoggedInInfo.style.display = 'none';
+            }
+        }
+
+        function logAction(email, userId, action, details) {
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('action_logs').insert([{
+                user_id: userId,
+                user_email: email,
+                action_type: action,
+                details: details
+            }]).then(response => {
+                if (response.error) console.error('Error logging action to Supabase:', response.error.message);
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = decodeJwtResponse(response.credential);
+
+            const userData = {
+                id: responsePayload.sub,
+                nom_complet: responsePayload.name,
+                prenom: responsePayload.given_name,
+                email: responsePayload.email,
+                picture: responsePayload.picture,
+                statut: responsePayload.email.endsWith('@student.upkol.org') ? 'Étudiant' : 'Autre',
+                action: "Connexion",
+                details: "Authentification via Google Identity Services (Bibliothèque)"
+            };
+
+            const supabaseUrl = 'https://mzsjeaymlmmrrwtveiti.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16c2plYXltbG1tcnJ3dHZlaXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mzc2NTQsImV4cCI6MjA5NzExMzY1NH0.WMFDexKIMC2YWdnTKNcTzIjklkTZVLRlF_D7Xs1Q9eg';
+            const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+            _supabase.from('profiles').select('id').eq('email', userData.email).single()
+                .then(async ({ data: existingUser }) => {
+                    if (existingUser) {
+                        await _supabase.from('profiles').update({
+                            name: userData.nom_complet,
+                            picture: userData.picture,
+                            last_login: new Date().toISOString()
+                        }).eq('id', existingUser.id);
+                    } else {
+                        await _supabase.from('profiles').insert([{
+                            id: userData.id,
+                            name: userData.nom_complet,
+                            email: userData.email,
+                            picture: userData.picture,
+                            role: userData.statut === 'Étudiant' ? 'etudiant' : 'autre',
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        }]);
+                    }
+                    localStorage.setItem('userEmail', userData.email);
+                    localStorage.setItem('userId', userData.id);
+                    localStorage.setItem('userName', userData.nom_complet);
+                    localStorage.setItem('userPicture', userData.picture);
+                    updateAuthUI();
+                    logAction(userData.email, userData.id, userData.action, userData.details);
+                })
+                .catch(error => console.error("Erreur lors de la transmission ou de la mise à jour Supabase :", error));
+        }
+    </script>
+    
     <style>
         :root {
             --primary: #FFD700;
             --secondary: #121212;
             --accent: #ffffff;
         }
-
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; transition: background-color 0.4s ease, color 0.4s ease; }
 
         .bg-upkol-jaune { background-color: var(--primary); }
         .text-upkol-jaune { color: var(--primary); }
         .bg-upkol-noir { background-color: var(--secondary); }
-
+        
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-                        url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-color: #121212;
+            background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+                              url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
+            background-attachment: scroll;
         }
 
         @keyframes slideFromTop { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes slideFromLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideFromRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .reveal-down { animation: slideFromTop 0.8s ease-out forwards; }
         .reveal-left { animation: slideFromLeft 0.8s ease-out forwards; }
         .reveal-right { animation: slideFromRight 0.8s ease-out forwards; }
 
-        .library-card {
+        .nav-dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.3s ease; }
+        
+        .search-container input:focus { width: 250px; border-color: var(--primary); }
+        .search-container input { transition: width 0.4s ease, border-color 0.4s ease; width: 150px; }
+
+        .card-faculte {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: default;
         }
-        .library-card:hover {
+        .card-faculte:hover {
+            border-color: var(--primary);
             transform: translateY(-10px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary);
         }
+
+        /* --- GESTION DES THÈMES --- */
+        body.theme-night { background-color: #121212 !important; color: #e0e0e0 !important; }
+        body.theme-night nav, body.theme-night .dropdown-content, body.theme-night #mobile-menu { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
+        body.theme-night .bg-white, body.theme-night .bg-gray-50, body.theme-night .bg-slate-50, body.theme-night .bg-gray-100 { background-color: #1e1e1e !important; color: #e0e0e0 !important; border-color: #333 !important; }
+        body.theme-night .text-gray-900, body.theme-night .text-gray-800, body.theme-night .text-gray-700, body.theme-night .text-gray-600, body.theme-night .text-slate-800 { color: #d1d5db !important; }
+        body.theme-night .text-gray-500 { color: #9ca3af !important; }
+        
+        body.theme-gray { background-color: #b0b5be !important; color: #111827 !important; }
+        body.theme-gray nav, body.theme-gray .dropdown-content, body.theme-gray #mobile-menu { background-color: #9ca3af !important; }
+        body.theme-gray .bg-white, body.theme-gray .bg-gray-50, body.theme-gray .bg-slate-50, body.theme-gray .bg-gray-100 { background-color: #d1d5db !important; border-color: #9ca3af !important; }
+        
+        body.theme-comfort { background-color: #F4EAD5 !important; color: #433422 !important; }
+        body.theme-comfort nav, body.theme-comfort .dropdown-content, body.theme-comfort #mobile-menu { background-color: #FDF9E8 !important; }
+        body.theme-comfort .bg-white, body.theme-comfort .bg-gray-50, body.theme-comfort .bg-slate-50, body.theme-comfort .bg-gray-100 { background-color: #FDF9E8 !important; color: #433422 !important; border-color: #E6D5B8 !important; }
+        body.theme-comfort .text-gray-900, body.theme-comfort .text-gray-800, body.theme-comfort .text-gray-700, body.theme-comfort .text-gray-600, body.theme-comfort .text-slate-800 { color: #433422 !important; }
+        
+        #theme-menu button.active-theme { border: 2px solid var(--primary); transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -59,9 +217,9 @@
     <!-- TOP BAR -->
     <div class="bg-upkol-noir text-white py-2 px-6 text-[10px] md:text-xs font-medium tracking-widest border-b border-gray-800 reveal-down">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex space-x-6">
-                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> KOLWEZI, RDC</span>
-                <span class="flex items-center"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> contact@upkol.org</span>
+            <div class="flex flex-wrap gap-4 items-center">
+                <span class="flex items-center"><i class="fas fa-map-marker-alt text-upkol-jaune mr-2"></i> Num 1640, Av. Kamina, Q. Industriel, Manika</span>
+                <a href="mailto:upkolwezi@gmail.com" class="flex items-center hover:text-upkol-jaune transition-colors"><i class="fas fa-envelope text-upkol-jaune mr-2"></i> upkolwezi@gmail.com</a>
             </div>
             <div class="hidden md:flex space-x-4">
                 <span class="text-gray-500 italic">Excellence Pédagogique au Lualaba</span>
@@ -69,9 +227,15 @@
         </div>
     </div>
 
-    <!-- NAVIGATION -->
-    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300">
+    <!-- MAIN NAVIGATION -->
+    <div id="g_id_onload"
+         data-client_id="396005366251-5jl94257ahdgn21j0e5r3iiiajje0fc3.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300 relative">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <!-- Logo -->
             <div class="flex items-center space-x-3 cursor-pointer reveal-left" onclick="window.location.href='index.html'">
                 <div class="w-12 h-12 flex items-center justify-center overflow-hidden hover:rotate-3 transition-transform">
                     <img src="logo.png" alt="Logo UPKOL" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-upkol-jaune font-black text-xl bg-upkol-noir w-full h-full flex items-center justify-center rounded-lg shadow-lg\'>Logo</span>';">
@@ -82,21 +246,138 @@
                 </div>
             </div>
 
+            <!-- Desktop Menu & Search -->
             <div class="hidden lg:flex space-x-6 text-[11px] font-bold uppercase tracking-widest items-center reveal-right">
-                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Accueil</a>
-                <a href="presentation.html" class="hover:text-upkol-jaune py-8 transition-colors">À Propos</a>
-                <a href="recherche.html" class="hover:text-upkol-jaune py-8 transition-colors">Recherches</a>
-                <a href="e-learning.html" class="hover:text-upkol-jaune py-8 transition-colors">E-Learning</a>
+                
+                <!-- Search Bar -->
+                <div class="search-container relative mr-4">
+                    <input type="text" id="site-search" placeholder="Rechercher..." 
+                           class="bg-gray-100 border-2 border-transparent px-4 py-2 rounded-full outline-none text-gray-700">
+                    <button class="absolute right-3 top-2.5 text-gray-400 hover:text-upkol-jaune" onclick="handleSearch('site-search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors">À Propos <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute left-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[250px] py-4 rounded-b-xl">
+                        <a href="presentation.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Présentation de l'UPKOL</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Les Organes</a>
+                        <a href="e-learning_info.html" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">C'est quoi le e-learning</a>
+                        <a href="#" class="block px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">Plan Stratégique</a>
+                    </div>
+                </div>
+
+                <a href="index.html" class="hover:text-upkol-jaune py-8 transition-colors">Facultés</a>
+                <a href="actualites.html" class="hover:text-upkol-jaune py-8 transition-colors flex items-center">Actualités</a>
+
+                <div class="relative nav-dropdown py-8">
+                    <button class="flex items-center hover:text-upkol-jaune transition-colors text-upkol-jaune">Enseignements <i class="fas fa-chevron-down ml-2 text-[8px]"></i></button>
+                    <div class="dropdown-content hidden absolute right-0 top-full bg-white shadow-2xl border-t-4 border-upkol-jaune min-w-[220px] py-4 rounded-b-xl">
+                        <a href="bibliotheque.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-jaune transition-all">
+                            <i class="fas fa-book-open mr-3"></i> BIBLIOTHÈQUES
+                        </a>
+                        <a href="e-learning.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-laptop mr-3 opacity-50"></i> E-LEARNING
+                        </a>
+                        <a href="recherche.html" class="flex items-center px-6 py-3 hover:bg-gray-50 hover:text-upkol-jaune transition-all">
+                            <i class="fas fa-microscope mr-3 opacity-50"></i> RECHERCHES
+                        </a>
+                        <a href="dashboard.html" class="flex items-center px-6 py-3 bg-gray-50 text-upkol-noir font-black hover:bg-upkol-jaune transition-all border-t border-gray-100">
+                            <i class="fas fa-user-shield mr-3"></i> ADMINISTRATION
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <a href="dashboard.html" class="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-upkol-jaune transition-all">
+                        <div class="w-8 h-8 bg-upkol-noir rounded-full flex items-center justify-center text-upkol-jaune">
+                            <i class="fas fa-university text-[10px]"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-gray-500 group-hover:text-upkol-noir">PORTAIL</span>
+                    </a>
+                </div>
+                
+                <div id="google-signin-button-container">
+                    <div class="g_id_signin"
+                        data-type="icon"
+                        data-shape="circle"
+                        data-theme="outline"
+                        data-size="large">
+                    </div>
+                </div>
+
+                <div id="logged-in-user-info" class="hidden items-center space-x-4">
+                    <img id="display-user-picture" class="w-8 h-8 rounded-full mr-2" alt="Photo de profil">
+                    <div class="flex flex-col text-sm font-bold text-gray-700">
+                        <span>Bienvenue</span>
+                        <span id="display-user-name" class="text-upkol-jaune"></span>
+                    </div>
+                    <button onclick="signOut()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-red-600 transition transform hover:scale-105">
+                        Déconnexion
+                    </button>
+                </div>
+
                 <a href="inscription.html" class="bg-upkol-jaune text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-white transition transform hover:scale-105">
-                    S'INSCRIRE
+                S'INSCRIRE
                 </a>
             </div>
 
-            <div class="lg:hidden flex items-center space-x-5">
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center space-x-3">
+                <div id="mobile-google-signin-button-container">
+                    <div class="g_id_signin" 
+                        data-type="icon" 
+                        data-shape="circle" 
+                        data-theme="outline">
+                    </div>
+                </div>
+                <div id="mobile-logged-in-user-info" class="hidden items-center space-x-2">
+                    <img id="mobile-display-user-picture" class="w-8 h-8 rounded-full" alt="P">
+                    <div class="flex flex-col text-[10px] font-bold text-gray-700 leading-tight">
+                        <span>Bienvenue</span>
+                        <span id="mobile-display-user-name" class="text-upkol-jaune truncate max-w-[50px]"></span>
+                    </div>
+                    <button onclick="signOut()" class="text-red-500 text-[10px] ml-1" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+
+                <i class="fas fa-search text-xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileSearch()"></i>
                 <i class="fas fa-bars text-2xl cursor-pointer hover:text-upkol-jaune transition-colors" onclick="toggleMobileMenu()"></i>
             </div>
         </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-full left-0 w-full bg-white border-t-4 border-upkol-jaune shadow-2xl z-50 flex-col">
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Accueil</a>
+            <a href="presentation.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">À Propos</a>
+            <a href="actualites.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Actualités</a>
+            <a href="bibliotheque.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-upkol-jaune">Bibliothèques</a>
+            <a href="index.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm hover:text-upkol-jaune">Facultés</a>
+            <a href="dashboard.html" class="px-6 py-4 border-b border-gray-50 font-bold uppercase text-sm text-blue-600">Administration</a>
+            <a href="inscription.html" class="px-6 py-4 font-black uppercase text-sm text-upkol-jaune">S'inscrire</a>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobile-search-bar" class="hidden lg:hidden absolute top-full left-0 w-full bg-gray-100 p-4 shadow-md z-40">
+            <div class="flex">
+                <input type="text" id="mobile-site-search" placeholder="Rechercher..." class="flex-grow px-4 py-2 rounded-l-lg outline-none border border-gray-300">
+                <button onclick="handleSearch('mobile-site-search')" class="bg-upkol-jaune px-6 py-2 rounded-r-lg font-bold text-black"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
     </nav>
+
+    <!-- THEME SWITCHER -->
+    <div class="fixed bottom-6 left-6 z-[100]">
+        <div id="theme-menu" class="hidden flex-col bg-white rounded-2xl shadow-2xl border-2 border-gray-100 p-2 mb-2 space-y-2 animate__animated animate__fadeInUp animate__faster">
+            <button onclick="setTheme('light')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-transform" title="Mode Clair" id="btn-theme-light"><i class="fas fa-sun"></i></button>
+            <button onclick="setTheme('gray')" class="w-10 h-10 rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-transform" title="Mode Gris" id="btn-theme-gray"><i class="fas fa-adjust"></i></button>
+            <button onclick="setTheme('night')" class="w-10 h-10 rounded-full bg-gray-900 hover:bg-black text-white flex items-center justify-center transition-transform" title="Mode Nuit" id="btn-theme-night"><i class="fas fa-moon"></i></button>
+            <button onclick="setTheme('comfort')" class="w-10 h-10 rounded-full bg-[#f4ecd8] hover:bg-[#e5ddc5] text-[#433422] flex items-center justify-center transition-transform" title="Mode Confort des Yeux" id="btn-theme-comfort"><i class="fas fa-eye"></i></button>
+        </div>
+        <button onclick="toggleThemeMenu()" class="w-14 h-14 bg-upkol-jaune text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <i class="fas fa-palette text-xl"></i>
+        </button>
+    </div>
 
     <!-- HERO SECTION -->
     <section class="hero-section h-[50vh] flex items-center px-6">
@@ -112,55 +393,67 @@
     <section class="py-20 px-6 max-w-7xl mx-auto">
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Ouvrages & Livres -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-left">
-                <i class="fas fa-book text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Livres & Ouvrages</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-book text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Livres & Ouvrages</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Une vaste collection de manuels académiques et d'ouvrages de référence par faculté.
                 </p>
             </div>
 
             <!-- Revues Scientifiques -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-down">
-                <i class="fas fa-microscope text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Revues Scientifiques</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-microscope text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Revues Scientifiques</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Articles de recherche et publications périodiques nationaux et internationaux.
                 </p>
             </div>
 
             <!-- Travaux de Fin de Cycle (TFC) -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-right">
-                <i class="fas fa-graduation-cap text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Travaux de Fin de Cycle</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-graduation-cap text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Travaux de Fin de Cycle</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Consultez les travaux de recherche produits par nos étudiants finalistes de graduat.
                 </p>
             </div>
 
             <!-- Mémoires de Licence -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-left">
-                <i class="fas fa-user-graduate text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Mémoires de Licence</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-left cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-user-graduate text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Mémoires de Licence</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Accès aux archives des mémoires soutenus par nos licenciés dans divers domaines.
                 </p>
             </div>
 
             <!-- Rapports de Stage -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-down">
-                <i class="fas fa-briefcase text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Rapports de Stage</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-down cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-briefcase text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Rapports de Stage</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Partage d'expériences professionnelles et rapports techniques en milieu professionnel.
                 </p>
             </div>
 
             <!-- Autres Documents Intéressants -->
-            <div class="library-card bg-white p-8 rounded-2xl border-l-8 border-gray-100 shadow-sm reveal-right">
-                <i class="fas fa-file-alt text-4xl mb-6 text-upkol-jaune"></i>
-                <h3 class="font-black text-xl mb-4 uppercase">Autres Documents</h3>
-                <p class="text-gray-600 leading-relaxed">
+            <div class="group bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-2xl transition-all duration-500 reveal-right cursor-pointer card-faculte text-center sm:text-left">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto sm:mx-0 group-hover:scale-110 transition-transform duration-500">
+                    <i class="fas fa-file-alt text-3xl text-upkol-jaune"></i>
+                </div>
+                <h3 class="font-black text-xl mb-4 uppercase group-hover:text-upkol-jaune transition-colors">Autres Documents</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Supports de cours, guides méthodologiques et documents pédagogiques complémentaires.
                 </p>
             </div>
@@ -178,15 +471,19 @@
                 <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Liens</h5>
                 <ul class="space-y-4 text-xs font-bold text-gray-400">
                     <li><a href="index.html" class="hover:text-white transition-colors uppercase">Accueil</a></li>
-                    <li><a href="presentation.html" class="hover:text-white transition-colors uppercase">À Propos</a></li>
-                    <li><a href="e-learning.html" class="hover:text-white transition-colors uppercase">E-Learning</a></li>
+                    <li><a href="index.html" class="hover:text-white transition-colors uppercase">Facultés</a></li>
+                    <li><a href="actualites.html" class="hover:text-white transition-colors uppercase">Actualités</a></li>
                 </ul>
             </div>
             <div class="reveal-down" style="animation-delay: 0.4s">
                 <h5 class="text-upkol-jaune font-black text-xs uppercase mb-6 tracking-widest">Social</h5>
-                <div class="flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                <div class="flex flex-wrap gap-3">
+                    <a href="https://www.facebook.com/share/1HxEWef2tf/" target="_blank" title="Facebook" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.linkedin.com/company/universite-pedagogique-de-kolwezi/" target="_blank" title="LinkedIn" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/upkol1?stkn=dG9jbjIzb2JodjNv" target="_blank" title="Instagram" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@upkol1?_r=1&_t=ZS-99XEeSIsJyz" target="_blank" title="TikTok" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@universitepedagogiquedekolwezi?si=qBv6wuj59NXBS6ZZ" target="_blank" title="YouTube" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-youtube"></i></a>
+                    <a href="https://whatsapp.com/channel/0029VbDBBON29752VGwZVX34" target="_blank" title="Chaîne WhatsApp" class="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-full hover:bg-upkol-jaune hover:text-black transition-all"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
             <div class="reveal-right">
@@ -205,27 +502,76 @@
     </footer>
 
     <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu) {
-                menu.classList.toggle('hidden');
-                menu.classList.toggle('flex');
+        // --- GESTION DES THÈMES ---
+        function toggleThemeMenu() {
+            const menu = document.getElementById('theme-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
             }
         }
 
+        function setTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-gray', 'theme-night', 'theme-comfort');
+            
+            const btnIds = ['btn-theme-light', 'btn-theme-gray', 'btn-theme-night', 'btn-theme-comfort'];
+            btnIds.forEach(id => {
+                document.getElementById(id).classList.remove('active-theme');
+            });
+
+            if (theme !== 'light') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            document.getElementById(`btn-theme-${theme}`).classList.add('active-theme');
+
+            localStorage.setItem('upkol-theme', theme);
+            toggleThemeMenu(); 
+        }
+
+        // --- NAVIGATION & UI ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        function toggleMobileSearch() {
+            const searchBar = document.getElementById('mobile-search-bar');
+            searchBar.classList.toggle('hidden');
+        }
+
+        function handleSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if (query.trim() !== "") {
+                console.log("Recherche en cours pour : " + query);
+            }
+        }
+
+        // --- ANIMATIONS ON SCROLL ---
         const observerOptions = { threshold: 0.1 };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = "1";
                     entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
                 }
             });
         }, observerOptions);
 
-        document.querySelectorAll('.library-card').forEach(card => {
+        document.querySelectorAll('.card-faculte').forEach(card => {
             card.style.opacity = "0";
             observer.observe(card);
+        });
+
+        // --- INITIALISATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            const savedTheme = localStorage.getItem('upkol-theme') || 'light';
+            setTheme(savedTheme);
         });
     </script>
 </body>
